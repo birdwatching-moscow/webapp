@@ -34,7 +34,7 @@ describe('PurchaseSummary — fields rendered', () => {
 describe('PurchaseSummary — Russian plural quantity', () => {
   it('quantity=1 renders "1 билет"', () => {
     render(<PurchaseSummary {...base} quantity={1} />)
-    expect(screen.getByText(/1 билет\b/)).toBeInTheDocument()
+    expect(screen.getByText(/^1 билет$/)).toBeInTheDocument()
   })
 
   it('quantity=2 renders "2 билета"', () => {
