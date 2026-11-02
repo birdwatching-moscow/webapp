@@ -90,10 +90,14 @@ If a test seems wrong, stop and raise it with the human rather than changing it 
 
 ## Commands
 
+> Always use pnpm scripts — `pnpm dev` and `pnpm build` internally pass `--webpack`. Calling `next dev`/`next build` directly skips it and breaks CSP nonce stamping ([vercel/next.js#96063](https://github.com/vercel/next.js/issues/96063)).
+
 ```bash
+docker compose up -d  # Start PostgreSQL (required before pnpm dev)
 pnpm dev             # Start development server
 pnpm build           # Production build
 pnpm lint            # Run ESLint
+pnpm typecheck       # TypeScript type check (tsc --noEmit)
 pnpm test            # Run Vitest in watch mode
 pnpm test:run        # Run Vitest once (CI)
 pnpm test:coverage   # Run Vitest with V8 coverage report
@@ -140,6 +144,12 @@ pnpm exec vitest run __tests__/lib/utils.test.ts  # run a single test file
 - One component per file
 - No prop drilling beyond 2 levels — use context or lift state
 
+## Next.js Gotchas
+
+- **`middleware.ts`** — keep `export const config = { runtime: 'nodejs' }`; Edge Runtime doesn't support Prisma. Do NOT rename to `proxy.ts` — the runtime doesn't support that convention yet despite the Next 16.3.2 deprecation warning.
+- **Dynamic route params** — type `context.params` as `Promise<{ id: string }>`, not a union. Enforced at build time in Next.js 16.
+- **Auth routes** (`app/(auth)`, `/login`) — require `export const dynamic = 'force-dynamic'`; static render breaks CSP nonces.
+
 ## Payments
 
 Checkout uses the **ЮKassa widget** for payment confirmation (not a redirect to a hosted page).
@@ -154,7 +164,7 @@ Deployed on **Selectel VPS** (not Vercel/serverless). Implications:
 - No function timeout constraints — long-running server tasks are fine
 - **Ticket concurrency** — wrap purchases in Prisma transactions with row-level locks to prevent double-booking under simultaneous requests
 - **Certificate generation (stage 2)** — generate via Puppeteer using fire-and-forget (`generateCertificate(orderId).catch(...)`) so the HTTP response is not blocked; no job queue needed
-- **Auth** — database sessions via NextAuth.js v5 (Auth.js) with the Prisma adapter (`strategy: "database"`); sessions stored in PostgreSQL for instant revocation; secrets in `.env` only, never committed
+- **Auth** — database sessions via NextAuth.js v5 (Auth.js) with the Prisma adapter (`strategy: "database"`); sessions stored in PostgreSQL for instant revocation; secrets in `.env.production` (production/staging) — `prisma.config.ts` hard-codes this path; never commit it
 
 ## Testing
 

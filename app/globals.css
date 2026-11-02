@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Manrope:wght@500;600&display=swap');
+
 html {
   height: 100%;
   scroll-behavior: smooth;
@@ -52,4 +54,133 @@ svg {
 
 :root {
   color-scheme: light;
+
+  /* --- Colors --- */
+  --color-primary:            #3f4fa6;
+  --color-primary-foreground: #fffff8;
+  --color-primary-hover:      #33418c;
+  --color-foreground:         #26241f;
+  --color-background:         #fffff8;
+  --color-border:             #d6d5c4;
+  --color-input-border:       #d6d5c4;
+  --color-muted-foreground:   #806870;
+  --color-error:              #b4453f;
+
+  /* --- Space --- */
+  --space-0:  0px;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-4a: 20px;
+  --space-5:  24px;
+  --space-6:  32px;
+  --space-7:  48px;
+  --space-8:  64px;
+  --space-10: 96px;
+
+  /* --- Radius --- */
+  --radius-none: 0px;
+  --radius-lg:   12px;
+  --radius-full: 999px;
+
+  /* --- Size: controls --- */
+  --size-control-icon:           24px;
+  --size-control-sm:             36px;
+  --size-control-default:        44px;
+  --size-control-input:          48px;
+  --size-control-header-mobile:  64px;
+  --size-control-header-desktop: 80px;
+
+  /* --- Size: layout --- */
+  --size-layout-input:   320px;
+  --size-content-mobile: 328px;
+  --size-screen-mobile:  360px;
+  --size-col-3:          406px;
+  --size-col-2:          612px;
+  --size-text-max:       720px;
+  --size-col-1:          1248px;
+  --size-screen-desktop: 1440px;
+
+  /* --- Stroke & state --- */
+  --stroke-default:     2px;
+  --stroke-focus:       2px;
+  --opacity-disabled:   0.5;
+
+  /* --- Grid gutters (mobile-first) --- */
+  --page-gutter: var(--space-4);
+}
+
+@media (min-width: 1248px) {
+  :root {
+    --page-gutter: var(--space-10);
+  }
+}
+
+/* --- Typography --- */
+
+.text-display {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 40px;
+  line-height: 44px;
+}
+
+.text-h1 {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 32px;
+}
+
+.text-h2 {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 28px;
+}
+
+.text-h3 {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 24px;
+}
+
+.text-body-l {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 24px;
+}
+
+.text-body {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 20px;
+}
+
+.text-label {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 16px;
+}
+
+.text-caption {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 16px;
+}
+
+@media (min-width: 1248px) {
+  .text-display { font-size: 56px; line-height: 58px; }
+  .text-h1      { font-size: 40px; line-height: 44px; }
+  .text-h2      { font-size: 28px; line-height: 32px; }
+  .text-h3      { font-size: 24px; line-height: 28px; }
+  .text-body-l  { font-size: 20px; line-height: 24px; }
+  .text-body    { font-size: 18px; line-height: 24px; }
+  .text-label   { font-size: 16px; line-height: 20px; }
 }
