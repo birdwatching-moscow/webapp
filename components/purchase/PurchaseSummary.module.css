@@ -1,0 +1,13 @@
+.card {
+  width: 358px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+@media (min-width: 1248px) {
+  .card {
+    width: 454px;
+  }
+}

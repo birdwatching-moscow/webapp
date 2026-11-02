@@ -57,12 +57,12 @@ svg {
 
   /* --- Colors --- */
   --color-primary:            #3f4fa6;
-  --color-primary-foreground: #fffff8;
+  --color-primary-foreground: #ffffff;
   --color-primary-hover:      #33418c;
   --color-foreground:         #26241f;
   --color-background:         #fffff8;
   --color-border:             #d6d5c4;
-  --color-input-border:       #d6d5c4;
+  --color-input-border:       #8a8978;
   --color-muted-foreground:   #806870;
   --color-error:              #b4453f;
 
