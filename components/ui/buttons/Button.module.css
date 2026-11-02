@@ -1,3 +1,82 @@
 .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1;
+  text-decoration: none;
+  transition: background-color 0.15s, border-color 0.15s, opacity 0.15s;
+  white-space: nowrap;
+}
 
+.button:focus-visible {
+  outline: var(--stroke-focus) solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.button:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Variants */
+
+.default {
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  padding: 0 var(--space-5);
+}
+
+.default:hover:not(:disabled):not([aria-disabled='true']) {
+  background: var(--color-primary-hover);
+}
+
+.secondary {
+  background: transparent;
+  color: var(--color-primary);
+  border: var(--stroke-default) solid var(--color-primary);
+  padding: 0 var(--space-5);
+}
+
+.secondary:hover:not(:disabled):not([aria-disabled='true']) {
+  border-color: var(--color-primary-hover);
+  color: var(--color-primary-hover);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--color-primary);
+  border: none;
+  padding: 0;
+  /* ghost is always sm height regardless of size prop */
+  height: var(--size-control-sm) !important;
+}
+
+.ghost:hover:not(:disabled):not([aria-disabled='true']) {
+  border: var(--stroke-default) solid var(--color-primary-hover);
+  color: var(--color-primary-hover);
+  padding: 0 var(--space-3);
+}
+
+/* Sizes */
+
+.default {
+  height: var(--size-control-default);
+}
+
+.sm {
+  height: var(--size-control-sm);
+}
+
+/* Disabled / loading */
+
+.button:disabled,
+.button[aria-disabled='true'] {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+  pointer-events: none;
 }

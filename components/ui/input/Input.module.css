@@ -1,0 +1,61 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 16px;
+  color: var(--color-foreground);
+}
+
+.input {
+  width: 100%;
+  height: var(--size-control-input);
+  padding: 0 var(--space-4);
+  border: var(--stroke-default) solid var(--color-input-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 20px;
+  outline: none;
+  transition: border-color 0.15s;
+  /* for Windows High Contrast mode */
+  forced-color-adjust: auto;
+}
+
+.input::placeholder {
+  color: var(--color-muted-foreground);
+}
+
+.input:focus {
+  border-color: var(--color-primary);
+  border-width: var(--stroke-focus);
+}
+
+.input.error {
+  border-color: var(--color-error);
+}
+
+.input.error:focus {
+  border-color: var(--color-error);
+}
+
+.input:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.errorMessage {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 16px;
+  color: var(--color-error);
+}

@@ -3,31 +3,45 @@
 import Link from 'next/link';
 import styles from './Button.module.css';
 
-type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
-type ButtonSize = 'sm' | 'md' | 'lg';
+type ButtonVariant = 'default' | 'secondary' | 'ghost';
+type ButtonSize    = 'default' | 'sm';
 
 type BaseProps = {
-  variant?: ButtonVariant;
-  size?: ButtonSize;
-  loading?: boolean;
-  disabled?: boolean;
+  variant?:   ButtonVariant;
+  size?:      ButtonSize;
+  loading?:   boolean;
+  disabled?:  boolean;
   className?: string;
-  children: React.ReactNode;
+  children:   React.ReactNode;
 };
 
 type AsButton = BaseProps & { as?: 'button' } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 type AsLink   = BaseProps & { as: 'a'; href: string } & React.AnchorHTMLAttributes<HTMLAnchorElement>;
 
-type ButtonProps = AsButton | AsLink;
+export type ButtonProps = AsButton | AsLink;
 
-export const Button = ({ variant = 'primary', size = 'md', loading = false, disabled, className, children, ...rest }: ButtonProps) => {
-  const cls = [styles.button, styles[variant], styles[size], className].filter(Boolean).join(' ');
+export const Button = ({
+  variant = 'default',
+  size = 'default',
+  loading = false,
+  disabled,
+  className,
+  children,
+  ...rest
+}: ButtonProps) => {
   const isDisabled = disabled || loading;
+  const cls = [styles.button, styles[variant], styles[size], className].filter(Boolean).join(' ');
 
   if (rest.as === 'a') {
     const { as: _as, href, ...linkRest } = rest as AsLink;
     return (
-      <Link href={href} className={cls} aria-disabled={isDisabled} {...linkRest}>
+      <Link
+        href={href}
+        className={cls}
+        aria-disabled={isDisabled ? 'true' : undefined}
+        aria-busy={loading ? 'true' : undefined}
+        {...linkRest}
+      >
         {children}
       </Link>
     );
@@ -35,7 +49,12 @@ export const Button = ({ variant = 'primary', size = 'md', loading = false, disa
 
   const { as: _as, ...btnRest } = rest as AsButton;
   return (
-    <button className={cls} disabled={isDisabled} {...btnRest}>
+    <button
+      className={cls}
+      disabled={isDisabled}
+      aria-busy={loading ? 'true' : undefined}
+      {...btnRest}
+    >
       {children}
     </button>
   );
