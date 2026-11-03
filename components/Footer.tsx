@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Logo } from '@/components/ui/logo/Logo'
+import { getRandomBirdSrc } from '@/lib/footer-birds'
 import styles from './Footer.module.css'
 
 const EVENTS_LINKS = [
@@ -25,6 +26,7 @@ const CONTACT_LINKS = [
 
 export const Footer = () => {
   const year = new Date().getFullYear()
+  const birdSrc = getRandomBirdSrc()
 
   return (
     <footer className={styles.footer}>
@@ -37,13 +39,15 @@ export const Footer = () => {
         </div>
 
         <div className={styles.birdPhoto}>
-          <Image
-            src="/images/footer-bird.png"
-            alt="Зимородок"
-            width={355}
-            height={187}
-            placeholder="empty"
-          />
+          {birdSrc && (
+            <Image
+              src={birdSrc}
+              alt="Зимородок"
+              width={355}
+              height={187}
+              placeholder="empty"
+            />
+          )}
         </div>
 
         <div className={styles.navSection}>
