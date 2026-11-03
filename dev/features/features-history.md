@@ -299,6 +299,29 @@ Added `POST /api/requests` — a public, unauthenticated endpoint that creates `
 
 ---
 
+## Header
+
+**Branch:** header
+**Completed:** 2026-11-03
+
+### Goals
+
+- Replace `components/Header.tsx` stub with a mobile-first Header matching Figma
+- Desktop (≥1248px): logo left + nav row right + context-dependent CTA
+- Mobile: slim bar with hamburger → full-screen overlay
+- CTA adapts to auth state: Войти / Личный кабинет / Выйти
+- Pre-load session in `layout.tsx` to eliminate CTA flash on reload
+- CSP fix for Google Fonts; background/foreground colors on `body`
+- `.container` utility class (16px mobile → 96px desktop)
+- `/book` placeholder page; `/team` → `/about` rename
+- `className="container"` on all auth page `<main>` elements
+
+### Summary
+
+Implemented full Header with CSS Modules (mobile-first). Mobile overlay is `position: fixed; inset: 0` with body scroll-lock. Auth state via `useSession`; `signOut({ redirectTo: '/' })` for Выйти. Session pre-loaded server-side in `app/layout.tsx` via `await auth()` and passed to `SessionProvider` to eliminate the loading flash. CSP updated to allow `fonts.googleapis.com` (style-src) and `fonts.gstatic.com` (font-src). Global `.container` utility added for consistent horizontal gutters. 32 tests.
+
+---
+
 ## App Wiring
 
 **Branch:** app-wiring
