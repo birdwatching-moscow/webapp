@@ -66,13 +66,40 @@
   }
 }
 
-/* ─── Nav columns ─────────────────────────────────────────────────────────── */
+/* ─── Nav section ─────────────────────────────────────────────────────────── */
 
-/* Mobile: two nav columns side by side, contacts full-width */
-.navColumns {
+/* Mobile: navSection is a vertical stack (navRow on top, Contacts below) */
+.navSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Mobile: navRow puts событие + прочее side by side */
+.navRow {
   display: flex;
   flex-direction: row;
   gap: 0;
+}
+
+.navRow .column {
+  flex: 1;
+}
+
+/* Desktop: navSection spreads all 3 columns horizontally with 64px gaps */
+@media (min-width: 1248px) {
+  .navSection {
+    flex-direction: row;
+    gap: 64px;
+  }
+
+  .navRow {
+    display: contents; /* unwrap navRow so columns sit directly in navSection */
+  }
+
+  .navRow .column {
+    flex: unset;
+  }
 }
 
 .column {

@@ -46,25 +46,29 @@ export const Footer = () => {
           />
         </div>
 
-        <div className={styles.column}>
-          <span className={styles.columnLabel}>события</span>
-          {EVENTS_LINKS.map(({ label, href }) => (
-            <Link key={href} href={href} className={styles.link}>{label}</Link>
-          ))}
-        </div>
+        <div className={styles.navSection}>
+          <div className={styles.navRow}>
+            <div className={styles.column}>
+              <span className={styles.columnLabel}>события</span>
+              {EVENTS_LINKS.map(({ label, href }) => (
+                <Link key={href} href={href} className={styles.link}>{label}</Link>
+              ))}
+            </div>
 
-        <div className={styles.column}>
-          <span className={styles.columnLabel}>прочее</span>
-          {OTHER_LINKS.map(({ label, href }) => (
-            <Link key={href} href={href} className={styles.link}>{label}</Link>
-          ))}
-        </div>
+            <div className={styles.column}>
+              <span className={styles.columnLabel}>прочее</span>
+              {OTHER_LINKS.map(({ label, href }) => (
+                <Link key={href} href={href} className={styles.link}>{label}</Link>
+              ))}
+            </div>
+          </div>
 
-        <div className={styles.column}>
-          <span className={styles.columnLabel}>Контакты</span>
-          {CONTACT_LINKS.map(({ label, href }) => (
-            <a key={label} href={href} className={styles.link}>{label}</a>
-          ))}
+          <div className={styles.column}>
+            <span className={styles.columnLabel}>Контакты</span>
+            {CONTACT_LINKS.map(({ label, href }) => (
+              <a key={label} href={href} className={styles.link}>{label}</a>
+            ))}
+          </div>
         </div>
       </div>
 
