@@ -6,7 +6,10 @@
   gap: 16px;
   padding-top: 64px;
   padding-inline: var(--page-gutter);
+  background: var(--color-background);
 }
+
+.heading { display: block; }
 
 .heroMedia {
   width: 100%;
@@ -47,10 +50,12 @@
   .hero {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
     column-gap: 48px;
     row-gap: 12px;
     align-items: start;
     padding-top: 96px;
+    padding-bottom: 0;
   }
 
   .heading {
