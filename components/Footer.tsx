@@ -19,9 +19,9 @@ const OTHER_LINKS = [
 ] as const
 
 const CONTACT_LINKS = [
-  { label: 'Почта',      href: 'mailto:birdwatching@mail.ru' },
-  { label: 'ВКонтакте', href: 'https://vk.ru/birdwatching_moscow' },
-  { label: 'Телеграм',  href: 'https://t.me/birdwatching_moscow' },
+  { label: 'birdwatching@mail.ru', href: 'mailto:birdwatching@mail.ru' },
+  { label: 'ВКонтакте',           href: 'https://vk.ru/birdwatching_moscow' },
+  { label: 'Телеграм',            href: 'https://t.me/birdwatching_moscow' },
 ] as const
 
 export const Footer = () => {
@@ -70,7 +70,7 @@ export const Footer = () => {
           <div className={styles.column}>
             <span className={styles.columnLabel}>КОНТАКТЫ</span>
             {CONTACT_LINKS.map(({ label, href }) => (
-              <a key={label} href={href} className={styles.link}>{label}</a>
+              <a key={label} href={href} target="_blank" rel="noreferrer" className={styles.link}>{label}</a>
             ))}
           </div>
         </div>
