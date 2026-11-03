@@ -1,6 +1,17 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { Hero } from '@/components/Hero/Hero'
+
+vi.mock('next/image', () => ({
+  default: ({ src, alt, width, height }: { src: string; alt: string; width?: number; height?: number }) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt={alt} width={width} height={height} />
+  ),
+}))
+
+vi.mock('@/lib/footer-birds', () => ({
+  getRandomBirdSrc: vi.fn(() => ({ src: '/footer-birds/kingfisher.jpg', name: 'Kingfisher' })),
+}))
 
 describe('Hero — structure', () => {
   it('renders a <section> element', () => {
@@ -52,16 +63,23 @@ describe('Hero — CTA button', () => {
   })
 })
 
-describe('Hero — media placeholder', () => {
-  it('renders a media placeholder element', () => {
+describe('Hero — media', () => {
+  it('renders the hero-media container', () => {
     const { container } = render(<Hero />)
-    // placeholder is a div with a data-testid (no <img> until a real photo is added)
     expect(container.querySelector('[data-testid="hero-media"]')).toBeInTheDocument()
   })
 
-  it('placeholder does not contain an <img> before a photo is provided', () => {
+  it('renders bird image with src from getRandomBirdSrc', () => {
+    render(<Hero />)
+    const img = screen.getByAltText('Kingfisher')
+    expect(img).toBeInTheDocument()
+    expect(img).toHaveAttribute('src', '/footer-birds/kingfisher.jpg')
+  })
+
+  it('renders no <img> when getRandomBirdSrc returns null', async () => {
+    const { getRandomBirdSrc } = await import('@/lib/footer-birds')
+    vi.mocked(getRandomBirdSrc).mockReturnValueOnce(null)
     const { container } = render(<Hero />)
-    const media = container.querySelector('[data-testid="hero-media"]')
-    expect(media?.querySelector('img')).toBeNull()
+    expect(container.querySelector('[data-testid="hero-media"] img')).toBeNull()
   })
 })
