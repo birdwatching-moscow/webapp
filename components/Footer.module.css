@@ -57,6 +57,7 @@
   height: 190px;
   flex-shrink: 0;
   overflow: hidden;
+  background: var(--color-border);
 }
 
 .birdPhoto img {
@@ -68,8 +69,12 @@
 
 @media (min-width: 1248px) {
   .birdPhoto {
-    width: 355px;
+    flex: 1 0 0;
+    width: auto;
     height: 187px;
+    padding-right: 10px;
+    display: flex;
+    align-items: center;
   }
 }
 
