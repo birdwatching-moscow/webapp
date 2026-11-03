@@ -1,0 +1,36 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: var(--space-7) var(--space-4);
+  border: var(--stroke-default) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.imageContainer {
+  width: 247px;
+  height: var(--size-control-header-mobile);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.title {
+  text-align: center;
+}
+
+.subtitle {
+  text-align: center;
+  color: var(--color-muted-foreground);
+  font-weight: 500;
+}
