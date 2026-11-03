@@ -10,7 +10,7 @@ vi.mock('next/image', () => ({
 }))
 
 vi.mock('@/lib/footer-birds', () => ({
-  getRandomBirdSrc: vi.fn(() => '/footer-birds/kingfisher.jpg'),
+  getRandomBirdSrc: vi.fn(() => ({ src: '/footer-birds/kingfisher.jpg', name: 'Kingfisher' })),
 }))
 
 describe('Footer — structure', () => {
@@ -33,18 +33,23 @@ describe('Footer — logo block', () => {
 })
 
 describe('Footer — bird photo', () => {
-  it('renders bird image when getRandomBirdSrc returns a path', () => {
+  it('renders bird image with src from getRandomBirdSrc', () => {
     render(<Footer />)
-    const img = screen.getByAltText('Зимородок')
+    const img = screen.getByAltText('Kingfisher')
     expect(img).toBeInTheDocument()
     expect(img).toHaveAttribute('src', '/footer-birds/kingfisher.jpg')
+  })
+
+  it('uses bird name from getRandomBirdSrc as alt text', () => {
+    render(<Footer />)
+    expect(screen.getByAltText('Kingfisher')).toBeInTheDocument()
   })
 
   it('renders no bird image when getRandomBirdSrc returns null', async () => {
     const { getRandomBirdSrc } = await import('@/lib/footer-birds')
     vi.mocked(getRandomBirdSrc).mockReturnValueOnce(null)
-    render(<Footer />)
-    expect(screen.queryByAltText('Зимородок')).toBeNull()
+    const { container } = render(<Footer />)
+    expect(container.querySelector('img')).toBeNull()
   })
 })
 

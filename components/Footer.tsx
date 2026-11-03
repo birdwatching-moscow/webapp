@@ -26,7 +26,7 @@ const CONTACT_LINKS = [
 
 export const Footer = () => {
   const year = new Date().getFullYear()
-  const birdSrc = getRandomBirdSrc()
+  const bird = getRandomBirdSrc()
 
   return (
     <footer className={styles.footer}>
@@ -39,10 +39,10 @@ export const Footer = () => {
         </div>
 
         <div className={styles.birdPhoto}>
-          {birdSrc && (
+          {bird && (
             <Image
-              src={birdSrc}
-              alt="Зимородок"
+              src={bird.src}
+              alt={bird.name}
               width={355}
               height={187}
               placeholder="empty"
