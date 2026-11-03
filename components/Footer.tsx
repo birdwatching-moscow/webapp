@@ -18,11 +18,11 @@ const OTHER_LINKS = [
   { label: 'BirdID',      href: '/birdid' },
 ] as const
 
-const CONTACT_LINKS = [
+const CONTACT_LINKS: { label: string; href: string; external?: true }[] = [
   { label: 'birdwatching@mail.ru', href: 'mailto:birdwatching@mail.ru' },
-  { label: 'ВКонтакте',           href: 'https://vk.ru/birdwatching_moscow' },
-  { label: 'Телеграм',            href: 'https://t.me/birdwatching_moscow' },
-] as const
+  { label: 'ВКонтакте',           href: 'https://vk.ru/birdwatching_moscow',   external: true },
+  { label: 'Телеграм',            href: 'https://t.me/birdwatching_moscow',    external: true },
+]
 
 export const Footer = () => {
   const year = new Date().getFullYear()
@@ -69,8 +69,13 @@ export const Footer = () => {
 
           <div className={styles.column}>
             <span className={styles.columnLabel}>КОНТАКТЫ</span>
-            {CONTACT_LINKS.map(({ label, href }) => (
-              <a key={label} href={href} target="_blank" rel="noreferrer" className={styles.link}>{label}</a>
+            {CONTACT_LINKS.map(({ label, href, external }) => (
+              <a
+                key={label}
+                href={href}
+                className={styles.link}
+                {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+              >{label}</a>
             ))}
           </div>
         </div>
