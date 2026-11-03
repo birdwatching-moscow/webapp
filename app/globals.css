@@ -121,6 +121,14 @@ svg {
   }
 }
 
+/* --- Layout utilities --- */
+
+/* Full-width element with consistent horizontal page gutters (16px mobile → 96px desktop). */
+.container {
+  width: 100%;
+  padding-inline: var(--page-gutter);
+}
+
 /* --- Typography --- */
 
 .text-display {
