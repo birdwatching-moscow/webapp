@@ -19,9 +19,9 @@ const OTHER_LINKS = [
 ] as const
 
 const CONTACT_LINKS = [
-  { label: 'Почта',      href: '#' },
-  { label: 'ВКонтакте', href: '#' },
-  { label: 'Телеграм',  href: '#' },
+  { label: 'Почта',      href: 'mailto:birdwatching@mail.ru' },
+  { label: 'ВКонтакте', href: 'https://vk.ru/birdwatching_moscow' },
+  { label: 'Телеграм',  href: 'https://t.me/birdwatching_moscow' },
 ] as const
 
 export const Footer = () => {
@@ -53,14 +53,14 @@ export const Footer = () => {
         <div className={styles.navSection}>
           <div className={styles.navRow}>
             <div className={styles.column}>
-              <span className={styles.columnLabel}>события</span>
+              <span className={styles.columnLabel}>СОБЫТИЯ</span>
               {EVENTS_LINKS.map(({ label, href }) => (
                 <Link key={href} href={href} className={styles.link}>{label}</Link>
               ))}
             </div>
 
             <div className={styles.column}>
-              <span className={styles.columnLabel}>прочее</span>
+              <span className={styles.columnLabel}>ПРОЧЕЕ</span>
               {OTHER_LINKS.map(({ label, href }) => (
                 <Link key={href} href={href} className={styles.link}>{label}</Link>
               ))}
@@ -68,7 +68,7 @@ export const Footer = () => {
           </div>
 
           <div className={styles.column}>
-            <span className={styles.columnLabel}>Контакты</span>
+            <span className={styles.columnLabel}>КОНТАКТЫ</span>
             {CONTACT_LINKS.map(({ label, href }) => (
               <a key={label} href={href} className={styles.link}>{label}</a>
             ))}
