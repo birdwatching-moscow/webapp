@@ -30,9 +30,14 @@
 
 .cta {
   display: flex;
-  align-items: center;
+  height: var(--size-control-header-mobile);
+  min-width: 260px;
+  max-width: 406px;
+  padding: var(--space-3) var(--space-7);
   justify-content: center;
-  padding: 12px 48px;
+  align-items: center;
+  gap: var(--space-2);
+  align-self: stretch;
   background: var(--color-primary);
   color: var(--color-primary-foreground);
   border-radius: var(--radius-lg);
@@ -88,6 +93,5 @@
     grid-row: 3;
     /* row-gap 12px + this margin = 32px total gap from subheading to button */
     margin-top: 20px;
-    width: 406px;
   }
 }
