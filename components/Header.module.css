@@ -1,0 +1,152 @@
+/* ─── Layout ─────────────────────────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: var(--size-control-header-mobile);
+  padding-inline: var(--page-gutter);
+  background: var(--color-background);
+}
+
+@media (min-width: 1248px) {
+  .header {
+    height: var(--size-control-header-desktop);
+  }
+}
+
+/* ─── Desktop nav ─────────────────────────────────────────────────────────── */
+
+.desktopNav {
+  display: none;
+  align-items: center;
+  gap: var(--space-5); /* 24px between nav group and CTA */
+}
+
+@media (min-width: 1248px) {
+  .desktopNav {
+    display: flex;
+  }
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6); /* 32px between nav items */
+}
+
+.navLink {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-foreground);
+}
+
+.navLink:hover {
+  opacity: 0.75;
+}
+
+/* ─── CTA (link or button) ────────────────────────────────────────────────── */
+
+.cta {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.cta:hover {
+  color: var(--color-primary-hover);
+}
+
+/* ─── Mobile hamburger ────────────────────────────────────────────────────── */
+
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  width: var(--size-control-icon);
+  height: var(--size-control-icon);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+@media (min-width: 1248px) {
+  .hamburger {
+    display: none;
+  }
+}
+
+.bar {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--color-foreground);
+}
+
+/* ─── Mobile overlay ──────────────────────────────────────────────────────── */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-background);
+  padding-inline: var(--page-gutter);
+}
+
+.overlayHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--size-control-header-mobile);
+  flex-shrink: 0;
+}
+
+.overlayNav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4); /* 16px between items */
+  padding-top: var(--space-2);
+}
+
+/* ─── Close button ────────────────────────────────────────────────────────── */
+
+.closeBtn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-control-icon);
+  height: var(--size-control-icon);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.closeBar {
+  position: absolute;
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--color-foreground);
+}
+
+.closeBar:first-child {
+  transform: rotate(45deg);
+}
+
+.closeBar:last-child {
+  transform: rotate(-45deg);
+}

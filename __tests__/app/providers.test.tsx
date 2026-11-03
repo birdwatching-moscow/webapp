@@ -19,7 +19,7 @@ function GuardConsumer() {
 describe('Providers component', () => {
   it('renders children', () => {
     render(
-      <Providers>
+      <Providers session={null}>
         <span data-testid="child">hello</span>
       </Providers>
     )
@@ -29,7 +29,7 @@ describe('Providers component', () => {
   it('does not throw for a child using useNavigationGuardContext', () => {
     expect(() =>
       render(
-        <Providers>
+        <Providers session={null}>
           <GuardConsumer />
         </Providers>
       )

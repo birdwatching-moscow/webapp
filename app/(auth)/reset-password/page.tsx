@@ -36,7 +36,7 @@ export default function RequestResetPage() {
 
   if (success) {
     return (
-      <main>
+      <main className="container">
         <h1>{L.successTitle}</h1>
         <p>{L.successText}</p>
         <Link href="/login">{C.backToLogin}</Link>
@@ -45,7 +45,7 @@ export default function RequestResetPage() {
   }
 
   return (
-    <main>
+    <main className="container">
       <h1>{L.title}</h1>
       <p>{L.description}</p>
       {error && <p role="alert">{error}</p>}
