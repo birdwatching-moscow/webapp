@@ -54,7 +54,7 @@ export default function ConfirmResetPage() {
   }
 
   return (
-    <main>
+    <main className="container">
       <h1>{L.title}</h1>
       {error && <p role="alert">{error}</p>}
 

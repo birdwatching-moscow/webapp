@@ -183,7 +183,7 @@ function LoginCodeForm() {
   }
 
   return (
-    <main>
+    <main className="container">
       <h1>
         {step === 'password' ? LA.title : step === 'set-password' ? ASP.title : L.title}
       </h1>

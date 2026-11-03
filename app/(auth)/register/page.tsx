@@ -94,7 +94,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <main>
+    <main className="container">
       <h1>{step === 'code' ? L.confirmTitle : L.title}</h1>
       {error && <p role="alert">{error}</p>}
 
