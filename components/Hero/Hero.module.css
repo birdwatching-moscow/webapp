@@ -25,6 +25,7 @@
 
 .subheading {
   font-weight: 600;
+  color: var(--color-muted-foreground);
 }
 
 .cta {
