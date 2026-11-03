@@ -53,14 +53,14 @@ export const Footer = () => {
         <div className={styles.navSection}>
           <div className={styles.navRow}>
             <div className={styles.column}>
-              <span className={styles.columnLabel}>СОБЫТИЯ</span>
+              <span className={styles.columnLabel}>события</span>
               {EVENTS_LINKS.map(({ label, href }) => (
                 <Link key={href} href={href} className={styles.link}>{label}</Link>
               ))}
             </div>
 
             <div className={styles.column}>
-              <span className={styles.columnLabel}>ПРОЧЕЕ</span>
+              <span className={styles.columnLabel}>прочее</span>
               {OTHER_LINKS.map(({ label, href }) => (
                 <Link key={href} href={href} className={styles.link}>{label}</Link>
               ))}
@@ -68,7 +68,7 @@ export const Footer = () => {
           </div>
 
           <div className={styles.column}>
-            <span className={styles.columnLabel}>КОНТАКТЫ</span>
+            <span className={styles.columnLabel}>Контакты</span>
             {CONTACT_LINKS.map(({ label, href, external }) => (
               <a
                 key={label}
