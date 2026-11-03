@@ -4,7 +4,7 @@ import Link from 'next/link';
 import styles from './Button.module.css';
 
 type ButtonVariant = 'default' | 'secondary' | 'ghost';
-type ButtonSize    = 'default' | 'sm';
+type ButtonSize    = 'default' | 'sm' | 'lg';
 
 type BaseProps = {
   variant?:   ButtonVariant;

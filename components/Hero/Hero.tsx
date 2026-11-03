@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import Link from 'next/link'
+import { Button } from '@/components/ui/buttons/Button'
 import { getRandomBirdSrc } from '@/lib/footer-birds'
 import styles from './Hero.module.css'
 
@@ -22,9 +22,9 @@ export const Hero = () => {
 
     <p className={`text-body-l ${styles.subheading}`}>{SUBHEADING}</p>
 
-    <Link href="/walks" className={styles.cta}>
+    <Button as="a" href="/walks" size="lg" className={styles.cta}>
       Выбрать прогулку
-    </Link>
+    </Button>
   </section>
   )
 }
