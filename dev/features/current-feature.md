@@ -6,16 +6,14 @@ Spec written — awaiting Gate 1 approval
 
 ## Goals
 
-- Replace `components/Header.tsx` stub with a mobile-first Header component matching Figma
-- Desktop (≥1248px): logo left + nav row right + context-dependent CTA
-- Mobile: slim bar with hamburger → full-screen overlay when open
-- CTA adapts to auth state: Войти / Личный кабинет / Выйти
+- Build `components/Footer.tsx` — static, mobile-first, matching Figma
+- Desktop (≥1248px): 5-column layout (logo, bird photo, 3 nav columns)
+- Mobile (<1248px): stacked (logo → photo → 2-col nav → contacts)
+- Dynamic `© {year}` in bottom bar
+- Bird photo: manual export from Figma required (`public/images/footer-bird.png`)
 
 ## Notes
 
-- Figma file: `UPCl1IDlaoQ3lmPoKafETU`
-- Header is `'use client'`: needs `useSession`, `usePathname`, `useState`
-- `signOut` from `next-auth/react` with `redirectTo: '/'`
-- Mobile overlay: toggle `overflow: hidden` on `document.body` via `useEffect`
-- Книга → `/book`, О проекте → `/about`
-- Spec: `dev/specs/header/spec.md`
+- Figma file: `o3z6B8QEOwTHCosUVizuyH`, node `1883:6481`
+- Server Component — no `'use client'`
+- Spec: `dev/specs/footer/spec.md`
