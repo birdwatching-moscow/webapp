@@ -3,21 +3,24 @@ import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Providers } from "@/components/Providers";
+import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Birdwatching Moscow",
   description: "Бердвотчинг в Москве, экспедиции по России и за границей",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+
   return (
     <html lang="ru" data-scroll-behavior="smooth">
       <body>
-        <Providers>
+        <Providers session={session}>
           <Header />
           {children}
           <Footer />
