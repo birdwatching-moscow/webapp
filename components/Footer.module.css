@@ -1,0 +1,110 @@
+/* ─── Layout ─────────────────────────────────────────────────────────────── */
+
+.footer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-top: 48px;
+  padding-bottom: 48px;
+  padding-inline: var(--page-gutter);
+  background: var(--color-background);
+}
+
+@media (min-width: 1248px) {
+  .footer {
+    gap: 16px;
+    padding-top: 96px;
+    padding-bottom: 64px;
+  }
+}
+
+/* ─── Main row ────────────────────────────────────────────────────────────── */
+
+.mainRow {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 1248px) {
+  .mainRow {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 64px;
+  }
+}
+
+/* ─── Logo block ──────────────────────────────────────────────────────────── */
+
+.logoBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tagline {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--color-muted-foreground);
+  max-width: 355px;
+}
+
+/* ─── Bird photo ──────────────────────────────────────────────────────────── */
+
+.birdPhoto img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+@media (min-width: 1248px) {
+  .birdPhoto img {
+    width: 355px;
+    height: 187px;
+  }
+}
+
+/* ─── Nav columns ─────────────────────────────────────────────────────────── */
+
+/* Mobile: two nav columns side by side, contacts full-width */
+.navColumns {
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.columnLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-muted-foreground);
+  margin-bottom: 0;
+}
+
+.link {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-foreground);
+}
+
+.link:hover {
+  opacity: 0.75;
+}
+
+/* ─── Bottom bar ──────────────────────────────────────────────────────────── */
+
+.bottomBar {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-muted-foreground);
+}
