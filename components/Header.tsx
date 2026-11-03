@@ -61,7 +61,7 @@ export const Header = () => {
 
   return (
     <header className={styles.header}>
-      <Logo />
+      <Link href="/"><Logo /></Link>
 
       <nav className={styles.desktopNav}>
         <div className={styles.navLinks}>
@@ -85,7 +85,7 @@ export const Header = () => {
       {isOpen && (
         <div className={styles.overlay}>
           <div className={styles.overlayHeader}>
-            <Logo />
+            <Link href="/" onClick={close}><Logo /></Link>
             <button
               type="button"
               className={styles.closeBtn}

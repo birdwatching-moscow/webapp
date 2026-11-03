@@ -43,6 +43,12 @@ describe('Header — structure', () => {
     renderHeader()
     expect(screen.getByRole('img', { name: 'Birdwatching Moscow' })).toBeDefined()
   })
+
+  it('logo links to the home page', () => {
+    const { container } = renderHeader()
+    const logoLink = container.querySelector('a[href="/"] svg, a[href="/"] [role="img"]')
+    expect(logoLink).not.toBeNull()
+  })
 })
 
 // ─── Nav links ───────────────────────────────────────────────────────────────
