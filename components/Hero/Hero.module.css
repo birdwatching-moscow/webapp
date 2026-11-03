@@ -9,9 +9,7 @@
   background: var(--color-background);
 }
 
-/* Mobile: show short heading, hide long one */
-.headingDesktop { display: none; }
-.headingMobile  { display: block; }
+.heading { display: block; }
 
 .heroMedia {
   width: 100%;
@@ -68,13 +66,10 @@
     padding-bottom: 0;
   }
 
-  .headingDesktop {
-    display: block;
+  .heading {
     grid-column: 1;
     grid-row: 1;
   }
-
-  .headingMobile { display: none; }
 
   .heroMedia {
     grid-column: 2;

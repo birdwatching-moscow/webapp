@@ -14,19 +14,13 @@ describe('Hero — heading', () => {
     render(<Hero />)
     const h1 = screen.getByRole('heading', { level: 1 })
     expect(h1).toBeInTheDocument()
-    expect(h1.textContent).toMatch(/Помогаем природе через образование/)
+    expect(h1).toHaveTextContent('Помогаем природе через образование людей')
   })
 
   it('h1 has text-display class', () => {
     render(<Hero />)
     const h1 = screen.getByRole('heading', { level: 1 })
     expect(h1).toHaveClass('text-display')
-  })
-
-  it('renders the full desktop heading text «людей»', () => {
-    render(<Hero />)
-    // The full-length heading must exist in the DOM (may be hidden on mobile via CSS)
-    expect(screen.getByText(/Помогаем природе через образование людей/)).toBeInTheDocument()
   })
 })
 
