@@ -1,0 +1,84 @@
+/* ─── Mobile: flex column ─────────────────────────────────────────────────── */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 64px;
+  padding-inline: var(--page-gutter);
+  background: var(--color-background);
+}
+
+.heading { display: block; }
+
+.heroMedia {
+  width: 100%;
+  height: 174px;
+}
+
+.heroMedia img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.subheading {
+  font-weight: 600;
+  color: var(--color-muted-foreground);
+}
+
+.cta {
+  min-width: 260px;
+  max-width: 406px;
+  align-self: stretch;
+}
+
+/* ─── Desktop: CSS grid ───────────────────────────────────────────────────── */
+/*
+  Grid layout (1fr = half the content area):
+  ┌─────────────────┬─────────────────┐
+  │  headingDesktop │                 │
+  ├─────────────────┤   heroMedia     │
+  │  subheading     │                 │
+  ├─────────────────┤                 │
+  │  cta            │                 │
+  └─────────────────┴─────────────────┘
+*/
+
+@media (min-width: 1248px) {
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    column-gap: 48px;
+    row-gap: 12px;
+    align-items: start;
+    padding-top: 96px;
+    padding-bottom: 0;
+  }
+
+  .heading {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .heroMedia {
+    grid-column: 2;
+    grid-row: 1 / -1;
+    height: 317px;
+    align-self: center;
+  }
+
+  .subheading {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .cta {
+    grid-column: 1;
+    grid-row: 3;
+    /* row-gap 12px + this margin = 32px total gap from subheading to button */
+    margin-top: 20px;
+  }
+}

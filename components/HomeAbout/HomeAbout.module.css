@@ -1,0 +1,52 @@
+/* ─── Mobile ──────────────────────────────────────────────────────────────── */
+
+.section {
+  width: 100%;
+  padding-top: 64px;
+  padding-inline: var(--page-gutter);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.textBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Mobile body text: Figma specifies weight 500 (lighter than the token default 600) */
+.body {
+  font-weight: 500;
+  color: var(--color-muted-foreground);
+}
+
+.cta {
+  align-self: stretch;
+}
+
+/* ─── Desktop ─────────────────────────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .section {
+    padding-top: 96px;
+  }
+
+  .content {
+    max-width: 720px;
+    margin-inline: auto;
+  }
+
+  /* Desktop body: restore token weight 600 */
+  .body {
+    font-weight: 600;
+  }
+
+  .cta {
+    align-self: auto;
+    width: 406px;
+  }
+}

@@ -2,6 +2,7 @@
 
 .footer {
   width: 100%;
+  margin-top: auto;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -57,7 +58,6 @@
   height: 190px;
   flex-shrink: 0;
   overflow: hidden;
-  background: var(--color-border);
 }
 
 .birdPhoto img {

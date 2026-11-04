@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createTeamMember } from '@/app/admin/team/_actions'
+import { ROUTES } from '@/utils/routes'
 
 export default function NewTeamMemberPage() {
   async function handleCreate(formData: FormData) {
@@ -23,7 +24,7 @@ export default function NewTeamMemberPage() {
   return (
     <div>
       <h1>Новый участник команды</h1>
-      <Link href="/admin/team">← Назад</Link>
+      <Link href={ROUTES.admin.team}>← Назад</Link>
       <form action={handleCreate}>
         <label>
           Имя

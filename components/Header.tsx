@@ -5,15 +5,16 @@ import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
 import { Logo } from '@/components/ui/logo/Logo'
+import { ROUTES } from '@/utils/routes'
 import styles from './Header.module.css'
 
 const NAV_LINKS = [
-  { label: 'Прогулки',   href: '/walks' },
-  { label: 'Экспедиции', href: '/expeditions' },
-  { label: 'Частные',    href: '/private-events' },
-  { label: 'Книга',      href: '/book' },
-  { label: 'О проекте',  href: '/about' },
-] as const
+  { label: 'Прогулки',   href: ROUTES.walks },
+  { label: 'Экспедиции', href: ROUTES.expeditions },
+  { label: 'Частные',    href: ROUTES.privateEvents },
+  { label: 'Книга',      href: ROUTES.book },
+  { label: 'О проекте',  href: ROUTES.about },
+]
 
 export const Header = () => {
   const { status } = useSession()
@@ -43,9 +44,9 @@ export const Header = () => {
   const renderCta = (onClick?: () => void) => {
     if (status === 'loading') return null
     if (status === 'unauthenticated') {
-      return <Link href="/login" className={styles.cta} onClick={onClick}>Войти</Link>
+      return <Link href={ROUTES.login} className={styles.cta} onClick={onClick}>Войти</Link>
     }
-    if (pathname === '/profile') {
+    if (pathname === ROUTES.profile) {
       return (
         <button
           type="button"
@@ -56,7 +57,7 @@ export const Header = () => {
         </button>
       )
     }
-    return <Link href="/profile" className={styles.cta} onClick={onClick}>Личный кабинет</Link>
+    return <Link href={ROUTES.profile} className={styles.cta} onClick={onClick}>Личный кабинет</Link>
   }
 
   return (

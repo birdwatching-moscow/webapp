@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import { ROUTES } from '@/utils/routes'
 
 export default async function TeamPage() {
   const members = await prisma.teamMember.findMany({ orderBy: { sortOrder: 'asc' } })
@@ -7,7 +8,7 @@ export default async function TeamPage() {
   return (
     <div>
       <h1>Команда</h1>
-      <Link href="/admin/team/new">Добавить участника</Link>
+      <Link href={ROUTES.admin.teamNew}>Добавить участника</Link>
       <table>
         <thead>
           <tr>

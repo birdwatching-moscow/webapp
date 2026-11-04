@@ -121,9 +121,11 @@ describe('Footer — «Контакты» column', () => {
     expect(screen.getByText('Контакты')).toBeInTheDocument()
   })
 
-  it('renders link «Почта»', () => {
+  it('renders email link with address as label', () => {
     render(<Footer />)
-    expect(screen.getByRole('link', { name: 'Почта' })).toBeInTheDocument()
+    const link = screen.getByRole('link', { name: 'birdwatching@mail.ru' })
+    expect(link).toBeInTheDocument()
+    expect(link).toHaveAttribute('href', 'mailto:birdwatching@mail.ru')
   })
 
   it('renders link «ВКонтакте»', () => {

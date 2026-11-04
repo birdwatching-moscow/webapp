@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { updateWalk, publishWalk, cancelWalk, deleteWalk } from '@/app/admin/walks/_actions'
+import { ROUTES } from '@/utils/routes'
 
 export default async function EditWalkPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -52,7 +53,7 @@ export default async function EditWalkPage({ params }: { params: Promise<{ id: s
   return (
     <div>
       <h1>{walk.title}</h1>
-      <Link href="/admin/walks">← Назад</Link>
+      <Link href={ROUTES.admin.walks}>← Назад</Link>
       <p>Статус: {walk.status}</p>
 
       <div>

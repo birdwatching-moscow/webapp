@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { createWalk } from '@/app/admin/walks/_actions'
+import { ROUTES } from '@/utils/routes'
 
 export default async function NewWalkPage() {
   const guides = await prisma.teamMember.findMany({ orderBy: { name: 'asc' } })
@@ -27,7 +28,7 @@ export default async function NewWalkPage() {
   return (
     <div>
       <h1>Новая прогулка</h1>
-      <Link href="/admin/walks">← Назад</Link>
+      <Link href={ROUTES.admin.walks}>← Назад</Link>
       <form action={handleCreate}>
         <label>
           Название

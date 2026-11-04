@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import { ROUTES } from '@/utils/routes'
 
 export default async function ExpeditionsPage() {
   const expeditions = await prisma.expedition.findMany({
@@ -12,7 +13,7 @@ export default async function ExpeditionsPage() {
   return (
     <div>
       <h1>Экспедиции</h1>
-      <Link href="/admin/expeditions/new">Новая экспедиция</Link>
+      <Link href={ROUTES.admin.expeditionsNew}>Новая экспедиция</Link>
       <table>
         <thead>
           <tr>
