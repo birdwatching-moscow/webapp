@@ -201,19 +201,79 @@ async function main() {
     })),
   })
 
-  // PLACEHOLDER: expedition — replace coverPhotoUrl with real S3 URL
+  const daysFromNow = (days: number) =>
+    new Date(now.getFullYear(), now.getMonth(), now.getDate() + days, 8, 0, 0)
+
+  // PLACEHOLDER: expedition covers — replace with real S3 URLs
+  const EXPEDITION_COVER = '/images/home-walks.jpg'
+
+  await prisma.expedition.create({
+    data: {
+      slug: 'dagestan-gory-i-kaspiy',
+      title: 'Дагестан: горы и каспийский берег',
+      description: 'Восемь дней, смешанные биотопы, до двенадцати участников.',
+      startsAt: daysFromNow(30),
+      endsAt: daysFromNow(37),
+      location: 'Республика Дагестан',
+      totalSpots: 12,
+      spotsLeft: 5,
+      status: EventStatus.ACTIVE,
+      coverPhotoUrl: EXPEDITION_COVER,
+      publishedAt: now,
+      publishedBy: admin.id,
+      guides: { connect: [{ id: guide1.id }] },
+    },
+  })
+
   const expedition = await prisma.expedition.create({
     data: {
-      slug: 'altay-2026',
-      title: 'Алтай 2026: орлы и соколы',
+      slug: 'altay-orly-i-sokoly',
+      title: 'Алтай: орлы и соколы',
       description:
-        'Восьмидневная экспедиция в горный Алтай. Наблюдаем за хищными птицами: беркутом, сапсаном, балобаном. Маршрут рассчитан на людей с базовой физической подготовкой.',
-      startsAt: new Date('2026-08-01T08:00:00+03:00'),
+        'Восьмидневная экспедиция в горный Алтай. Наблюдаем за беркутом, сапсаном и балобаном.',
+      startsAt: daysFromNow(75),
+      endsAt: daysFromNow(82),
       location: 'Республика Алтай, Чемальский район',
       totalSpots: 12,
       spotsLeft: 8,
       status: EventStatus.ACTIVE,
-      coverPhotoUrl: 'https://placeholder.example.com/covers/expedition1.jpg',
+      coverPhotoUrl: EXPEDITION_COVER,
+      publishedAt: now,
+      publishedBy: admin.id,
+      guides: { connect: [{ id: guide1.id }, { id: guide2.id }] },
+    },
+  })
+
+  await prisma.expedition.create({
+    data: {
+      slug: 'kareliya-belye-nochi',
+      title: 'Карелия: белые ночи и кулики',
+      description: 'Шесть дней на озёрах и болотах, весенний пролёт куликов и гагар.',
+      startsAt: daysFromNow(120),
+      endsAt: daysFromNow(125),
+      location: 'Республика Карелия',
+      totalSpots: 10,
+      spotsLeft: 10,
+      status: EventStatus.ACTIVE,
+      coverPhotoUrl: EXPEDITION_COVER,
+      publishedAt: now,
+      publishedBy: admin.id,
+      guides: { connect: [{ id: guide2.id }] },
+    },
+  })
+
+  await prisma.expedition.create({
+    data: {
+      slug: 'kamchatka-morskie-ptitsy',
+      title: 'Камчатка: морские птицы и вулканы',
+      description: 'Десять дней, птичьи базары Авачинской бухты, топорки и белоплечие орланы.',
+      startsAt: daysFromNow(180),
+      endsAt: daysFromNow(189),
+      location: 'Камчатский край',
+      totalSpots: 8,
+      spotsLeft: 3,
+      status: EventStatus.ACTIVE,
+      coverPhotoUrl: EXPEDITION_COVER,
       publishedAt: now,
       publishedBy: admin.id,
       guides: { connect: [{ id: guide1.id }, { id: guide2.id }] },

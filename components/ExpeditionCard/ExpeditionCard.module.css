@@ -1,0 +1,50 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  border: var(--stroke-default) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-background);
+  color: var(--color-foreground);
+  text-decoration: none;
+  transition: border-color 150ms ease;
+}
+
+.card:hover {
+  border-color: var(--color-primary-hover);
+}
+
+.card:focus-visible {
+  outline: var(--stroke-focus) solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* doubled class beats PhotoCard's own 16:9 ratio regardless of CSS load order */
+.photo.photo {
+  aspect-ratio: 4 / 3;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 0 var(--space-4) var(--space-4);
+}
+
+.date {
+  color: var(--color-muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.title {
+  color: var(--color-foreground);
+}
+
+.desc {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: var(--font-size-lg);
+  line-height: 24px;
+  color: var(--color-muted-foreground);
+}

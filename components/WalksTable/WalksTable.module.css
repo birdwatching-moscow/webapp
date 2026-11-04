@@ -4,16 +4,6 @@
   width: 100%;
   padding-top: var(--space-7);
   padding-inline: var(--page-gutter);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
-}
-
-.heading {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 600;
-  font-size: 28px;
-  line-height: 32px;
 }
 
 .table {
@@ -86,19 +76,9 @@
   display: none; /* show on desktop */
 }
 
-.moreButton {
-  min-width: 260px;
-  max-width: 406px;
-  align-self: stretch;
-}
-
 /* ─── Desktop (min-width: 1248px) ─────────────────────────────────────────── */
 
 @media (min-width: 1248px) {
-  .section {
-    padding-top: var(--space-7);
-  }
-
   /* Show column headers */
   .headerRow {
     display: grid;
