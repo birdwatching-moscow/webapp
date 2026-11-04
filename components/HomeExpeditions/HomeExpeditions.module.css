@@ -1,0 +1,86 @@
+/* ─── Mobile ──────────────────────────────────────────────────────────────── */
+
+.section {
+  width: 100%;
+  padding-top: var(--space-8);
+  padding-inline: var(--page-gutter);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.introTitle {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 1.2;
+}
+
+.introDesc {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--color-muted-foreground);
+}
+
+.coverWrap {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  background: var(--color-muted);
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* hide 3rd card on mobile */
+.cards > :nth-child(3) {
+  display: none;
+}
+
+/* ─── Desktop (min-width: 1248px) ─────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .section {
+    padding-top: var(--space-10);
+  }
+
+  .intro {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0;
+  }
+
+  .introTitle {
+    flex: 0 0 50%;
+    font-size: 40px;
+  }
+
+  .introDesc {
+    flex: 0 0 50%;
+    font-size: 20px;
+  }
+
+  .cards {
+    flex-direction: row;
+    gap: var(--space-4);
+  }
+
+  .cards > :nth-child(3) {
+    display: flex;
+  }
+
+  .cards > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}

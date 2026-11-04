@@ -4,6 +4,7 @@ export const ROUTES = {
   walks:         '/walks',
   walk:          (slug: string) => `/walks/${slug}` as const,
   expeditions:   '/expeditions',
+  expedition:    (slug: string) => `/expeditions/${slug}` as const,
   privateEvents: '/private-events',
   book:          '/book',
   about:         '/about',

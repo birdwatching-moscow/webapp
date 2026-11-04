@@ -19,7 +19,7 @@ export default async function EditWalkPage({ params }: { params: Promise<{ id: s
       title: formData.get('title') as string,
       description: formData.get('description') as string,
       startsAt: formData.get('startsAt') as string,
-      duration: (formData.get('duration') as string) || undefined,
+      endsAt: (formData.get('endsAt') as string) || undefined,
       location: formData.get('location') as string,
       coverPhotoUrl: formData.get('coverPhotoUrl') as string,
       galleryUrl: (formData.get('galleryUrl') as string) || undefined,
@@ -86,8 +86,8 @@ export default async function EditWalkPage({ params }: { params: Promise<{ id: s
           <input name="startsAt" type="datetime-local" defaultValue={startsAtLocal} required />
         </label>
         <label>
-          Продолжительность
-          <input name="duration" defaultValue={walk.duration ?? ''} />
+          Дата окончания
+          <input name="endsAt" type="datetime-local" defaultValue={walk.endsAt?.toISOString().slice(0, 16) ?? ''} />
         </label>
         <label>
           Место

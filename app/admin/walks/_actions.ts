@@ -22,7 +22,7 @@ type WalkInput = {
   capacity: number
   guideId: number
   slug?: string
-  duration?: string
+  endsAt?: string
 }
 
 export async function createWalk(input: WalkInput): Promise<string> {
@@ -37,7 +37,7 @@ export async function createWalk(input: WalkInput): Promise<string> {
       title: input.title,
       description: input.description,
       startsAt: new Date(input.startsAt),
-      duration: input.duration ?? null,
+      endsAt: input.endsAt ? new Date(input.endsAt) : null,
       location: input.location,
       coverPhotoUrl: input.coverPhotoUrl,
       galleryUrl: input.galleryUrl ?? null,
@@ -57,7 +57,7 @@ export async function updateWalk(id: string, input: WalkInput): Promise<void> {
       title: input.title,
       description: input.description,
       startsAt: new Date(input.startsAt),
-      duration: input.duration ?? null,
+      endsAt: input.endsAt ? new Date(input.endsAt) : null,
       location: input.location,
       coverPhotoUrl: input.coverPhotoUrl,
       galleryUrl: input.galleryUrl ?? null,

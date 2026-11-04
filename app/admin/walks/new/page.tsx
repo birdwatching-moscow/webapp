@@ -14,7 +14,7 @@ export default async function NewWalkPage() {
       title: formData.get('title') as string,
       description: formData.get('description') as string,
       startsAt: formData.get('startsAt') as string,
-      duration: (formData.get('duration') as string) || undefined,
+      endsAt: (formData.get('endsAt') as string) || undefined,
       location: formData.get('location') as string,
       coverPhotoUrl: formData.get('coverPhotoUrl') as string,
       galleryUrl: (formData.get('galleryUrl') as string) || undefined,
@@ -43,8 +43,8 @@ export default async function NewWalkPage() {
           <input name="startsAt" type="datetime-local" required />
         </label>
         <label>
-          Продолжительность
-          <input name="duration" placeholder="напр. 2 часа" />
+          Дата окончания
+          <input name="endsAt" type="datetime-local" />
         </label>
         <label>
           Место
