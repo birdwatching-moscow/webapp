@@ -29,6 +29,7 @@
 }
 
 .cta {
+  display: flex;
   width: 100%;
   max-width: 406px;
 }
