@@ -7,13 +7,10 @@
   background: var(--color-background);
   color: var(--color-foreground);
   text-decoration: none;
-}
-
-.link {
   transition: border-color 150ms ease;
 }
 
-.link:hover {
+.card:hover {
   border-color: var(--color-primary-hover);
 }
 
