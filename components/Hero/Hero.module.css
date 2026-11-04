@@ -3,8 +3,8 @@
 .hero {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding-top: 64px;
+  gap: var(--space-4);
+  padding-top: var(--space-8);
   padding-inline: var(--page-gutter);
   background: var(--color-background);
 }
@@ -51,10 +51,10 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto auto auto;
-    column-gap: 48px;
-    row-gap: 12px;
+    column-gap: var(--space-7);
+    row-gap: var(--space-3);
     align-items: start;
-    padding-top: 96px;
+    padding-top: var(--space-10);
     padding-bottom: 0;
   }
 
@@ -79,6 +79,6 @@
     grid-column: 1;
     grid-row: 3;
     /* row-gap 12px + this margin = 32px total gap from subheading to button */
-    margin-top: 20px;
+    margin-top: var(--space-4a);
   }
 }

@@ -38,7 +38,7 @@
 }
 
 .navLink {
-  font-size: 16px;
+  font-size: var(--font-size-md);
   font-weight: 500;
   color: var(--color-foreground);
 }
@@ -50,7 +50,7 @@
 /* ─── CTA (link or button) ────────────────────────────────────────────────── */
 
 .cta {
-  font-size: 16px;
+  font-size: var(--font-size-md);
   font-weight: 500;
   color: var(--color-primary);
   background: none;
@@ -69,7 +69,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 8px;
+  gap: var(--space-2);
   width: var(--size-control-icon);
   height: var(--size-control-icon);
   background: none;
@@ -96,7 +96,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: var(--z-index-header);
   display: flex;
   flex-direction: column;
   background: var(--color-background);
@@ -123,10 +123,8 @@
 /* ─── Close button ────────────────────────────────────────────────────────── */
 
 .closeBtn {
+  composes: flex-center from global;
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: var(--size-control-icon);
   height: var(--size-control-icon);
   background: none;

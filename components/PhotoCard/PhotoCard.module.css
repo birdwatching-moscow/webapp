@@ -2,7 +2,7 @@
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -10,40 +10,41 @@
   object-fit: cover;
 }
 
-/* Info icon — bottom-left corner */
+/* Info icon — bottom-right corner */
 .icon {
   position: absolute;
-  bottom: 16px;
-  left: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 1;
-  transition: opacity 0.2s ease;
-  pointer-events: none;
-  z-index: 2;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  composes: flex-center from global;
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: var(--z-index-float);
 }
 
-/* Caption overlay — hidden by default */
+/* Caption overlay — hidden by default, appears at bottom-right on icon hover */
 .caption {
   position: absolute;
-  inset: auto 0 0 0;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  max-width: 60%;
+  text-align: right;
+  text-transform: uppercase;
   margin: 0;
-  padding: 24px 16px 16px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, transparent 100%);
-  color: #fff;
-  font-size: 14px;
+  padding: 0;
+  color: var(--color-primary-foreground);
+  font-size: var(--font-size-sm);
   line-height: 1.4;
   opacity: 0;
+  pointer-events: none;
   transition: opacity 0.2s ease;
-  z-index: 2;
+  z-index: var(--z-index-raised);
 }
 
-/* Hover: hide icon, show caption */
-.card:hover .icon {
+/* On icon hover: hide icon, show caption */
+.card:has(.icon:hover) .icon {
   opacity: 0;
 }
 
-.card:hover .caption {
+.card:has(.icon:hover) .caption {
   opacity: 1;
 }

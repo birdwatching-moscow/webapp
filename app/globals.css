@@ -106,6 +106,25 @@ svg {
   --size-col-1:          1248px;
   --size-screen-desktop: 1440px;
 
+  /* --- Font size --- */
+  --font-size-xs:  12px;
+  --font-size-sm:  14px;
+  --font-size-md:  16px;
+  --font-size-lg:  18px;
+  --font-size-xl:  20px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 28px;
+  --font-size-4xl: 40px;
+  --font-size-5xl: 56px;
+
+  /* --- Z-index --- */
+  --z-index-base:     1;
+  --z-index-raised:   2;
+  --z-index-float:    3;
+  --z-index-dropdown: 10;
+  --z-index-header:   100;
+  --z-index-modal:    200;
+
   /* --- Stroke & state --- */
   --stroke-default:     2px;
   --stroke-focus:       2px;
@@ -129,70 +148,82 @@ svg {
   padding-inline: var(--page-gutter);
 }
 
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inline-flex-center {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* --- Typography --- */
 
 .text-display {
   font-family: 'Montserrat', sans-serif;
   font-weight: 600;
-  font-size: 40px;
+  font-size: var(--font-size-4xl);
   line-height: 44px;
 }
 
 .text-h1 {
   font-family: 'Montserrat', sans-serif;
   font-weight: 600;
-  font-size: 28px;
+  font-size: var(--font-size-3xl);
   line-height: 32px;
 }
 
 .text-h2 {
   font-family: 'Montserrat', sans-serif;
   font-weight: 600;
-  font-size: 24px;
+  font-size: var(--font-size-2xl);
   line-height: 28px;
 }
 
 .text-h3 {
   font-family: 'Montserrat', sans-serif;
   font-weight: 600;
-  font-size: 18px;
+  font-size: var(--font-size-lg);
   line-height: 24px;
 }
 
 .text-body-l {
   font-family: 'Manrope', sans-serif;
   font-weight: 600;
-  font-size: 18px;
+  font-size: var(--font-size-lg);
   line-height: 24px;
 }
 
 .text-body {
   font-family: 'Manrope', sans-serif;
   font-weight: 500;
-  font-size: 16px;
+  font-size: var(--font-size-md);
   line-height: 20px;
 }
 
 .text-label {
   font-family: 'Manrope', sans-serif;
   font-weight: 500;
-  font-size: 14px;
+  font-size: var(--font-size-sm);
   line-height: 16px;
 }
 
 .text-caption {
   font-family: 'Manrope', sans-serif;
   font-weight: 500;
-  font-size: 14px;
+  font-size: var(--font-size-sm);
   line-height: 16px;
 }
 
 @media (min-width: 1248px) {
-  .text-display { font-size: 56px; line-height: 58px; }
-  .text-h1      { font-size: 40px; line-height: 44px; }
-  .text-h2      { font-size: 28px; line-height: 32px; }
-  .text-h3      { font-size: 24px; line-height: 28px; }
-  .text-body-l  { font-size: 20px; line-height: 24px; }
-  .text-body    { font-size: 18px; line-height: 24px; }
-  .text-label   { font-size: 16px; line-height: 20px; }
+  .text-display { font-size: var(--font-size-5xl); line-height: 58px; }
+  .text-h1      { font-size: var(--font-size-4xl); line-height: 44px; }
+  .text-h2      { font-size: var(--font-size-3xl); line-height: 32px; }
+  .text-h3      { font-size: var(--font-size-2xl); line-height: 28px; }
+  .text-body-l  { font-size: var(--font-size-xl);  line-height: 24px; }
+  .text-body    { font-size: var(--font-size-lg);  line-height: 24px; }
+  .text-label   { font-size: var(--font-size-md);  line-height: 20px; }
 }

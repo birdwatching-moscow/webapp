@@ -10,6 +10,6 @@ export const HomeWalks = () => (
       <h2 className={`text-h1 ${styles.heading}`}>{HEADING}</h2>
       <p className={`text-body-l ${styles.body}`}>{BODY}</p>
     </div>
-    <PhotoCard src="/placeholder-walks.jpg" alt="Участники прогулки по Москве" className={styles.photo} />
+    <PhotoCard src="/images/home-walks.jpg" alt="Участники прогулки по Москве" className={styles.photo} />
   </section>
 )
