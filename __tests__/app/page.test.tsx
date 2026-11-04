@@ -1,8 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
-const { authMock } = vi.hoisted(() => ({ authMock: vi.fn() }))
-vi.mock('@/lib/auth', () => ({ auth: authMock }))
 vi.mock('@/lib/walks', () => ({ getActiveWalks: vi.fn(() => Promise.resolve([])) }))
 vi.mock('next/image', () => ({
   default: ({ src, alt }: { src: string; alt: string }) => (
@@ -18,35 +16,11 @@ import Home from '@/app/page'
 
 describe('Home page', () => {
   it('renders without errors', async () => {
-    authMock.mockResolvedValue(null)
     render(await Home())
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
   })
-})
 
-describe('Home page admin link', () => {
-  it('renders Админка link to /admin/walks for ADMIN', async () => {
-    authMock.mockResolvedValue({ user: { id: 'u1', role: 'ADMIN', name: 'Admin' } })
-    const { container } = render(await Home())
-    const link = container.querySelector('a[href="/admin/walks"]')
-    expect(link).not.toBeNull()
-    expect(link?.textContent).toBe('Админка')
-  })
-
-  it('renders Админка link for SUPERADMIN', async () => {
-    authMock.mockResolvedValue({ user: { id: 'u2', role: 'SUPERADMIN', name: 'SA' } })
-    const { container } = render(await Home())
-    expect(container.querySelector('a[href="/admin/walks"]')).not.toBeNull()
-  })
-
-  it('does not render Админка link for USER', async () => {
-    authMock.mockResolvedValue({ user: { id: 'u3', role: 'USER', name: 'User' } })
-    const { container } = render(await Home())
-    expect(container.querySelector('a[href="/admin/walks"]')).toBeNull()
-  })
-
-  it('does not render Админка link when unauthenticated', async () => {
-    authMock.mockResolvedValue(null)
+  it('does not render Админка link', async () => {
     const { container } = render(await Home())
     expect(container.querySelector('a[href="/admin/walks"]')).toBeNull()
   })
