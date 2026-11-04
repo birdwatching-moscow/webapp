@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { updateTeamMember, deleteTeamMember } from '@/app/admin/team/_actions'
+import { ROUTES } from '@/utils/routes'
 
 export default async function EditTeamMemberPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -35,7 +36,7 @@ export default async function EditTeamMemberPage({ params }: { params: Promise<{
   return (
     <div>
       <h1>{member.name}</h1>
-      <Link href="/admin/team">← Назад</Link>
+      <Link href={ROUTES.admin.team}>← Назад</Link>
 
       <form action={handleDelete} style={{ display: 'inline' }}>
         <button type="submit">Удалить</button>

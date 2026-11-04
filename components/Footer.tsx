@@ -2,21 +2,22 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Logo } from '@/components/ui/logo/Logo'
 import { getRandomBirdSrc } from '@/lib/footer-birds'
+import { ROUTES } from '@/utils/routes'
 import styles from './Footer.module.css'
 
 const EVENTS_LINKS = [
-  { label: 'Прогулки',    href: '/walks' },
-  { label: 'Экспедиции',  href: '/expeditions' },
-  { label: 'Частные',     href: '/private-events' },
-] as const
+  { label: 'Прогулки',    href: ROUTES.walks },
+  { label: 'Экспедиции',  href: ROUTES.expeditions },
+  { label: 'Частные',     href: ROUTES.privateEvents },
+]
 
 const OTHER_LINKS = [
-  { label: 'О проекте',   href: '/about' },
-  { label: 'FAQ',         href: '/faq' },
-  { label: 'Книга',       href: '/book' },
-  { label: 'Сертификаты', href: '/certificates' },
-  { label: 'BirdID',      href: '/birdid' },
-] as const
+  { label: 'О проекте',   href: ROUTES.about },
+  { label: 'FAQ',         href: ROUTES.faq },
+  { label: 'Книга',       href: ROUTES.book },
+  { label: 'Сертификаты', href: ROUTES.certificates },
+  { label: 'BirdID',      href: ROUTES.birdid },
+]
 
 const CONTACT_LINKS: { label: string; href: string; external?: true }[] = [
   { label: 'birdwatching@mail.ru', href: 'mailto:birdwatching@mail.ru' },
@@ -53,14 +54,14 @@ export const Footer = () => {
         <div className={styles.navSection}>
           <div className={styles.navRow}>
             <div className={styles.column}>
-              <span className={styles.columnLabel}>события</span>
+              <span className={styles.columnLabel}>СОБЫТИЯ</span>
               {EVENTS_LINKS.map(({ label, href }) => (
                 <Link key={href} href={href} className={styles.link}>{label}</Link>
               ))}
             </div>
 
             <div className={styles.column}>
-              <span className={styles.columnLabel}>прочее</span>
+              <span className={styles.columnLabel}>ПРОЧЕЕ</span>
               {OTHER_LINKS.map(({ label, href }) => (
                 <Link key={href} href={href} className={styles.link}>{label}</Link>
               ))}
@@ -68,7 +69,7 @@ export const Footer = () => {
           </div>
 
           <div className={styles.column}>
-            <span className={styles.columnLabel}>Контакты</span>
+            <span className={styles.columnLabel}>КОНТАКТЫ</span>
             {CONTACT_LINKS.map(({ label, href, external }) => (
               <a
                 key={label}
@@ -83,7 +84,7 @@ export const Footer = () => {
 
       <div className={styles.bottomBar}>
         <span>© {year}</span>
-        <Link href="/oferta">Оферта</Link>
+        <Link href={ROUTES.oferta}>Оферта</Link>
       </div>
     </footer>
   )

@@ -45,6 +45,6 @@ describe('HomeAbout — CTA button', () => {
   it('button links to /team', () => {
     render(<HomeAbout />)
     const link = screen.getByRole('link', { name: 'Подробнее' })
-    expect(link).toHaveAttribute('href', '/team')
+    expect(link).toHaveAttribute('href', '/about')
   })
 })

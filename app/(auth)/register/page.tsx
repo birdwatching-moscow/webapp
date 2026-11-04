@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useRef, useEffect, useState } from 'react'
 import { signIn } from 'next-auth/react'
+import { ROUTES } from '@/utils/routes'
 import { useRouter } from 'next/navigation'
 import { useLooksLikeEmail } from '@/hooks/useLooksLikeEmail'
 import { HTTP_METHOD, JSON_HEADERS, HTTP_STATUS_CONFLICT, LOGIN_CODE_LENGTH, LOGIN_CODE_PROVIDER_ID } from '@/lib/constants'
@@ -124,7 +125,7 @@ export default function RegisterPage() {
               </button>
             )}
           </form>
-          <Link href="/login">{L.loginLink}</Link>
+          <Link href={ROUTES.login}>{L.loginLink}</Link>
         </>
       )}
 

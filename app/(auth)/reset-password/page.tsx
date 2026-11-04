@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { useAuthForm } from '@/hooks/useAuthForm'
+import { ROUTES } from '@/utils/routes'
 import { AUTH_ERRORS } from '@/lib/auth-errors'
 import { AUTH_LABELS } from '@/lib/auth-labels'
 import { HTTP_METHOD, JSON_HEADERS } from '@/lib/constants'
@@ -39,7 +40,7 @@ export default function RequestResetPage() {
       <main className="container">
         <h1>{L.successTitle}</h1>
         <p>{L.successText}</p>
-        <Link href="/login">{C.backToLogin}</Link>
+        <Link href={ROUTES.login}>{C.backToLogin}</Link>
       </main>
     )
   }
@@ -58,7 +59,7 @@ export default function RequestResetPage() {
           {loading ? L.submitting : L.submit}
         </button>
       </form>
-      <Link href="/login">{C.backToLogin}</Link>
+      <Link href={ROUTES.login}>{C.backToLogin}</Link>
     </main>
   )
 }

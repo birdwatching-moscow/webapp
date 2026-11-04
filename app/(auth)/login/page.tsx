@@ -3,6 +3,7 @@
 import { Suspense, useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
+import { ROUTES } from '@/utils/routes'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { safeRedirect } from '@/utils/safeRedirect'
 import { RETURN_URL_PARAM, CALLBACK_URL_PARAM, REGISTERED_PARAM, HTTP_METHOD, JSON_HEADERS, LOGIN_CODE_PROVIDER_ID, ADMIN_2FA_PROVIDER_ID, LOGIN_CODE_LENGTH, PASSWORD_MIN_LENGTH } from '@/lib/constants'
@@ -211,7 +212,7 @@ function LoginCodeForm() {
               </button>
             )}
           </form>
-          <Link href="/register">{L.registerLink}</Link>
+          <Link href={ROUTES.register}>{L.registerLink}</Link>
         </>
       )}
 
@@ -297,7 +298,7 @@ function LoginCodeForm() {
               {loading ? LA.submitting : LA.submit}
             </button>
           </form>
-          <Link href="/reset-password">{L.resetLink}</Link>
+          <Link href={ROUTES.resetPassword}>{L.resetLink}</Link>
         </>
       )}
     </main>

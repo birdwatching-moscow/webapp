@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import { ROUTES } from '@/utils/routes'
 
 export default async function WalksPage({
   searchParams,
@@ -25,7 +26,7 @@ export default async function WalksPage({
   return (
     <div>
       <h1>Прогулки</h1>
-      <Link href="/admin/walks/new">Новая прогулка</Link>
+      <Link href={ROUTES.admin.walksNew}>Новая прогулка</Link>
       <table>
         <thead>
           <tr>

@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useRouter, useParams } from 'next/navigation'
 import { useAuthForm } from '@/hooks/useAuthForm'
+import { ROUTES } from '@/utils/routes'
 import { AUTH_ERRORS } from '@/lib/auth-errors'
 import { AUTH_LABELS } from '@/lib/auth-labels'
 import { PASSWORD_MIN_LENGTH, HTTP_METHOD, JSON_HEADERS } from '@/lib/constants'
@@ -76,7 +77,7 @@ export default function ConfirmResetPage() {
         </button>
       </form>
 
-      <Link href="/login">{C.backToLogin}</Link>
+      <Link href={ROUTES.login}>{C.backToLogin}</Link>
     </main>
   )
 }

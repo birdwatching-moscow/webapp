@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import { Button } from '@/components/ui/buttons/Button'
 import { getRandomBirdSrc } from '@/lib/footer-birds'
+import { ROUTES } from '@/utils/routes'
 import styles from './Hero.module.css'
 
 const HEADING = 'Помогаем природе через образование людей'
@@ -22,7 +23,7 @@ export const Hero = () => {
 
     <p className={`text-body-l ${styles.subheading}`}>{SUBHEADING}</p>
 
-    <Button as="a" href="/walks" size="lg" className={styles.cta}>
+    <Button as="a" href={ROUTES.walks} size="lg" className={styles.cta}>
       Выбрать прогулку
     </Button>
   </section>

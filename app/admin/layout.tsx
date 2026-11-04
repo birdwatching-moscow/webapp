@@ -1,12 +1,13 @@
 import Link from 'next/link'
 import { auth } from '@/lib/auth'
 import { isSuperAdmin } from '@/lib/auth/permissions'
+import { ROUTES } from '@/utils/routes'
 
 const NAV_ITEMS = [
-  { label: 'Прогулки', href: '/admin/walks' },
-  { label: 'Экспедиции', href: '/admin/expeditions' },
-  { label: 'Команда', href: '/admin/team' },
-  { label: 'Заявки', href: '/admin/requests' },
+  { label: 'Прогулки',   href: ROUTES.admin.walks },
+  { label: 'Экспедиции', href: ROUTES.admin.expeditions },
+  { label: 'Команда',    href: ROUTES.admin.team },
+  { label: 'Заявки',     href: ROUTES.admin.requests },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -20,7 +21,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         {NAV_ITEMS.map((item) => (
           <Link key={item.href} href={item.href}>{item.label}</Link>
         ))}
-        {showUsers && <Link href="/admin/users">Пользователи</Link>}
+        {showUsers && <Link href={ROUTES.admin.users}>Пользователи</Link>}
       </nav>
       <main>{children}</main>
     </div>
