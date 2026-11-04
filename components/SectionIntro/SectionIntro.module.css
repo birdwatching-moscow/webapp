@@ -1,0 +1,37 @@
+/* ─── Mobile ──────────────────────────────────────────────────────────────── */
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.description {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: var(--font-size-lg);
+  line-height: 24px;
+  color: var(--color-muted-foreground);
+}
+
+/* ─── Desktop (min-width: 1248px) ─────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .intro {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0;
+  }
+
+  .title {
+    flex: 0 0 50%;
+    font-size: var(--font-size-4xl);
+    line-height: 44px;
+  }
+
+  .description {
+    flex: 0 0 50%;
+    font-weight: 600;
+    font-size: var(--font-size-xl);
+  }
+}

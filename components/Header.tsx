@@ -19,11 +19,10 @@ const NAV_LINKS = [
 export const Header = () => {
   const { status } = useSession()
   const pathname = usePathname()
-  const [isOpen, setIsOpen] = useState(false)
-
-  useEffect(() => {
-    setIsOpen(false)
-  }, [pathname])
+  // Menu is open only on the page it was opened on, so navigating closes it
+  const [openedOn, setOpenedOn] = useState<string | null>(null)
+  const isOpen = openedOn === pathname
+  const setIsOpen = (open: boolean) => setOpenedOn(open ? pathname : null)
 
   useEffect(() => {
     if (!isOpen) return

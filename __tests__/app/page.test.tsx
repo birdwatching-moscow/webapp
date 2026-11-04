@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
 vi.mock('@/lib/walks', () => ({ getActiveWalks: vi.fn(() => Promise.resolve([])) }))
+vi.mock('@/lib/expeditions', () => ({ getActiveExpeditions: vi.fn(() => Promise.resolve([])) }))
 vi.mock('next/image', () => ({
   default: ({ src, alt }: { src: string; alt: string }) => (
     // eslint-disable-next-line @next/next/no-img-element
