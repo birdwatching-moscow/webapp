@@ -1,4 +1,5 @@
 import { NearestSection } from '@/components/NearestSection/NearestSection'
+import { PhotoCard } from '@/components/PhotoCard/PhotoCard'
 import { ExpeditionCard } from '@/components/ExpeditionCard/ExpeditionCard'
 import { ROUTES } from '@/utils/routes'
 import type { ExpeditionCardRow } from '@/lib/expeditions'
@@ -21,7 +22,7 @@ export const HomeExpeditions = ({ expeditions }: HomeExpeditionsProps) => {
         <p className={styles.introDesc}>{SECTION_DESCRIPTION}</p>
       </div>
 
-      <div className={styles.coverWrap} aria-hidden="true" />
+      <PhotoCard src="/images/home-expeditions.jpg" alt="Участники экспедиции" />
 
       <NearestSection moreHref={ROUTES.expeditions} showMoreButton>
         <div className={styles.cards}>
