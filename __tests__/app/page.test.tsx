@@ -3,6 +3,15 @@ import { render, screen } from '@testing-library/react'
 
 const { authMock } = vi.hoisted(() => ({ authMock: vi.fn() }))
 vi.mock('@/lib/auth', () => ({ auth: authMock }))
+vi.mock('next/image', () => ({
+  default: ({ src, alt }: { src: string; alt: string }) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt={alt} />
+  ),
+}))
+vi.mock('@/lib/footer-birds', () => ({
+  getRandomBirdSrc: vi.fn(() => ({ src: '/footer-birds/kingfisher.jpg', name: 'Kingfisher' })),
+}))
 
 import Home from '@/app/page'
 
@@ -10,7 +19,7 @@ describe('Home page', () => {
   it('renders without errors', async () => {
     authMock.mockResolvedValue(null)
     render(await Home())
-    expect(screen.getByRole('main')).toBeDefined()
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
   })
 })
 

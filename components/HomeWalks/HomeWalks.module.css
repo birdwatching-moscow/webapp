@@ -1,0 +1,44 @@
+/* ─── Mobile ──────────────────────────────────────────────────────────────── */
+
+.section {
+  width: 100%;
+  padding-top: 64px;
+  padding-inline: var(--page-gutter);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.body {
+  font-weight: 500;
+  color: var(--color-muted-foreground);
+}
+
+/* ─── Desktop ─────────────────────────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .section {
+    padding-top: 96px;
+    gap: 48px;
+  }
+
+  .intro {
+    flex-direction: row;
+    gap: 24px;
+  }
+
+  .heading {
+    flex: 1;
+  }
+
+  .body {
+    flex: 1;
+    font-weight: 600;
+  }
+}

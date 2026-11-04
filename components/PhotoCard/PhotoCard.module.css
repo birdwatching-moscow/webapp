@@ -1,0 +1,49 @@
+.card {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.image {
+  object-fit: cover;
+}
+
+/* Info icon — bottom-left corner */
+.icon {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Caption overlay — hidden by default */
+.caption {
+  position: absolute;
+  inset: auto 0 0 0;
+  margin: 0;
+  padding: 24px 16px 16px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, transparent 100%);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.4;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 2;
+}
+
+/* Hover: hide icon, show caption */
+.card:hover .icon {
+  opacity: 0;
+}
+
+.card:hover .caption {
+  opacity: 1;
+}
