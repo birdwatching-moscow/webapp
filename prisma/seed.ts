@@ -1,4 +1,4 @@
-import { PrismaClient, EventStatus, Role } from '../generated/prisma/client'
+import { PrismaClient, EventStatus, OrderStatus, Role } from '../generated/prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 
 const connectionString = process.env.DATABASE_URL
@@ -30,8 +30,16 @@ async function main() {
   })
 
   const now = new Date()
-  const inOneMonth = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate(), 8, 0, 0)
-  const inTwoMonths = new Date(now.getFullYear(), now.getMonth() + 2, now.getDate(), 19, 0, 0)
+  const inOneMonth       = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate(),      8,  0, 0)
+  const inOneMonthEnd    = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate(),     10,  0, 0)
+  const inTwoMonths      = new Date(now.getFullYear(), now.getMonth() + 2, now.getDate(),     19,  0, 0)
+  const inTwoMonthsEnd   = new Date(now.getFullYear(), now.getMonth() + 2, now.getDate(),     21,  0, 0)
+  const inThreeWeeks     = new Date(now.getFullYear(), now.getMonth(),     now.getDate() + 21, 9,  0, 0)
+  const inThreeWeeksEnd  = new Date(now.getFullYear(), now.getMonth(),     now.getDate() + 21,11,  0, 0)
+  const inFiveWeeks      = new Date(now.getFullYear(), now.getMonth(),     now.getDate() + 35,10,  0, 0)
+  const inFiveWeeksEnd   = new Date(now.getFullYear(), now.getMonth(),     now.getDate() + 35,12,  0, 0)
+  const inTenWeeks       = new Date(now.getFullYear(), now.getMonth(),     now.getDate() + 70, 7,  0, 0)
+  const inTenWeeksEnd    = new Date(now.getFullYear(), now.getMonth(),     now.getDate() + 70, 9, 30, 0)
 
   // PLACEHOLDER: guides — replace photoUrl with real S3 URLs
   const guide1 = await prisma.teamMember.create({
@@ -75,6 +83,7 @@ async function main() {
       description:
         'Прогулка по одному из лучших мест для наблюдения за птицами в Москве. Ожидаем встретить зябликов, дроздов, синиц, уток и крякв. Подходит для начинающих.',
       startsAt: inOneMonth,
+      endsAt: inOneMonthEnd,
       location: 'Парк Покровское-Стрешнево, вход с ул. Вишнёвая',
       priceKopecks: 150000,
       capacity: 12,
@@ -94,6 +103,7 @@ async function main() {
       description:
         'Вечерняя прогулка по национальному парку. Лучшее время для наблюдения за дятлами, совами и ночными птицами. Берём фонарики.',
       startsAt: inTwoMonths,
+      endsAt: inTwoMonthsEnd,
       location: 'Национальный парк «Лосиный остров», Погонный проезд, центральный вход',
       priceKopecks: 120000,
       capacity: 10,
@@ -103,6 +113,92 @@ async function main() {
       publishedAt: now,
       publishedBy: admin.id,
     },
+  })
+
+  // PLACEHOLDER: walk 3 — replace coverPhotoUrl with real S3 URL
+  await prisma.walk.create({
+    data: {
+      slug: 'kolomenskoe-pervye-perelyotnye',
+      title: 'Коломенское: первые перелётные',
+      description:
+        'Ранняя осенняя прогулка по склонам и пойме Москвы-реки. Наблюдаем за первыми осенними мигрантами: мухоловками, пеночками, зарянками.',
+      startsAt: inThreeWeeks,
+      endsAt: inThreeWeeksEnd,
+      location: 'Музей-заповедник «Коломенское», главный вход',
+      priceKopecks: 130000,
+      capacity: 10,
+      guideId: guide2.id,
+      status: EventStatus.ACTIVE,
+      coverPhotoUrl: 'https://placeholder.example.com/covers/walk3.jpg',
+      publishedAt: now,
+      publishedBy: admin.id,
+    },
+  })
+
+  // PLACEHOLDER: walk 4 — replace coverPhotoUrl with real S3 URL
+  await prisma.walk.create({
+    data: {
+      slug: 'bitsevskiy-les-dyatly',
+      title: 'Битцевский лес: дятлы и поползни',
+      description:
+        'Прогулка по старому смешанному лесу. Идеальное время для наблюдения за дятлами — большим пёстрым, малым пёстрым и чёрным — а также за поползнями и пищухами.',
+      startsAt: inFiveWeeks,
+      endsAt: inFiveWeeksEnd,
+      location: 'Битцевский лес, вход со ст. м. Новоясеневская',
+      priceKopecks: 110000,
+      capacity: 12,
+      guideId: guide1.id,
+      status: EventStatus.ACTIVE,
+      coverPhotoUrl: 'https://placeholder.example.com/covers/walk4.jpg',
+      publishedAt: now,
+      publishedBy: admin.id,
+    },
+  })
+
+  // Walk 5: sold out — capacity filled by real ticket records
+  const soldOutWalk = await prisma.walk.create({
+    data: {
+      slug: 'fili-utki-i-nyrki',
+      title: 'Фили: утки и нырки',
+      description:
+        'Осмотр зимующих водоплавающих птиц на Москве-реке в районе Филёвского парка. Ожидаем хохлатых чернетей, гоголей и крякв.',
+      startsAt: inTenWeeks,
+      endsAt: inTenWeeksEnd,
+      location: 'Филёвский парк, лодочная станция',
+      priceKopecks: 95000,
+      capacity: 8,
+      guideId: guide2.id,
+      status: EventStatus.ACTIVE,
+      coverPhotoUrl: 'https://placeholder.example.com/covers/walk5.jpg',
+      publishedAt: now,
+      publishedBy: admin.id,
+    },
+  })
+
+  // Create a paid order that fills all 8 spots on soldOutWalk
+  const soldOutOrder = await prisma.order.create({
+    data: {
+      userId: admin.id,
+      status: OrderStatus.PAID,
+      totalKopecks: soldOutWalk.priceKopecks * soldOutWalk.capacity,
+      expiresAt: now,
+      paidAt: now,
+      orderItems: {
+        create: {
+          walkId: soldOutWalk.id,
+          quantity: soldOutWalk.capacity,
+          unitPriceKopecks: soldOutWalk.priceKopecks,
+        },
+      },
+    },
+  })
+
+  await prisma.ticket.createMany({
+    data: Array.from({ length: soldOutWalk.capacity }, () => ({
+      orderId: soldOutOrder.id,
+      userId: admin.id,
+      walkId: soldOutWalk.id,
+    })),
   })
 
   // PLACEHOLDER: expedition — replace coverPhotoUrl with real S3 URL

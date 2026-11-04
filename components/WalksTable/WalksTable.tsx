@@ -17,7 +17,7 @@ export const WalksTable = ({ walks, showMoreButton = false }: WalksTableProps) =
 
   return (
     <section data-testid="walks-table" className={styles.section}>
-      <h2 className={`text-h1 ${styles.heading}`}>Ближайшие</h2>
+      <h2 className={styles.heading}>Ближайшие</h2>
 
       <div className={styles.table} role="list">
         <div className={styles.headerRow} role="presentation">
@@ -29,7 +29,7 @@ export const WalksTable = ({ walks, showMoreButton = false }: WalksTableProps) =
 
         {walks.map((walk) => {
           const available = walk.capacity - walk.ticketsSold
-          const dateLabel = formatWalkDate(walk.startsAt, walk.duration)
+          const dateLabel = formatWalkDate(walk.startsAt, walk.endsAt)
           const priceLabel = `от ${formatKopecksShort(walk.priceKopecks)}`
           const ticketsLabel = formatTicketsLabel(available)
 
@@ -43,7 +43,7 @@ export const WalksTable = ({ walks, showMoreButton = false }: WalksTableProps) =
               <span className={`text-body ${styles.colDate} ${styles.dateText}`}>{dateLabel}</span>
               <span className={`text-body ${styles.colTitle}`}>{walk.title}</span>
               <span className={`text-body ${styles.colPrice}`}>{priceLabel}</span>
-              <span className={`text-body ${styles.colTickets} ${available === 0 ? styles.soldOut : ''}`}>
+              <span className={`text-body ${styles.colTickets}`}>
                 {ticketsLabel}
               </span>
               <span className={styles.arrow} aria-hidden="true">→</span>
@@ -53,7 +53,7 @@ export const WalksTable = ({ walks, showMoreButton = false }: WalksTableProps) =
       </div>
 
       {showMoreButton && (
-        <Button as="a" href={ROUTES.walks} className={styles.moreButton}>
+        <Button as="a" size="lg" href={ROUTES.walks} className={styles.moreButton}>
           Подробнее
         </Button>
       )}

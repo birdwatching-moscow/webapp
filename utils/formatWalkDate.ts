@@ -1,19 +1,24 @@
-const END_TIME_RE = /^\d{2}:\d{2}$/
+const MOS_TZ = 'Europe/Moscow'
 
-export function formatWalkDate(startsAt: Date, duration: string | null): string {
+export function formatWalkDate(startsAt: Date, endsAt: Date | null): string {
   const date = startsAt.toLocaleDateString('ru-RU', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
-    timeZone: 'Europe/Moscow',
+    timeZone: MOS_TZ,
   })
-  const time = startsAt.toLocaleTimeString('ru-RU', {
+  const startTime = startsAt.toLocaleTimeString('ru-RU', {
     hour: '2-digit',
     minute: '2-digit',
-    timeZone: 'Europe/Moscow',
+    timeZone: MOS_TZ,
   })
 
-  if (!duration) return `${date} · ${time}`
-  if (END_TIME_RE.test(duration)) return `${date} · ${time}–${duration}`
-  return `${date} · ${time} (${duration})`
+  if (!endsAt) return `${date} · ${startTime}`
+
+  const endTime = endsAt.toLocaleTimeString('ru-RU', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: MOS_TZ,
+  })
+  return `${date} · ${startTime}–${endTime}`
 }

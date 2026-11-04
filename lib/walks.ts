@@ -5,7 +5,7 @@ export type WalkTableRow = {
   slug: string
   title: string
   startsAt: Date
-  duration: string | null
+  endsAt: Date | null
   priceKopecks: number
   capacity: number
   ticketsSold: number
@@ -19,7 +19,7 @@ export async function getActiveWalks(options?: { limit?: number }): Promise<Walk
       slug: true,
       title: true,
       startsAt: true,
-      duration: true,
+      endsAt: true,
       priceKopecks: true,
       capacity: true,
       _count: { select: { tickets: true } },
@@ -33,7 +33,7 @@ export async function getActiveWalks(options?: { limit?: number }): Promise<Walk
     slug: r.slug,
     title: r.title,
     startsAt: r.startsAt,
-    duration: r.duration,
+    endsAt: r.endsAt,
     priceKopecks: r.priceKopecks,
     capacity: r.capacity,
     ticketsSold: r._count.tickets,
