@@ -80,3 +80,20 @@ describe('Button — variant and size classes', () => {
     expect(screen.getByRole('button').className).toMatch(/sm/)
   })
 })
+
+describe('Button — fullWidth', () => {
+  it('fullWidth applies a CSS class containing "fullWidth"', () => {
+    render(<Button fullWidth>Click</Button>)
+    expect(screen.getByRole('button').className).toMatch(/fullWidth/)
+  })
+
+  it('fullWidth applies to link variant too', () => {
+    render(<Button as="a" href="/path" fullWidth>Link</Button>)
+    expect(screen.getByRole('link').className).toMatch(/fullWidth/)
+  })
+
+  it('does not apply fullWidth class by default', () => {
+    render(<Button>Click</Button>)
+    expect(screen.getByRole('button').className).not.toMatch(/fullWidth/)
+  })
+})
