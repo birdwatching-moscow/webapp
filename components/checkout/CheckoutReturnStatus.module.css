@@ -2,13 +2,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  padding: 2rem 1rem;
+  gap: var(--space-4);
+  padding: var(--space-6) var(--space-4);
   text-align: center;
 }
 
 .message {
-  font-size: 1.125rem;
+  font-size: var(--font-size-lg);
 }
 
 .success {

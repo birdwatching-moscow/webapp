@@ -1,13 +1,11 @@
 .wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem;
+  composes: flex-center from global;
+  padding: var(--space-4);
 }
 
 .ring {
-  width: 2rem;
-  height: 2rem;
+  width: var(--space-6);
+  height: var(--space-6);
   border: 3px solid currentColor;
   border-top-color: transparent;
   border-radius: 50%;

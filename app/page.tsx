@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { isAdmin } from '@/lib/auth/permissions'
 import { Hero } from '@/components/Hero/Hero'
 import { HomeAbout } from '@/components/HomeAbout/HomeAbout'
+import { HomeWalks } from '@/components/HomeWalks/HomeWalks'
 import { ROUTES } from '@/utils/routes'
 
 export default async function Home() {
@@ -13,6 +14,7 @@ export default async function Home() {
     <>
       <Hero />
       <HomeAbout />
+      <HomeWalks />
       {showAdminLink && (
         <Link href={ROUTES.admin.walks}>Админка</Link>
       )}

@@ -54,9 +54,9 @@ describe('Footer — bird photo', () => {
 })
 
 describe('Footer — «события» column', () => {
-  it('renders column label «события»', () => {
+  it('renders column label «СОБЫТИЯ»', () => {
     render(<Footer />)
-    expect(screen.getByText('события')).toBeInTheDocument()
+    expect(screen.getByText('СОБЫТИЯ')).toBeInTheDocument()
   })
 
   it('renders link «Прогулки» → /walks', () => {
@@ -79,9 +79,9 @@ describe('Footer — «события» column', () => {
 })
 
 describe('Footer — «прочее» column', () => {
-  it('renders column label «прочее»', () => {
+  it('renders column label «ПРОЧЕЕ»', () => {
     render(<Footer />)
-    expect(screen.getByText('прочее')).toBeInTheDocument()
+    expect(screen.getByText('ПРОЧЕЕ')).toBeInTheDocument()
   })
 
   it('renders link «О проекте» → /about', () => {
@@ -116,9 +116,9 @@ describe('Footer — «прочее» column', () => {
 })
 
 describe('Footer — «Контакты» column', () => {
-  it('renders column label «Контакты»', () => {
+  it('renders column label «КОНТАКТЫ»', () => {
     render(<Footer />)
-    expect(screen.getByText('Контакты')).toBeInTheDocument()
+    expect(screen.getByText('КОНТАКТЫ')).toBeInTheDocument()
   })
 
   it('renders email link with address as label', () => {

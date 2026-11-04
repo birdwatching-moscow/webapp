@@ -2,20 +2,20 @@
 
 .section {
   width: 100%;
-  padding-top: 64px;
+  padding-top: var(--space-8);
   padding-inline: var(--page-gutter);
 }
 
 .content {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--space-5);
 }
 
 .textBlock {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 /* Mobile body text: Figma specifies weight 500 (lighter than the token default 600) */
@@ -32,11 +32,11 @@
 
 @media (min-width: 1248px) {
   .section {
-    padding-top: 96px;
+    padding-top: var(--space-10);
   }
 
   .content {
-    max-width: 720px;
+    max-width: var(--size-text-max);
     margin-inline: auto;
   }
 
@@ -47,6 +47,6 @@
 
   .cta {
     align-self: auto;
-    width: 406px;
+    width: var(--size-col-3);
   }
 }

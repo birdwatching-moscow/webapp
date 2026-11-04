@@ -1,8 +1,6 @@
 .root {
-  display: flex;
+  composes: flex-center from global;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
   width: 100%;
   height: 100%;
   padding: var(--space-7) var(--space-4);
