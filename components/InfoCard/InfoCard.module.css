@@ -7,14 +7,17 @@
   background: var(--color-background);
   color: var(--color-foreground);
   text-decoration: none;
+}
+
+.link {
   transition: border-color 150ms ease;
 }
 
-.card:hover {
+.link:hover {
   border-color: var(--color-primary-hover);
 }
 
-.card:focus-visible {
+.link:focus-visible {
   outline: var(--stroke-focus) solid var(--color-primary);
   outline-offset: 2px;
 }
@@ -31,7 +34,7 @@
   padding: 0 var(--space-4) var(--space-4);
 }
 
-.date {
+.label {
   color: var(--color-muted-foreground);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -41,7 +44,7 @@
   color: var(--color-foreground);
 }
 
-.desc {
+.description {
   font-family: 'Manrope', sans-serif;
   font-weight: 500;
   font-size: var(--font-size-lg);

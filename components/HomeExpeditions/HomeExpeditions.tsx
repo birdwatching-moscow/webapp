@@ -1,6 +1,7 @@
 import { NearestSection } from '@/components/NearestSection/NearestSection'
 import { PhotoCard } from '@/components/PhotoCard/PhotoCard'
 import { ExpeditionCard } from '@/components/ExpeditionCard/ExpeditionCard'
+import { SectionIntro } from '@/components/SectionIntro/SectionIntro'
 import { ROUTES } from '@/utils/routes'
 import type { ExpeditionCardRow } from '@/lib/expeditions'
 import styles from './HomeExpeditions.module.css'
@@ -17,10 +18,7 @@ export const HomeExpeditions = ({ expeditions }: HomeExpeditionsProps) => {
 
   return (
     <section className={styles.section}>
-      <div className={styles.intro}>
-        <h2 className={styles.introTitle}>Экспедиции</h2>
-        <p className={styles.introDesc}>{SECTION_DESCRIPTION}</p>
-      </div>
+      <SectionIntro title="Экспедиции" description={SECTION_DESCRIPTION} />
 
       <PhotoCard src="/images/home-expeditions.png" alt="Участники экспедиции" />
 
