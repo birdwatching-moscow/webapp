@@ -23,7 +23,7 @@ export const Hero = () => {
 
     <p className={`text-body-l ${styles.subheading}`}>{SUBHEADING}</p>
 
-    <Button as="a" href={ROUTES.walks} size="lg" className={styles.cta}>
+    <Button as="a" href={ROUTES.walks} size="lg" fullWidth className={styles.cta}>
       Выбрать прогулку
     </Button>
   </section>

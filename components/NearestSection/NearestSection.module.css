@@ -11,8 +11,8 @@
   line-height: 32px;
 }
 
-.moreButton {
-  display: flex;
-  width: 100%;
-  max-width: 406px;
+@media (min-width: 1248px) {
+  .moreButton {
+    max-width: 406px;
+  }
 }

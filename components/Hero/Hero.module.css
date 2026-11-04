@@ -28,12 +28,6 @@
   color: var(--color-muted-foreground);
 }
 
-.cta {
-  display: flex;
-  width: 100%;
-  max-width: 406px;
-}
-
 /* ─── Desktop: CSS grid ───────────────────────────────────────────────────── */
 /*
   Grid layout (1fr = half the content area):
@@ -80,7 +74,6 @@
     grid-row: 3;
     /* row-gap 12px + this margin = 32px total gap from subheading to button */
     margin-top: var(--space-4a);
-    width: auto;
-    min-width: 260px;
+    max-width: 406px;
   }
 }

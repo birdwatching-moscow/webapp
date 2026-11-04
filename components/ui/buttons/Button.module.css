@@ -78,6 +78,11 @@
   gap: var(--space-2);
 }
 
+.fullWidth {
+  display: flex;
+  width: 100%;
+}
+
 /* Disabled / loading */
 
 .button:disabled,

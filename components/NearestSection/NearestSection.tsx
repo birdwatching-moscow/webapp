@@ -18,7 +18,7 @@ export const NearestSection = ({
     <h2 className={styles.heading}>{heading}</h2>
     {children}
     {showMoreButton && moreHref && (
-      <Button as="a" size="lg" href={moreHref} className={styles.moreButton}>
+      <Button as="a" size="lg" fullWidth href={moreHref} className={styles.moreButton}>
         Подробнее
       </Button>
     )}
