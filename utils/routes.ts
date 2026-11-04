@@ -2,6 +2,7 @@ export const ROUTES = {
   // Public
   home:          '/',
   walks:         '/walks',
+  walk:          (slug: string) => `/walks/${slug}` as const,
   expeditions:   '/expeditions',
   privateEvents: '/private-events',
   book:          '/book',

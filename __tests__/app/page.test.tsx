@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react'
 
 const { authMock } = vi.hoisted(() => ({ authMock: vi.fn() }))
 vi.mock('@/lib/auth', () => ({ auth: authMock }))
+vi.mock('@/lib/walks', () => ({ getActiveWalks: vi.fn(() => Promise.resolve([])) }))
 vi.mock('next/image', () => ({
   default: ({ src, alt }: { src: string; alt: string }) => (
     // eslint-disable-next-line @next/next/no-img-element
