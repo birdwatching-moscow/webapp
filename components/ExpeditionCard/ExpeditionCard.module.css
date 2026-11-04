@@ -7,6 +7,11 @@
   background: var(--color-background);
   color: var(--color-foreground);
   text-decoration: none;
+  transition: border-color 150ms ease;
+}
+
+.card:hover {
+  border-color: var(--color-primary-hover);
 }
 
 .card:focus-visible {
