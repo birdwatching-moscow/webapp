@@ -30,6 +30,8 @@ async function main() {
   })
 
   const now = new Date()
+  const inOneMonth = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate(), 8, 0, 0)
+  const inTwoMonths = new Date(now.getFullYear(), now.getMonth() + 2, now.getDate(), 19, 0, 0)
 
   // PLACEHOLDER: guides — replace photoUrl with real S3 URLs
   const guide1 = await prisma.teamMember.create({
@@ -72,7 +74,7 @@ async function main() {
       title: 'Утренний бёрдвотчинг в Покровском-Стрешнево',
       description:
         'Прогулка по одному из лучших мест для наблюдения за птицами в Москве. Ожидаем встретить зябликов, дроздов, синиц, уток и крякв. Подходит для начинающих.',
-      startsAt: new Date('2026-07-05T07:00:00+03:00'),
+      startsAt: inOneMonth,
       location: 'Парк Покровское-Стрешнево, вход с ул. Вишнёвая',
       priceKopecks: 150000,
       capacity: 12,
@@ -91,7 +93,7 @@ async function main() {
       title: 'Вечерние птицы Лосиного острова',
       description:
         'Вечерняя прогулка по национальному парку. Лучшее время для наблюдения за дятлами, совами и ночными птицами. Берём фонарики.',
-      startsAt: new Date('2026-07-12T19:00:00+03:00'),
+      startsAt: inTwoMonths,
       location: 'Национальный парк «Лосиный остров», Погонный проезд, центральный вход',
       priceKopecks: 120000,
       capacity: 10,
