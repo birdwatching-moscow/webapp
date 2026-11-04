@@ -13,16 +13,19 @@ const PLACEHOLDER_IMAGE = '/images/home-walks.jpg'
 
 const EVENT_TYPES = [
   {
+    href: ROUTES.privateWalks,
     title: 'Персональная прогулка в Москве и окрестностях',
     description:
       'Подберём место, дату и маршрут с учётом сезона, вашего опыта и того, каких птиц вам хотелось бы увидеть. Можно выбрать одну из наших проверенных локаций или обсудить другой маршрут.',
   },
   {
+    href: ROUTES.privateLectures,
     title: 'Лекции',
     description:
       'Подберём место, дату и маршрут с учётом сезона, вашего опыта и того, каких птиц вам хотелось бы увидеть. Можно выбрать одну из наших проверенных локаций или обсудить другой маршрут.',
   },
   {
+    href: ROUTES.privateConsultations,
     title: 'Персональные консультации',
     description:
       'Поможем спланировать самостоятельное birdwatching-путешествие, сделать территорию безопаснее и привлекательнее для птиц, разобраться с профессиональным развитием или разработать собственный проект.',
@@ -37,6 +40,7 @@ export const HomePrivate = () => (
       {EVENT_TYPES.map((event) => (
         <InfoCard
           key={event.title}
+          href={event.href}
           imageSrc={PLACEHOLDER_IMAGE}
           imageAlt={event.title}
           title={event.title}
