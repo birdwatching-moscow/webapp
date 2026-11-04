@@ -11,6 +11,14 @@ export type ExpeditionCardRow = {
   spotsLeft: number
 }
 
+export async function getExpeditionTitle(slug: string): Promise<string | null> {
+  const row = await prisma.expedition.findFirst({
+    where: { slug, status: 'ACTIVE' },
+    select: { title: true },
+  })
+  return row?.title ?? null
+}
+
 export async function getActiveExpeditions(options?: { limit?: number }): Promise<ExpeditionCardRow[]> {
   const rows = await prisma.expedition.findMany({
     where: { status: 'ACTIVE', startsAt: { gte: new Date() } },
