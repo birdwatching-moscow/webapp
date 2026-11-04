@@ -10,7 +10,7 @@ interface HomeExpeditionsProps {
 }
 
 const SECTION_DESCRIPTION =
-  'Многодневные экспедиции в дальние места — от арктических тундр до субтропических лесов Колхиды.'
+  'Мы собираем поездки по России и миру, чтобы видеть редкие виды, узнавать новые территории и проживать маршрут не спеша — в компании людей, которым так же важно быть внимательными к природе.'
 
 export const HomeExpeditions = ({ expeditions }: HomeExpeditionsProps) => {
   if (expeditions.length === 0) return null
@@ -22,7 +22,7 @@ export const HomeExpeditions = ({ expeditions }: HomeExpeditionsProps) => {
         <p className={styles.introDesc}>{SECTION_DESCRIPTION}</p>
       </div>
 
-      <PhotoCard src="/images/home-expeditions.jpg" alt="Участники экспедиции" />
+      <PhotoCard src="/images/home-expeditions.png" alt="Участники экспедиции" />
 
       <NearestSection moreHref={ROUTES.expeditions} showMoreButton>
         <div className={styles.cards}>
