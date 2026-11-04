@@ -81,6 +81,7 @@ export const Header = () => {
       >
         <span className={styles.bar} />
         <span className={styles.bar} />
+        <span className={styles.bar} />
       </button>
 
       {isOpen && (
