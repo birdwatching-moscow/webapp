@@ -29,9 +29,8 @@
 }
 
 .cta {
-  min-width: 260px;
+  width: 100%;
   max-width: 406px;
-  align-self: stretch;
 }
 
 /* ─── Desktop: CSS grid ───────────────────────────────────────────────────── */
@@ -80,5 +79,7 @@
     grid-row: 3;
     /* row-gap 12px + this margin = 32px total gap from subheading to button */
     margin-top: var(--space-4a);
+    width: auto;
+    min-width: 260px;
   }
 }

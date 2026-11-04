@@ -12,7 +12,6 @@
 }
 
 .moreButton {
-  min-width: 260px;
+  width: 100%;
   max-width: 406px;
-  align-self: stretch;
 }
