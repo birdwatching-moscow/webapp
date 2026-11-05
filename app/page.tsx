@@ -9,6 +9,7 @@ import { HomePartners } from '@/components/HomePartners/HomePartners'
 import { HomeBook } from '@/components/HomeBook/HomeBook'
 import { HomePodcast } from '@/components/HomePodcast/HomePodcast'
 import { HomeBirdID } from '@/components/HomeBirdID/HomeBirdID'
+import { SaveBirds } from '@/components/SaveBirds/SaveBirds'
 import { getActiveWalks } from '@/lib/walks'
 import { getActiveExpeditions } from '@/lib/expeditions'
 
@@ -31,6 +32,7 @@ export default async function Home() {
       <HomeBook />
       <HomePodcast />
       <HomeBirdID />
+      <SaveBirds />
     </>
   )
 }
