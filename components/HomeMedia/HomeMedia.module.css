@@ -9,10 +9,23 @@
   gap: var(--space-6);
 }
 
+/* Horizontal carousel that bleeds to the screen edges */
 .cards {
+  --card-width-mobile: 320px;
+
   display: flex;
-  flex-direction: column;
   gap: var(--space-4);
+  margin-inline: calc(-1 * var(--page-gutter));
+  padding-inline: var(--page-gutter);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--page-gutter);
+  scrollbar-width: none;
+}
+
+.cards > * {
+  flex: 0 0 var(--card-width-mobile);
+  scroll-snap-align: start;
 }
 
 /* ─── Desktop (min-width: 1248px) ─────────────────────────────────────────── */
@@ -23,7 +36,9 @@
   }
 
   .cards {
-    flex-direction: row;
+    margin-inline: 0;
+    padding-inline: 0;
+    overflow-x: visible;
   }
 
   .cards > * {

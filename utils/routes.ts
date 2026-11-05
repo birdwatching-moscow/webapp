@@ -10,6 +10,7 @@ export const ROUTES = {
   privateLectures:      '/private-lectures',
   privateConsultations: '/private-consultations',
   media:         '/media',
+  partners:      '/partners',
   book:          '/book',
   about:         '/about',
   faq:           '/faq',
