@@ -1,0 +1,47 @@
+/* ─── Mobile ──────────────────────────────────────────────────────────────── */
+
+.band {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  border: var(--stroke-default) solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.title {
+  margin: 0;
+}
+
+.description {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* ─── Desktop (min-width: 1248px) ─────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .band {
+    flex-direction: row;
+    align-items: center;
+    padding: var(--space-7);
+    gap: var(--space-6);
+  }
+
+  .group {
+    flex: 1;
+  }
+
+  .cta {
+    max-width: var(--size-col-3);
+  }
+}
