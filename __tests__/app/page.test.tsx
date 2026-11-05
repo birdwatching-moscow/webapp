@@ -21,6 +21,11 @@ describe('Home page', () => {
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
   })
 
+  it('renders the media section', async () => {
+    render(await Home())
+    expect(screen.getByTestId('home-media')).toBeInTheDocument()
+  })
+
   it('does not render Админка link', async () => {
     const { container } = render(await Home())
     expect(container.querySelector('a[href="/admin/walks"]')).toBeNull()
