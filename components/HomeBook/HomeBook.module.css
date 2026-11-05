@@ -1,0 +1,107 @@
+/* ─── Mobile ──────────────────────────────────────────────────────────────── */
+
+.section {
+  width: 100%;
+  padding-top: 64px;
+  padding-inline: var(--page-gutter);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/*
+ * On mobile .left is flattened so its children become direct flex children of
+ * .section. We then use `order` to insert the image between title and the
+ * rest of the text: title(1) → image(2) → description(3) → button(4).
+ */
+.left {
+  display: contents;
+}
+
+.title       { order: 1; }
+.imageWrapper { order: 2; }
+.description { order: 3; margin: 0; }
+.cta         { order: 4; }
+
+.imageWrapper {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.image {
+  object-fit: cover;
+}
+
+/* Info icon — bottom-right corner */
+.infoIcon {
+  position: absolute;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  composes: flex-center from global;
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: var(--z-index-float);
+  transition: opacity 0.2s ease;
+}
+
+/* Caption — hidden by default, appears on icon hover */
+.caption {
+  position: absolute;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  max-width: 60%;
+  text-align: right;
+  text-transform: uppercase;
+  margin: 0;
+  padding: 0;
+  color: var(--color-primary-foreground);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: var(--z-index-raised);
+}
+
+.imageWrapper:has(.infoIcon:hover) .infoIcon {
+  opacity: 0;
+}
+
+.imageWrapper:has(.infoIcon:hover) .caption {
+  opacity: 1;
+}
+
+.description {
+  color: var(--color-muted-foreground);
+}
+
+/* ─── Desktop (min-width: 1248px) ─────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .section {
+    flex-direction: row;
+    align-items: center;
+    gap: 32px;
+    padding-top: 96px;
+  }
+
+  /* Restore .left as a real flex column; children revert to normal flow */
+  .left {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    flex: 1;
+  }
+
+  /* Reset order — layout is driven by DOM order inside .left */
+  .title       { order: unset; }
+  .description { order: unset; }
+  .cta         { order: unset; max-width: 406px; }
+
+  .imageWrapper {
+    flex: 1;
+    order: unset;
+  }
+}
