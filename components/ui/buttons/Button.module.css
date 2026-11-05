@@ -34,10 +34,16 @@
 }
 
 .secondary {
-  background: transparent;
-  color: var(--color-primary);
-  border: var(--stroke-default) solid var(--color-primary);
-  padding: 0 var(--space-5);
+  /* Override these custom properties to theme this variant without !important */
+  --_secondary-color:          var(--color-primary);
+  --_secondary-border-color:   var(--_secondary-color);
+  --_secondary-bg:             transparent;
+  --_secondary-padding-inline: var(--space-5);
+
+  background: var(--_secondary-bg);
+  color: var(--_secondary-color);
+  border: var(--stroke-default) solid var(--_secondary-border-color);
+  padding: 0 var(--_secondary-padding-inline);
 }
 
 .secondary:hover:not(:disabled):not([aria-disabled='true']) {
