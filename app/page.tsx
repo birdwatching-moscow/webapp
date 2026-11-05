@@ -6,6 +6,7 @@ import { HomeExpeditions } from '@/components/HomeExpeditions/HomeExpeditions'
 import { HomePrivate } from '@/components/HomePrivate/HomePrivate'
 import { HomeMedia } from '@/components/HomeMedia/HomeMedia'
 import { HomePartners } from '@/components/HomePartners/HomePartners'
+import { HomeBook } from '@/components/HomeBook/HomeBook'
 import { getActiveWalks } from '@/lib/walks'
 import { getActiveExpeditions } from '@/lib/expeditions'
 
@@ -25,6 +26,7 @@ export default async function Home() {
       <HomePrivate />
       <HomeMedia />
       <HomePartners />
+      <HomeBook />
     </>
   )
 }

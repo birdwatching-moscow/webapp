@@ -1,0 +1,48 @@
+/* ─── Mobile ──────────────────────────────────────────────────────────────── */
+
+.section {
+  width: 100%;
+  padding-top: 64px;
+  padding-inline: var(--page-gutter);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* DOM order: title → imageWrapper → description → cta
+   On mobile this is the natural reading order. */
+
+.imageWrapper {
+  position: relative;
+  aspect-ratio: 328 / 246;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.image {
+  object-fit: cover;
+}
+
+.description {
+  color: var(--color-muted-foreground);
+  margin: 0;
+}
+
+/* ─── Desktop (min-width: 1248px) ─────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  /* Switch to 2-column grid; image moves to right column via explicit placement */
+  .section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 1fr auto;
+    column-gap: 32px;
+    row-gap: 24px;
+    padding-top: 96px;
+  }
+
+  .title       { grid-column: 1; grid-row: 1; }
+  .imageWrapper { grid-column: 2; grid-row: 1 / 4; aspect-ratio: unset; }
+  .description { grid-column: 1; grid-row: 2; }
+  .cta         { grid-column: 1; grid-row: 3; align-self: start; max-width: 406px; }
+}
