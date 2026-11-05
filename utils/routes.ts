@@ -9,6 +9,7 @@ export const ROUTES = {
   privateWalks:         '/private-walks',
   privateLectures:      '/private-lectures',
   privateConsultations: '/private-consultations',
+  media:         '/media',
   book:          '/book',
   about:         '/about',
   faq:           '/faq',

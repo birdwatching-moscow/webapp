@@ -1,19 +1,44 @@
 .root {
-  composes: flex-center from global;
-  flex-direction: column;
   width: 100%;
-  height: 100%;
-  padding: var(--space-7) var(--space-4);
+  display: flex;
+  flex-direction: column;
   border: var(--stroke-default) solid var(--color-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  transition: border-color 150ms ease;
+}
+
+.linked:hover {
+  border-color: var(--color-primary-hover);
+}
+
+.content {
+  composes: flex-center from global;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-7) var(--space-4);
+  color: inherit;
+  text-decoration: none;
+}
+
+.content:focus-visible {
+  outline: var(--stroke-focus) solid var(--color-primary);
+  outline-offset: -4px;
+  border-radius: var(--radius-lg);
 }
 
 .imageContainer {
+  position: relative;
   width: 247px;
+  max-width: 100%;
   height: var(--size-control-header-mobile);
   overflow: hidden;
   flex-shrink: 0;
+}
+
+.image {
+  object-fit: contain;
 }
 
 .text {
@@ -25,6 +50,7 @@
 
 .title {
   text-align: center;
+  color: var(--color-foreground);
 }
 
 .subtitle {

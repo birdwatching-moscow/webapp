@@ -1,0 +1,37 @@
+/* ─── Mobile ──────────────────────────────────────────────────────────────── */
+
+.section {
+  width: 100%;
+  padding-top: var(--space-8);
+  padding-inline: var(--page-gutter);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ─── Desktop (min-width: 1248px) ─────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .section {
+    padding-top: var(--space-10);
+  }
+
+  .cards {
+    flex-direction: row;
+  }
+
+  .cards > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .moreButton {
+    max-width: 406px;
+  }
+}
