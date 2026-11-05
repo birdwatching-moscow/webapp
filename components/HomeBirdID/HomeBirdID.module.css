@@ -1,0 +1,19 @@
+/* ─── Mobile ──────────────────────────────────────────────────────────────── */
+
+.section {
+  width: 100%;
+  padding-top: 64px;
+  padding-inline: var(--page-gutter);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ─── Desktop (min-width: 1248px) ─────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .section {
+    padding-top: 96px;
+    gap: 48px;
+  }
+}
