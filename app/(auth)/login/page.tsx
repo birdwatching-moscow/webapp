@@ -267,7 +267,7 @@ function LoginCodeForm() {
             <p className={styles.subtitle}>
               {isRegistered
                 ? 'Регистрация прошла успешно. Войдите в аккаунт.'
-                : 'Введите почту, чтобы получить код для входа'}
+                : 'Введите почту, чтобы получить код для входа.'}
             </p>
           </div>
 
@@ -278,17 +278,19 @@ function LoginCodeForm() {
               id="email"
               name="email"
               type="email"
-              label={C.emailField}
+              placeholder="Ваш email"
+              aria-label={C.emailField}
               value={emailInput}
               onChange={e => setEmailInput(e.target.value)}
               autoComplete="email"
               required
+              className={styles.emailInput}
             />
             <div className={styles.actions}>
-              <Button type="submit" fullWidth loading={loading} disabled={loading}>
+              <Button type="submit" size="lg" fullWidth loading={loading} disabled={loading}>
                 Получить код
               </Button>
-              <Button as="a" href={ROUTES.register} variant="secondary" fullWidth>
+              <Button as="a" href={ROUTES.register} variant="secondary" size="lg" fullWidth>
                 Зарегистрироваться
               </Button>
             </div>
@@ -300,7 +302,7 @@ function LoginCodeForm() {
         <>
           <div className={styles.header}>
             <h1 className={styles.title}>Введите код</h1>
-            <p className={styles.subtitle}>
+            <p className={styles.subtitleCode}>
               Если вы зарегистрированы, на {email} придёт код
             </p>
           </div>
@@ -334,7 +336,8 @@ function LoginCodeForm() {
 
           <div className={styles.actions}>
             <Button
-              variant="secondary"
+              variant="outline"
+              size="lg"
               type="button"
               fullWidth
               onClick={goBackToEmail}

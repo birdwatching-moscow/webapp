@@ -51,6 +51,18 @@
   color: var(--color-primary-foreground);
 }
 
+.outline {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  border: var(--stroke-default) solid var(--color-primary);
+  padding: 0 var(--space-5);
+}
+
+.outline:hover:not(:disabled):not([aria-disabled='true']) {
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
 .ghost {
   background: transparent;
   color: var(--color-primary);
@@ -96,4 +108,9 @@
   opacity: var(--opacity-disabled);
   cursor: not-allowed;
   pointer-events: none;
+}
+
+.button[aria-busy='true'] {
+  opacity: 1;
+  cursor: wait;
 }

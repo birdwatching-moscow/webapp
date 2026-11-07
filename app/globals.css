@@ -50,6 +50,10 @@ select {
   font: inherit;
 }
 
+:is(input, textarea):focus::placeholder {
+  opacity: 0;
+}
+
 img,
 svg {
   display: block;
