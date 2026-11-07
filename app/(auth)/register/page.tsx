@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 import {
   HTTP_METHOD,
   JSON_HEADERS,
-  HTTP_STATUS_CONFLICT,
   LOGIN_CODE_PROVIDER_ID,
 } from '@/lib/constants'
 import { useAuthForm } from '@/hooks/useAuthForm'
@@ -15,8 +14,10 @@ import { AUTH_ERRORS } from '@/lib/auth-errors'
 import { AUTH_LABELS } from '@/lib/auth-labels'
 import { Button } from '@/components/ui/buttons/Button'
 import { Input } from '@/components/ui/input/Input'
-import { OtpInput } from '@/components/ui/otp/OtpInput'
-import styles from './register.module.css'
+import { OtpStep } from '@/components/auth/OtpStep'
+import { FormError } from '@/components/ui/form-error/FormError'
+import { mapOtpVerifyError } from '@/lib/auth/mapOtpVerifyError'
+import styles from '../auth-page.module.css'
 
 const L = AUTH_LABELS.register
 const C = AUTH_LABELS.common
@@ -37,9 +38,9 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (step === 'code') otp.digitRefs.current[0]?.focus()
-  }, [step])
+  }, [step, otp.digitRefs])
 
-  async function handleFormSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleFormSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
     setFieldErrors({})
 
@@ -50,14 +51,11 @@ export default function RegisterPage() {
         body: JSON.stringify({ email: emailInput, name: nameInput }),
       })
 
-      if (res.status === HTTP_STATUS_CONFLICT) {
-        setError(AUTH_ERRORS.emailTaken)
-        return
-      }
-
       if (!res.ok) {
         const data = await res.json().catch(() => null)
-        if (data?.issues) {
+        if (data?.error === 'code_rate_limited') {
+          setError(AUTH_ERRORS.codeTooFrequent)
+        } else if (data?.issues) {
           setFieldErrors(data.issues)
         } else {
           setError(AUTH_ERRORS.generic)
@@ -82,8 +80,10 @@ export default function RegisterPage() {
         body: JSON.stringify({ email, code, name }),
       })
 
+      const verifyData = await verifyRes.json().catch(() => ({})) as { error?: string }
+
       if (!verifyRes.ok) {
-        setError(AUTH_ERRORS.invalidCode)
+        setError(mapOtpVerifyError(verifyData.error))
         otp.reset({ focus: true })
         return
       }
@@ -117,7 +117,7 @@ export default function RegisterPage() {
             </p>
           </div>
 
-          {error && <p role="alert" className={styles.errorMsg}>{error}</p>}
+          <FormError message={error} />
 
           <form onSubmit={handleFormSubmit} className={styles.form}>
             <Input
@@ -156,43 +156,14 @@ export default function RegisterPage() {
       )}
 
       {step === 'code' && (
-        <>
-          <div className={styles.header}>
-            <h1 className={styles.title}>{L.confirmTitle}</h1>
-            <p className={styles.subtitleCode}>
-              Код подтверждения отправлен на {email}
-            </p>
-          </div>
-
-          {error && <p role="alert" className={styles.errorMsg}>{error}</p>}
-
-          <OtpInput
-            digits={otp.digits}
-            digitRefs={otp.digitRefs}
-            hasError={Boolean(error)}
-            disabled={loading}
-            onChange={otp.handleChange}
-            onKeyDown={otp.handleKeyDown}
-            onPaste={otp.handlePaste}
-          />
-
-          <p className={styles.hint}>
-            Код действует ограниченное время. Проверьте «Спам» и «Промоакции».
-          </p>
-
-          <div className={styles.actions}>
-            <Button
-              variant="outline"
-              size="lg"
-              type="button"
-              fullWidth
-              onClick={goBackToForm}
-              disabled={loading}
-            >
-              Назад
-            </Button>
-          </div>
-        </>
+        <OtpStep
+          title={L.confirmTitle}
+          subtitle={`Код подтверждения отправлен на ${email}`}
+          otp={otp}
+          error={error}
+          loading={loading}
+          onBack={goBackToForm}
+        />
       )}
 
     </main>

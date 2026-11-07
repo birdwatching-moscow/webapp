@@ -22,9 +22,11 @@ import { useOtpInput } from '@/hooks/useOtpInput'
 import { AUTH_ERRORS } from '@/lib/auth-errors'
 import { Button } from '@/components/ui/buttons/Button'
 import { Input } from '@/components/ui/input/Input'
-import { OtpInput } from '@/components/ui/otp/OtpInput'
+import { FormError } from '@/components/ui/form-error/FormError'
+import { OtpStep } from '@/components/auth/OtpStep'
 import { AUTH_LABELS } from '@/lib/auth-labels'
-import styles from './login.module.css'
+import { mapOtpVerifyError } from '@/lib/auth/mapOtpVerifyError'
+import styles from '../auth-page.module.css'
 
 const LA = AUTH_LABELS.adminPassword
 const ASP = AUTH_LABELS.adminSetPassword
@@ -42,6 +44,7 @@ function LoginCodeForm() {
   const [step, setStep] = useState<LoginStep>('email')
   const [email, setEmail] = useState('')
   const [emailInput, setEmailInput] = useState('')
+  const [emailError, setEmailError] = useState('')
   const [csrfToken, setCsrfToken] = useState('')
   const [challengeToken, setChallengeToken] = useState('')
   const passwordInputRef = useRef<HTMLInputElement>(null)
@@ -52,7 +55,7 @@ function LoginCodeForm() {
 
   useEffect(() => {
     if (step === 'code') otp.digitRefs.current[0]?.focus()
-  }, [step])
+  }, [step, otp.digitRefs])
 
   useEffect(() => {
     if (step === 'password') passwordInputRef.current?.focus()
@@ -69,17 +72,30 @@ function LoginCodeForm() {
         headers: JSON_HEADERS,
         body: JSON.stringify({ email: address }),
       })
-      let csrfData: { csrfToken?: string } = {}
-      try { csrfData = await res.json() } catch { /* no body */ }
-      setCsrfToken(csrfData.csrfToken ?? '')
+      let resData: { csrfToken?: string; error?: string } = {}
+      try { resData = await res.json() } catch { /* no body */ }
+      if (!res.ok) {
+        setError(resData.error === 'code_rate_limited' ? AUTH_ERRORS.codeTooFrequent : AUTH_ERRORS.generic)
+        return
+      }
+      setCsrfToken(resData.csrfToken ?? '')
       setEmail(address)
       otp.reset()
       setStep('code')
     })
   }
 
-  async function handleEmailSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleEmailSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
+    if (!emailInput.trim()) {
+      setEmailError('Введите почту, чтобы продолжить')
+      return
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.trim())) {
+      setEmailError('Введите почту в формате name@example.ru')
+      return
+    }
+    setEmailError('')
     await requestCode(emailInput)
   }
 
@@ -93,7 +109,7 @@ function LoginCodeForm() {
       const verifyData = await verifyRes.json()
 
       if (!verifyRes.ok) {
-        setError(AUTH_ERRORS.invalidCode)
+        setError(mapOtpVerifyError(verifyData.error))
         otp.reset({ focus: true })
         return
       }
@@ -128,7 +144,7 @@ function LoginCodeForm() {
     setError(null)
   }
 
-  async function handlePasswordSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handlePasswordSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
     const form = new FormData(e.currentTarget)
     const password = String(form.get('password') ?? '')
@@ -153,7 +169,7 @@ function LoginCodeForm() {
     })
   }
 
-  async function handleSetPasswordSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSetPasswordSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
     const form = new FormData(e.currentTarget)
     const password = String(form.get('newPassword') ?? '')
@@ -209,9 +225,9 @@ function LoginCodeForm() {
             </p>
           </div>
 
-          {error && <p role="alert" className={styles.errorMsg}>{error}</p>}
+          <FormError message={error} />
 
-          <form onSubmit={handleEmailSubmit} className={styles.form}>
+          <form onSubmit={handleEmailSubmit} className={styles.form} noValidate>
             <Input
               id="email"
               name="email"
@@ -219,10 +235,11 @@ function LoginCodeForm() {
               placeholder="Ваш email"
               aria-label={C.emailField}
               value={emailInput}
-              onChange={e => setEmailInput(e.target.value)}
+              onChange={e => { setEmailInput(e.target.value); setEmailError('') }}
               autoComplete="email"
               required
-              className={styles.emailInput}
+              error={emailError}
+              className={styles.fieldInput}
             />
             <div className={styles.actions}>
               <Button type="submit" size="lg" fullWidth loading={loading} disabled={loading}>
@@ -237,43 +254,14 @@ function LoginCodeForm() {
       )}
 
       {step === 'code' && (
-        <>
-          <div className={styles.header}>
-            <h1 className={styles.title}>Введите код</h1>
-            <p className={styles.subtitleCode}>
-              Если вы зарегистрированы, на {email} придёт код
-            </p>
-          </div>
-
-          {error && <p role="alert" className={styles.errorMsg}>{error}</p>}
-
-          <OtpInput
-            digits={otp.digits}
-            digitRefs={otp.digitRefs}
-            hasError={Boolean(error)}
-            disabled={loading}
-            onChange={otp.handleChange}
-            onKeyDown={otp.handleKeyDown}
-            onPaste={otp.handlePaste}
-          />
-
-          <p className={styles.hint}>
-            Код действует ограниченное время. Проверьте «Спам» и «Промоакции».
-          </p>
-
-          <div className={styles.actions}>
-            <Button
-              variant="outline"
-              size="lg"
-              type="button"
-              fullWidth
-              onClick={goBackToEmail}
-              disabled={loading}
-            >
-              Назад
-            </Button>
-          </div>
-        </>
+        <OtpStep
+          title="Введите код"
+          subtitle={`Если вы зарегистрированы, на ${email} придёт код`}
+          otp={otp}
+          error={error}
+          loading={loading}
+          onBack={goBackToEmail}
+        />
       )}
 
       {step === 'password' && (
@@ -282,7 +270,7 @@ function LoginCodeForm() {
             <h1 className={styles.title}>{LA.title}</h1>
           </div>
 
-          {error && <p role="alert" className={styles.errorMsg}>{error}</p>}
+          <FormError message={error} />
 
           <form onSubmit={handlePasswordSubmit} className={styles.form}>
             <div>
@@ -312,7 +300,7 @@ function LoginCodeForm() {
             <h1 className={styles.title}>{ASP.title}</h1>
           </div>
 
-          {error && <p role="alert" className={styles.errorMsg}>{error}</p>}
+          <FormError message={error} />
 
           <form onSubmit={handleSetPasswordSubmit} className={styles.form}>
             <div>

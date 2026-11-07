@@ -1,0 +1,27 @@
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.title {
+  composes: text-h1 from global;
+}
+
+.subtitle {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--color-muted-foreground);
+}
+
+.hint {
+  composes: text-body from global;
+  color: var(--color-muted-foreground);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}

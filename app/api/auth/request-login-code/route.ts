@@ -5,7 +5,7 @@ import { generateLoginCode, hashLoginCode } from '@/lib/login-code'
 import { sendMail } from '@/lib/mail'
 import { LOGIN_CODE_TTL_MS, HTTP_STATUS_TOO_MANY_REQUESTS } from '@/lib/constants'
 import { validateRequest } from '@/lib/api/validate'
-import { checkRateLimit } from '@/lib/rateLimit'
+import { checkRateLimit, checkEmailCodeRateLimit } from '@/lib/rateLimit'
 import { generateLoginCsrfToken } from '@/lib/auth/csrf'
 import { trackEmailRequestPerIp } from '@/lib/monitoring'
 
@@ -33,6 +33,14 @@ export async function POST(req: Request) {
   }
 
   const { email } = result.data
+
+  const emailRateLimit = checkEmailCodeRateLimit(email)
+  if (!emailRateLimit.allowed) {
+    return NextResponse.json(
+      { error: 'code_rate_limited', retryAfterSeconds: emailRateLimit.retryAfterSeconds },
+      { status: HTTP_STATUS_TOO_MANY_REQUESTS, headers: { 'Retry-After': String(emailRateLimit.retryAfterSeconds) } }
+    )
+  }
 
   trackEmailRequestPerIp(ip, email).catch((err) =>
     console.error('[monitoring] trackEmailRequestPerIp failed', err)

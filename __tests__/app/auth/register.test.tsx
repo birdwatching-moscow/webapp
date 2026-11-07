@@ -6,7 +6,6 @@ import { AUTH_LABELS } from '@/lib/auth-labels'
 import {
   HTTP_METHOD,
   JSON_HEADERS,
-  HTTP_STATUS_CONFLICT,
   HTTP_STATUS_INTERNAL_SERVER_ERROR,
   LOGIN_CODE_LENGTH,
 } from '@/lib/constants'
@@ -78,17 +77,6 @@ describe('RegisterPage — success', () => {
 })
 
 describe('RegisterPage — errors', () => {
-  it('shows email-taken error on 409', async () => {
-    ;(fetch as Mock).mockResolvedValue({ ok: false, status: HTTP_STATUS_CONFLICT, json: async () => ({}) })
-    render(<RegisterPage />)
-    fireEvent.change(screen.getByLabelText(L.nameField), { target: { value: 'Иван' } })
-    fireEvent.change(screen.getByLabelText(C.emailField), { target: { value: 'ivan@test.com' } })
-    fireEvent.click(screen.getByRole('button', { name: SUBMIT_BTN }))
-    await waitFor(() =>
-      expect(screen.getByRole('alert')).toHaveTextContent(AUTH_ERRORS.emailTaken)
-    )
-  })
-
   it('shows generic error on 500', async () => {
     ;(fetch as Mock).mockResolvedValue({ ok: false, status: HTTP_STATUS_INTERNAL_SERVER_ERROR, json: async () => ({}) })
     render(<RegisterPage />)

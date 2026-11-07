@@ -33,7 +33,7 @@ export const AuthFlow = ({ flow, email, onFlowChange, onSuccess }: AuthFlowProps
   const [otpError, setOtpError] = useState<OtpError>('idle')
   const [attempts, setAttempts] = useState(0)
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.SyntheticEvent) => {
     e.preventDefault()
     setLoading(true)
     setFormError(null)
@@ -47,15 +47,14 @@ export const AuthFlow = ({ flow, email, onFlowChange, onSuccess }: AuthFlowProps
     }
   }
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.SyntheticEvent) => {
     e.preventDefault()
     setLoading(true)
     setFormError(null)
     try {
       await register({ name: nameInput, email: emailInput })
     } catch (err: unknown) {
-      const status = (err as { response?: { status?: number } }).response?.status
-      setFormError(status === 409 ? AUTH_ERRORS.emailTaken : AUTH_ERRORS.network)
+      setFormError(AUTH_ERRORS.network)
       setLoading(false)
       return
     }
@@ -69,7 +68,7 @@ export const AuthFlow = ({ flow, email, onFlowChange, onSuccess }: AuthFlowProps
     }
   }
 
-  const handleOtp = async (e: React.FormEvent) => {
+  const handleOtp = async (e: React.SyntheticEvent) => {
     e.preventDefault()
     setLoading(true)
     try {
