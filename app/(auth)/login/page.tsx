@@ -14,14 +14,15 @@ import {
   JSON_HEADERS,
   LOGIN_CODE_PROVIDER_ID,
   ADMIN_2FA_PROVIDER_ID,
-  LOGIN_CODE_LENGTH,
   PASSWORD_MIN_LENGTH,
 } from '@/lib/constants'
 import { AUTH_ERROR_ACCOUNT_BLOCKED, AUTH_ERROR_PASSWORD_RESET_REQUIRED } from '@/lib/auth/errors'
 import { useAuthForm } from '@/hooks/useAuthForm'
+import { useOtpInput } from '@/hooks/useOtpInput'
 import { AUTH_ERRORS } from '@/lib/auth-errors'
 import { Button } from '@/components/ui/buttons/Button'
 import { Input } from '@/components/ui/input/Input'
+import { OtpInput } from '@/components/ui/otp/OtpInput'
 import { AUTH_LABELS } from '@/lib/auth-labels'
 import styles from './login.module.css'
 
@@ -42,16 +43,15 @@ function LoginCodeForm() {
   const [email, setEmail] = useState('')
   const [emailInput, setEmailInput] = useState('')
   const [csrfToken, setCsrfToken] = useState('')
-  const [digits, setDigits] = useState<string[]>(Array(LOGIN_CODE_LENGTH).fill(''))
-  const digitRefs = useRef<Array<HTMLInputElement | null>>(Array(LOGIN_CODE_LENGTH).fill(null))
   const [challengeToken, setChallengeToken] = useState('')
   const passwordInputRef = useRef<HTMLInputElement>(null)
   const newPasswordInputRef = useRef<HTMLInputElement>(null)
+  const otp = useOtpInput(submitCode)
 
   const isRegistered = searchParams.get(REGISTERED_PARAM) === '1'
 
   useEffect(() => {
-    if (step === 'code') digitRefs.current[0]?.focus()
+    if (step === 'code') otp.digitRefs.current[0]?.focus()
   }, [step])
 
   useEffect(() => {
@@ -73,7 +73,7 @@ function LoginCodeForm() {
       try { csrfData = await res.json() } catch { /* no body */ }
       setCsrfToken(csrfData.csrfToken ?? '')
       setEmail(address)
-      setDigits(Array(LOGIN_CODE_LENGTH).fill(''))
+      otp.reset()
       setStep('code')
     })
   }
@@ -94,8 +94,7 @@ function LoginCodeForm() {
 
       if (!verifyRes.ok) {
         setError(AUTH_ERRORS.invalidCode)
-        setDigits(Array(LOGIN_CODE_LENGTH).fill(''))
-        setTimeout(() => digitRefs.current[0]?.focus(), 0)
+        otp.reset({ focus: true })
         return
       }
 
@@ -123,70 +122,9 @@ function LoginCodeForm() {
     })
   }
 
-  function handleDigitChange(index: number, value: string) {
-    const cleaned = value.replace(/\D/g, '')
-
-    if (cleaned.length > 1) {
-      const newDigits = [...digits]
-      for (let i = 0; i < cleaned.length && index + i < LOGIN_CODE_LENGTH; i++) {
-        newDigits[index + i] = cleaned[i]
-      }
-      setDigits(newDigits)
-      const nextFocus = Math.min(index + cleaned.length, LOGIN_CODE_LENGTH - 1)
-      digitRefs.current[nextFocus]?.focus()
-      if (newDigits.every(d => d !== '')) {
-        submitCode(newDigits.join(''))
-      }
-      return
-    }
-
-    const digit = cleaned.slice(0, 1)
-    const newDigits = [...digits]
-    newDigits[index] = digit
-    setDigits(newDigits)
-
-    if (digit && index < LOGIN_CODE_LENGTH - 1) {
-      digitRefs.current[index + 1]?.focus()
-    }
-
-    if (newDigits.every(d => d !== '') && digit) {
-      submitCode(newDigits.join(''))
-    }
-  }
-
-  function handleDigitKeyDown(index: number, e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Backspace' && !digits[index] && index > 0) {
-      digitRefs.current[index - 1]?.focus()
-    }
-    if (e.key === 'ArrowLeft' && index > 0) {
-      e.preventDefault()
-      digitRefs.current[index - 1]?.focus()
-    }
-    if (e.key === 'ArrowRight' && index < LOGIN_CODE_LENGTH - 1) {
-      e.preventDefault()
-      digitRefs.current[index + 1]?.focus()
-    }
-  }
-
-  function handleDigitPaste(e: React.ClipboardEvent<HTMLInputElement>) {
-    e.preventDefault()
-    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, LOGIN_CODE_LENGTH)
-    if (!pasted) return
-    const newDigits = Array(LOGIN_CODE_LENGTH).fill('')
-    for (let i = 0; i < pasted.length; i++) {
-      newDigits[i] = pasted[i]
-    }
-    setDigits(newDigits)
-    const nextFocus = Math.min(pasted.length, LOGIN_CODE_LENGTH - 1)
-    digitRefs.current[nextFocus]?.focus()
-    if (newDigits.every(d => d !== '')) {
-      submitCode(newDigits.join(''))
-    }
-  }
-
   function goBackToEmail() {
     setStep('email')
-    setDigits(Array(LOGIN_CODE_LENGTH).fill(''))
+    otp.reset()
     setError(null)
   }
 
@@ -309,26 +247,15 @@ function LoginCodeForm() {
 
           {error && <p role="alert" className={styles.errorMsg}>{error}</p>}
 
-          <div className={styles.otpRow} role="group" aria-label="Код подтверждения">
-            {Array.from({ length: LOGIN_CODE_LENGTH }).map((_, i) => (
-              <input
-                key={i}
-                ref={el => { digitRefs.current[i] = el }}
-                className={[styles.otpBox, error ? styles.otpBoxError : ''].filter(Boolean).join(' ')}
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={LOGIN_CODE_LENGTH}
-                value={digits[i]}
-                onChange={e => handleDigitChange(i, e.target.value)}
-                onKeyDown={e => handleDigitKeyDown(i, e)}
-                onPaste={handleDigitPaste}
-                autoComplete={i === 0 ? 'one-time-code' : 'off'}
-                disabled={loading}
-                aria-label={`Цифра ${i + 1} из ${LOGIN_CODE_LENGTH}`}
-              />
-            ))}
-          </div>
+          <OtpInput
+            digits={otp.digits}
+            digitRefs={otp.digitRefs}
+            hasError={Boolean(error)}
+            disabled={loading}
+            onChange={otp.handleChange}
+            onKeyDown={otp.handleKeyDown}
+            onPaste={otp.handlePaste}
+          />
 
           <p className={styles.hint}>
             Код действует ограниченное время. Проверьте «Спам» и «Промоакции».
