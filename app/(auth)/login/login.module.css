@@ -1,0 +1,108 @@
+.wrap {
+  width: 100%;
+  max-width: calc(var(--size-col-3) + 2 * var(--space-7));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-7);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.title {
+  composes: text-h1 from global;
+}
+
+.subtitle {
+  font-size: var(--font-size-lg);
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--color-muted-foreground);
+}
+
+.subtitleCode {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--color-muted-foreground);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: var(--space-4);
+}
+
+.emailInput :global(input) {
+  padding: var(--space-3) var(--space-4);
+}
+
+.emailInput :global(input)::placeholder {
+  font-size: var(--font-size-lg);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.otpRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.otpBox {
+  width: 48px;
+  height: var(--size-control-input);
+  padding: var(--space-3) 0;
+  border: var(--stroke-default) solid var(--color-input-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  font-size: var(--font-size-2xl);
+  text-align: center;
+  outline: none;
+  transition: border-color 0.15s;
+  cursor: text;
+}
+
+.otpBox:focus {
+  border-color: var(--color-primary);
+  border-width: var(--stroke-focus);
+}
+
+.otpBox:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.otpBoxError {
+  border-color: var(--color-error);
+}
+
+.otpBoxError:focus {
+  border-color: var(--color-error);
+}
+
+.hint {
+  composes: text-body from global;
+  color: var(--color-muted-foreground);
+}
+
+.errorMsg {
+  composes: text-label from global;
+  color: var(--color-error);
+}
