@@ -1,0 +1,87 @@
+.wrap {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.title {
+  composes: text-h1 from global;
+}
+
+.subtitle {
+  font-size: var(--font-size-md);
+  line-height: 1.5;
+  color: var(--color-foreground);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.otpRow {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.otpBox {
+  flex: 1;
+  min-width: 0;
+  height: var(--size-control-input);
+  border: var(--stroke-default) solid var(--color-input-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  font-size: var(--font-size-2xl);
+  text-align: center;
+  outline: none;
+  transition: border-color 0.15s;
+  cursor: text;
+}
+
+.otpBox:focus {
+  border-color: var(--color-primary);
+  border-width: var(--stroke-focus);
+}
+
+.otpBox:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.otpBoxError {
+  border-color: var(--color-error);
+}
+
+.otpBoxError:focus {
+  border-color: var(--color-error);
+}
+
+.hint {
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  color: var(--color-muted-foreground);
+}
+
+.errorMsg {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-error);
+}

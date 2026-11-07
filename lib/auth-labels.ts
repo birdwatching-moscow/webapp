@@ -1,6 +1,6 @@
 export const AUTH_LABELS = {
   common: {
-    emailField:   'Email',
+    emailField:   'Почта',
     passwordField: 'Пароль',
     backToLogin:  'Вернуться ко входу',
   },

@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import LoginPage from '@/app/(auth)/login/page'
 import { AUTH_ERRORS } from '@/lib/auth-errors'
 import { AUTH_ERROR_ACCOUNT_BLOCKED, AUTH_ERROR_PASSWORD_RESET_REQUIRED } from '@/lib/auth/errors'
-import { ADMIN_2FA_PROVIDER_ID, LOGIN_CODE_PROVIDER_ID } from '@/lib/constants'
+import { ADMIN_2FA_PROVIDER_ID, LOGIN_CODE_PROVIDER_ID, LOGIN_CODE_LENGTH } from '@/lib/constants'
 import { AUTH_LABELS } from '@/lib/auth-labels'
 
 const { pushMock, refreshMock, searchParamsGetMock, signInMock } = vi.hoisted(() => ({
@@ -26,6 +26,18 @@ const LC = AUTH_LABELS.loginCode
 const LA = AUTH_LABELS.adminPassword
 const ASP = AUTH_LABELS.adminSetPassword
 
+const TEST_CODE = '1' .repeat(LOGIN_CODE_LENGTH)
+
+/** Fill each OTP digit box in order, triggering auto-submit on the last. */
+function fillOtpCode(code: string) {
+  for (let i = 0; i < LOGIN_CODE_LENGTH; i++) {
+    fireEvent.change(
+      screen.getByLabelText(`Цифра ${i + 1} из ${LOGIN_CODE_LENGTH}`),
+      { target: { value: code[i] ?? '' } }
+    )
+  }
+}
+
 // Default fetch mock: request-login-code (step 1) passes through ok;
 // verify-login-code (step 2) returns { next: 'session' } for the USER path.
 function stubFetchForUser() {
@@ -33,7 +45,7 @@ function stubFetchForUser() {
     if (String(url).includes('verify-login-code')) {
       return Promise.resolve({ ok: true, json: async () => ({ next: 'session' }) })
     }
-    return Promise.resolve({ ok: true })
+    return Promise.resolve({ ok: true, json: async () => ({}) })
   }))
 }
 
@@ -42,7 +54,7 @@ function stubFetchForAdmin(challengeToken = 'tok123') {
     if (String(url).includes('verify-login-code')) {
       return Promise.resolve({ ok: true, json: async () => ({ next: 'password', challengeToken }) })
     }
-    return Promise.resolve({ ok: true })
+    return Promise.resolve({ ok: true, json: async () => ({}) })
   }))
 }
 
@@ -60,7 +72,7 @@ function stubFetchForAdminNoPassword(verifyChallengeToken = 'tok123', newChallen
         json: async () => ({ challengeToken: newChallengeToken }),
       })
     }
-    return Promise.resolve({ ok: true })
+    return Promise.resolve({ ok: true, json: async () => ({}) })
   }))
 }
 
@@ -96,22 +108,21 @@ describe('LoginPage — step 1 (email)', () => {
   })
 })
 
-// ── Step 2: code entry ──────────────────────────────────────────────────────
+// ── Step 2: OTP code entry ──────────────────────────────────────────────────
 
 async function submitEmail(email = 'user@test.com') {
   render(<LoginPage />)
   fireEvent.change(screen.getByLabelText(C.emailField), { target: { value: email } })
-  await waitFor(() => screen.getByRole('button', { name: LC.requestCode }))
   fireEvent.submit(screen.getByRole('button', { name: LC.requestCode }))
-  await waitFor(() => screen.getByLabelText(LC.codeField))
+  await waitFor(() => screen.getByLabelText(`Цифра 1 из ${LOGIN_CODE_LENGTH}`))
 }
 
-describe('LoginPage — step 2 (code entry)', () => {
+describe('LoginPage — step 2 (OTP code entry)', () => {
   beforeEach(stubFetchForUser)
 
-  it('shows code field and no email field after step-1 submit', async () => {
+  it('shows OTP boxes and hides email field after step-1 submit', async () => {
     await submitEmail()
-    expect(screen.getByLabelText(LC.codeField)).toBeDefined()
+    expect(screen.getByLabelText(`Цифра 1 из ${LOGIN_CODE_LENGTH}`)).toBeDefined()
     expect(screen.queryByLabelText(C.emailField)).toBeNull()
   })
 
@@ -123,12 +134,11 @@ describe('LoginPage — step 2 (code entry)', () => {
   it('calls signIn("login-code") with email and code when verify returns { next:"session" }', async () => {
     signInMock.mockResolvedValue({ error: null, code: null })
     await submitEmail('user@test.com')
-    fireEvent.change(screen.getByLabelText(LC.codeField), { target: { value: 'ABCD2F' } })
-    fireEvent.submit(screen.getByRole('button', { name: LC.verify }))
+    fillOtpCode(TEST_CODE)
     await waitFor(() =>
       expect(signInMock).toHaveBeenCalledWith(LOGIN_CODE_PROVIDER_ID, {
         email: 'user@test.com',
-        code: 'ABCD2F',
+        code: TEST_CODE,
         redirect: false,
       })
     )
@@ -137,8 +147,7 @@ describe('LoginPage — step 2 (code entry)', () => {
   it('redirects to "/" on successful USER login', async () => {
     signInMock.mockResolvedValue({ error: null, code: null })
     await submitEmail()
-    fireEvent.change(screen.getByLabelText(LC.codeField), { target: { value: 'ABCD2F' } })
-    fireEvent.submit(screen.getByRole('button', { name: LC.verify }))
+    fillOtpCode(TEST_CODE)
     await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/'))
   })
 })
@@ -148,18 +157,16 @@ describe('LoginPage — step 2 (code entry)', () => {
 describe('LoginPage — admin path: verify returns { next:"password" }', () => {
   beforeEach(() => stubFetchForAdmin())
 
-  it('shows password field and hides code field', async () => {
+  it('shows password field and hides OTP boxes', async () => {
     await submitEmail('admin@test.com')
-    fireEvent.change(screen.getByLabelText(LC.codeField), { target: { value: 'ABCD2F' } })
-    fireEvent.submit(screen.getByRole('button', { name: LC.verify }))
+    fillOtpCode(TEST_CODE)
     await waitFor(() => screen.getByLabelText(C.passwordField))
-    expect(screen.queryByLabelText(LC.codeField)).toBeNull()
+    expect(screen.queryByLabelText(`Цифра 1 из ${LOGIN_CODE_LENGTH}`)).toBeNull()
   })
 
   it('does NOT call signIn("login-code") when advancing to password step', async () => {
     await submitEmail('admin@test.com')
-    fireEvent.change(screen.getByLabelText(LC.codeField), { target: { value: 'ABCD2F' } })
-    fireEvent.submit(screen.getByRole('button', { name: LC.verify }))
+    fillOtpCode(TEST_CODE)
     await waitFor(() => screen.getByLabelText(C.passwordField))
     expect(signInMock).not.toHaveBeenCalled()
   })
@@ -170,8 +177,7 @@ describe('LoginPage — admin path: verify returns { next:"password" }', () => {
 async function advanceToPasswordStep(email = 'admin@test.com', challengeToken = 'tok123') {
   stubFetchForAdmin(challengeToken)
   await submitEmail(email)
-  fireEvent.change(screen.getByLabelText(LC.codeField), { target: { value: 'ABCD2F' } })
-  fireEvent.submit(screen.getByRole('button', { name: LC.verify }))
+  fillOtpCode(TEST_CODE)
   await waitFor(() => screen.getByLabelText(C.passwordField))
 }
 
@@ -235,25 +241,22 @@ describe('LoginPage — step 3 (admin password)', () => {
 describe('LoginPage — admin first login: verify returns { next:"set-password" }', () => {
   beforeEach(() => stubFetchForAdminNoPassword())
 
-  it('shows set-password step and hides code field', async () => {
+  it('shows set-password step and hides OTP boxes', async () => {
     await submitEmail('admin@test.com')
-    fireEvent.change(screen.getByLabelText(LC.codeField), { target: { value: 'ABCD2F' } })
-    fireEvent.submit(screen.getByRole('button', { name: LC.verify }))
+    fillOtpCode(TEST_CODE)
     await waitFor(() => screen.getByLabelText(ASP.passwordField))
-    expect(screen.queryByLabelText(LC.codeField)).toBeNull()
+    expect(screen.queryByLabelText(`Цифра 1 из ${LOGIN_CODE_LENGTH}`)).toBeNull()
   })
 
   it('also shows a confirm-password field', async () => {
     await submitEmail('admin@test.com')
-    fireEvent.change(screen.getByLabelText(LC.codeField), { target: { value: 'ABCD2F' } })
-    fireEvent.submit(screen.getByRole('button', { name: LC.verify }))
+    fillOtpCode(TEST_CODE)
     await waitFor(() => screen.getByLabelText(ASP.confirmField))
   })
 
   it('does NOT call signIn when advancing to set-password step', async () => {
     await submitEmail('admin@test.com')
-    fireEvent.change(screen.getByLabelText(LC.codeField), { target: { value: 'ABCD2F' } })
-    fireEvent.submit(screen.getByRole('button', { name: LC.verify }))
+    fillOtpCode(TEST_CODE)
     await waitFor(() => screen.getByLabelText(ASP.passwordField))
     expect(signInMock).not.toHaveBeenCalled()
   })
@@ -264,8 +267,7 @@ describe('LoginPage — admin first login: verify returns { next:"set-password" 
 async function advanceToSetPasswordStep(email = 'admin@test.com') {
   stubFetchForAdminNoPassword()
   await submitEmail(email)
-  fireEvent.change(screen.getByLabelText(LC.codeField), { target: { value: 'ABCD2F' } })
-  fireEvent.submit(screen.getByRole('button', { name: LC.verify }))
+  fillOtpCode(TEST_CODE)
   await waitFor(() => screen.getByLabelText(ASP.passwordField))
 }
 
@@ -337,8 +339,7 @@ describe('LoginPage — errors (step 2)', () => {
   it('CredentialsSignin error → AUTH_ERRORS.invalidCode', async () => {
     signInMock.mockResolvedValue({ error: 'CredentialsSignin', code: null })
     await submitEmail()
-    fireEvent.change(screen.getByLabelText(LC.codeField), { target: { value: 'WRONG1' } })
-    fireEvent.submit(screen.getByRole('button', { name: LC.verify }))
+    fillOtpCode(TEST_CODE)
     await waitFor(() =>
       expect(screen.getByRole('alert')).toHaveTextContent(AUTH_ERRORS.invalidCode)
     )
@@ -347,8 +348,7 @@ describe('LoginPage — errors (step 2)', () => {
   it('account_blocked code → AUTH_ERRORS.accountBlocked', async () => {
     signInMock.mockResolvedValue({ error: 'AccessDenied', code: AUTH_ERROR_ACCOUNT_BLOCKED })
     await submitEmail()
-    fireEvent.change(screen.getByLabelText(LC.codeField), { target: { value: 'ABCD2F' } })
-    fireEvent.submit(screen.getByRole('button', { name: LC.verify }))
+    fillOtpCode(TEST_CODE)
     await waitFor(() =>
       expect(screen.getByRole('alert')).toHaveTextContent(AUTH_ERRORS.accountBlocked)
     )
