@@ -6,6 +6,7 @@ const {
   generateLoginCodeMock,
   hashLoginCodeMock,
   checkRateLimitMock,
+  checkEmailCodeRateLimitMock,
   generateLoginCsrfTokenMock,
   trackEmailRequestPerIpMock,
 } = vi.hoisted(() => ({
@@ -17,13 +18,14 @@ const {
   generateLoginCodeMock: vi.fn().mockReturnValue('123456'),
   hashLoginCodeMock: vi.fn().mockReturnValue('a'.repeat(64)),
   checkRateLimitMock: vi.fn().mockResolvedValue({ allowed: true, retryAfterSeconds: 0 }),
+  checkEmailCodeRateLimitMock: vi.fn().mockReturnValue({ allowed: true, retryAfterSeconds: 0 }),
   generateLoginCsrfTokenMock: vi.fn().mockReturnValue('mock-csrf-token'),
   trackEmailRequestPerIpMock: vi.fn().mockResolvedValue(undefined),
 }))
 
 vi.mock('@/lib/prisma', () => ({ prisma: prismaMock }))
 vi.mock('@/lib/mail', () => ({ sendMail: sendMailMock }))
-vi.mock('@/lib/rateLimit', () => ({ checkRateLimit: checkRateLimitMock }))
+vi.mock('@/lib/rateLimit', () => ({ checkRateLimit: checkRateLimitMock, checkEmailCodeRateLimit: checkEmailCodeRateLimitMock }))
 vi.mock('@/lib/auth/csrf', () => ({ generateLoginCsrfToken: generateLoginCsrfTokenMock }))
 vi.mock('@/lib/monitoring', () => ({ trackEmailRequestPerIp: trackEmailRequestPerIpMock }))
 vi.mock('@/lib/login-code', () => ({

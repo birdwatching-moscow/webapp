@@ -6,7 +6,7 @@ import {
   POSTBOX_DEFAULT_FROM_NAME,
 } from '@/lib/constants'
 
-export type MailKind = 'welcome' | 'password-reset' | 'order-paid' | 'login-code'
+export type MailKind = 'welcome' | 'password-reset' | 'order-paid' | 'login-code' | 'already-registered'
 
 interface MailTemplate {
   subject: string
@@ -89,6 +89,23 @@ function loginCodeTemplate(data: Record<string, string>): MailTemplate {
   }
 }
 
+function alreadyRegisteredTemplate(data: Record<string, string>): MailTemplate {
+  const loginUrl = data.loginUrl ?? '/login'
+  return {
+    subject: 'Вы уже зарегистрированы на Birdwatching Moscow',
+    html: `
+      <div>
+        <h1>Вы уже зарегистрированы</h1>
+        <p>Кто-то попытался зарегистрироваться с вашим адресом электронной почты на сайте Birdwatching Moscow.</p>
+        <p>Если это были вы — просто войдите в аккаунт по ссылке ниже:</p>
+        <p><a href="${loginUrl}">${loginUrl}</a></p>
+        <p>Если вы не делали этого запроса, проигнорируйте письмо.</p>
+      </div>
+    `,
+    text: `Кто-то попытался зарегистрироваться с вашим адресом на сайте Birdwatching Moscow.\n\nЕсли это были вы — войдите по ссылке: ${loginUrl}\n\nЕсли нет — просто проигнорируйте это письмо.`,
+  }
+}
+
 function buildTemplate(kind: MailKind, data: Record<string, string>): MailTemplate {
   switch (kind) {
     case 'welcome':
@@ -99,6 +116,8 @@ function buildTemplate(kind: MailKind, data: Record<string, string>): MailTempla
       return orderPaidTemplate(data)
     case 'login-code':
       return loginCodeTemplate(data)
+    case 'already-registered':
+      return alreadyRegisteredTemplate(data)
   }
 }
 

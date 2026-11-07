@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Logo } from '@/components/ui/logo/Logo'
 import { ROUTES } from '@/utils/routes'
 import styles from './Header.module.css'
@@ -19,6 +19,7 @@ const NAV_LINKS = [
 export const Header = () => {
   const { status } = useSession()
   const pathname = usePathname()
+  const router = useRouter()
   // Menu is open only on the page it was opened on, so navigating closes it
   const [openedOn, setOpenedOn] = useState<string | null>(null)
   const isOpen = openedOn === pathname
@@ -39,6 +40,14 @@ export const Header = () => {
   }, [isOpen])
 
   const close = () => setIsOpen(false)
+
+  const handleNavClick = (href: string, after?: () => void) => (e: React.MouseEvent) => {
+    if (pathname === href) {
+      e.preventDefault()
+      router.refresh()
+    }
+    after?.()
+  }
 
   const renderCta = (onClick?: () => void) => {
     if (status === 'loading') return null
@@ -66,7 +75,7 @@ export const Header = () => {
       <nav className={styles.desktopNav}>
         <div className={styles.navLinks}>
           {NAV_LINKS.map(({ label, href }) => (
-            <Link key={href} href={href} className={styles.navLink}>{label}</Link>
+            <Link key={href} href={href} className={styles.navLink} onClick={handleNavClick(href)}>{label}</Link>
           ))}
         </div>
         {renderCta()}
@@ -99,7 +108,7 @@ export const Header = () => {
           </div>
           <nav className={styles.overlayNav}>
             {NAV_LINKS.map(({ label, href }) => (
-              <Link key={href} href={href} className={styles.navLink} onClick={close}>{label}</Link>
+              <Link key={href} href={href} className={styles.navLink} onClick={handleNavClick(href, close)}>{label}</Link>
             ))}
             {renderCta(close)}
           </nav>

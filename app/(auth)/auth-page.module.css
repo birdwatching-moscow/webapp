@@ -32,13 +32,6 @@
   color: var(--color-muted-foreground);
 }
 
-.subtitleCode {
-  font-size: var(--font-size-xl);
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--color-muted-foreground);
-}
-
 .form {
   display: flex;
   flex-direction: column;
@@ -58,15 +51,4 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-}
-
-
-.hint {
-  composes: text-body from global;
-  color: var(--color-muted-foreground);
-}
-
-.errorMsg {
-  composes: text-label from global;
-  color: var(--color-error);
 }

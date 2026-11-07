@@ -5,8 +5,8 @@ import { sendMail } from '@/lib/mail'
 import { validateRequest } from '@/lib/api/validate'
 import { generateLoginCode, hashLoginCode } from '@/lib/login-code'
 import { generateLoginCsrfToken } from '@/lib/auth/csrf'
-import { checkRateLimit } from '@/lib/rateLimit'
-import { LOGIN_CODE_TTL_MS, HTTP_STATUS_CONFLICT, HTTP_STATUS_INTERNAL_SERVER_ERROR, HTTP_STATUS_TOO_MANY_REQUESTS } from '@/lib/constants'
+import { checkRateLimit, checkEmailCodeRateLimit } from '@/lib/rateLimit'
+import { LOGIN_CODE_TTL_MS, HTTP_STATUS_INTERNAL_SERVER_ERROR, HTTP_STATUS_TOO_MANY_REQUESTS } from '@/lib/constants'
 
 export async function POST(req: Request) {
   const ip =
@@ -27,37 +27,36 @@ export async function POST(req: Request) {
 
   const { email, name } = result.data
 
+  const emailRateLimit = checkEmailCodeRateLimit(email)
+  if (!emailRateLimit.allowed) {
+    return NextResponse.json(
+      { error: 'code_rate_limited', retryAfterSeconds: emailRateLimit.retryAfterSeconds },
+      { status: HTTP_STATUS_TOO_MANY_REQUESTS, headers: { 'Retry-After': String(emailRateLimit.retryAfterSeconds) } }
+    )
+  }
+
   try {
     const existing = await prisma.user.findFirst({
       where: { email, deletedAt: null },
     })
 
     if (existing) {
-      return NextResponse.json(
-        { error: 'Email is already taken' },
-        { status: HTTP_STATUS_CONFLICT }
-      )
+      const loginUrl = `${process.env.NEXTAUTH_URL ?? ''}/login`
+      await sendMail({ to: email, kind: 'already-registered', data: { loginUrl } })
+    } else {
+      await prisma.loginCode.deleteMany({ where: { email, usedAt: null } })
+
+      const code = generateLoginCode()
+      await prisma.loginCode.create({
+        data: {
+          email,
+          codeHash: hashLoginCode(code),
+          expiresAt: new Date(Date.now() + LOGIN_CODE_TTL_MS),
+        },
+      })
+
+      await sendMail({ to: email, kind: 'login-code', data: { code, name } })
     }
-
-    await prisma.loginCode.deleteMany({
-      where: { email, usedAt: null },
-    })
-
-    const code = generateLoginCode()
-
-    await prisma.loginCode.create({
-      data: {
-        email,
-        codeHash: hashLoginCode(code),
-        expiresAt: new Date(Date.now() + LOGIN_CODE_TTL_MS),
-      },
-    })
-
-    await sendMail({
-      to: email,
-      kind: 'login-code',
-      data: { code, name },
-    })
   } catch (err) {
     console.error('POST /api/auth/register failed', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: HTTP_STATUS_INTERNAL_SERVER_ERROR })

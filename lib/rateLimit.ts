@@ -1,25 +1,43 @@
-const WINDOW_MS = 60_000
-const MAX_REQUESTS = 2
+const IP_WINDOW_MS = 60_000
+const IP_MAX_REQUESTS = 2
 
-const store = new Map<string, { count: number; expiresAt: number }>()
+const EMAIL_WINDOW_MS = 60_000
+const EMAIL_MAX_REQUESTS = 1
+
+const ipStore = new Map<string, { count: number; expiresAt: number }>()
+const emailStore = new Map<string, { count: number; expiresAt: number }>()
 
 export function _resetStoreForTesting(): void {
-  store.clear()
+  ipStore.clear()
+  emailStore.clear()
 }
 
-export function checkRateLimit(key: string): { allowed: boolean; retryAfterSeconds: number } {
+function check(
+  store: Map<string, { count: number; expiresAt: number }>,
+  key: string,
+  maxRequests: number,
+  windowMs: number,
+): { allowed: boolean; retryAfterSeconds: number } {
   const now = Date.now()
   const entry = store.get(key)
 
   if (!entry || entry.expiresAt <= now) {
-    store.set(key, { count: 1, expiresAt: now + WINDOW_MS })
+    store.set(key, { count: 1, expiresAt: now + windowMs })
     return { allowed: true, retryAfterSeconds: 0 }
   }
 
   entry.count++
-  if (entry.count > MAX_REQUESTS) {
+  if (entry.count > maxRequests) {
     return { allowed: false, retryAfterSeconds: Math.ceil((entry.expiresAt - now) / 1000) }
   }
 
   return { allowed: true, retryAfterSeconds: 0 }
+}
+
+export function checkRateLimit(ip: string): { allowed: boolean; retryAfterSeconds: number } {
+  return check(ipStore, ip, IP_MAX_REQUESTS, IP_WINDOW_MS)
+}
+
+export function checkEmailCodeRateLimit(email: string): { allowed: boolean; retryAfterSeconds: number } {
+  return check(emailStore, email, EMAIL_MAX_REQUESTS, EMAIL_WINDOW_MS)
 }

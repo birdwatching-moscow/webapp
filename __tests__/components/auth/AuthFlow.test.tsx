@@ -147,22 +147,6 @@ describe('AuthFlow — sign-up submission', () => {
     })
   })
 
-  it('shows emailTaken error and does not call onFlowChange when register returns 409', async () => {
-    const err = Object.assign(new Error('Conflict'), { response: { status: 409 } })
-    mockRegister.mockRejectedValueOnce(err)
-    const onFlowChange = vi.fn()
-
-    render(<AuthFlow {...defaultProps} flow="sign-up" onFlowChange={onFlowChange} />)
-    fireEvent.change(screen.getByLabelText(AUTH_LABELS.register.nameField), { target: { value: 'Иван' } })
-    fireEvent.change(screen.getByLabelText(AUTH_LABELS.common.emailField), { target: { value: 'exists@example.com' } })
-    fireEvent.click(screen.getByRole('button', { name: AUTH_LABELS.register.submit }))
-
-    await waitFor(() => {
-      expect(screen.getByText(AUTH_ERRORS.emailTaken)).toBeInTheDocument()
-    })
-    expect(onFlowChange).not.toHaveBeenCalled()
-  })
-
   it('shows network error and does not call onFlowChange when requestLoginCode fails after register', async () => {
     mockRegister.mockResolvedValueOnce({})
     mockRequestLoginCode.mockRejectedValueOnce(new Error('Network Error'))
