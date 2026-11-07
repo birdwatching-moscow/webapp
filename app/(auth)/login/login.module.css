@@ -21,9 +21,10 @@
 }
 
 .subtitle {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-lg);
+  font-weight: 500;
   line-height: 1.5;
-  color: var(--color-foreground);
+  color: var(--color-muted-foreground);
 }
 
 .form {
