@@ -59,6 +59,10 @@ export async function POST(req: Request) {
 
       const code = generateLoginCode()
 
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[dev] login code for ${email}: ${code}`)
+      }
+
       await prisma.loginCode.create({
         data: {
           email,
