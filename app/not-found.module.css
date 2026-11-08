@@ -1,0 +1,42 @@
+/* ─── Mobile ──────────────────────────────────────────────────────────────── */
+
+.hero {
+  padding-block: var(--space-8);         /* 64px */
+  padding-inline: var(--page-gutter);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);                   /* 16px */
+  max-width: var(--size-text-max);       /* 720px */
+}
+
+.heading {
+  color: var(--color-foreground);
+}
+
+.subheading {
+  color: var(--color-muted-foreground);
+}
+
+.cta {
+  margin-top: var(--space-4);            /* extra breathing room before button */
+}
+
+/* ─── Desktop (min-width: 1248px) ─────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .hero {
+    padding-block: var(--space-10);      /* 96px */
+  }
+
+  .content {
+    gap: var(--space-3);                 /* 12px between title and subtitle */
+  }
+
+  .cta {
+    margin-top: var(--space-6);          /* 32px gap from text to button */
+    max-width: 406px;
+  }
+}
