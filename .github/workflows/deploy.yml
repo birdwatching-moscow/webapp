@@ -17,10 +17,11 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd ~/staging/birdwatching_moscow
-            git pull origin staging
+            git fetch origin staging
+            git checkout staging
+            git reset --hard origin/staging
             pnpm install
-            pnpm exec prisma generate
-            pnpm exec prisma migrate deploy
+            pnpm exec prisma db migrate
             pnpm build
             pm2 restart birdwatching
 
@@ -36,9 +37,10 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd ~/prod/birdwatching_moscow
-            git pull origin main
+            git fetch origin main
+            git checkout main
+            git reset --hard origin/main
             pnpm install
-            pnpm exec prisma generate
-            pnpm exec prisma migrate deploy
+            pnpm exec prisma db migrate
             pnpm build
             pm2 restart birdwatching-prod
