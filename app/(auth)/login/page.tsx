@@ -32,7 +32,7 @@ const LA = AUTH_LABELS.adminPassword
 const ASP = AUTH_LABELS.adminSetPassword
 const C = AUTH_LABELS.common
 
-type LoginStep = 'email' | 'code' | 'password' | 'set-password'
+type LoginStep = 'email' | 'name' | 'code' | 'password' | 'set-password'
 
 function LoginCodeForm() {
   const router = useRouter()
@@ -47,6 +47,10 @@ function LoginCodeForm() {
   const [emailError, setEmailError] = useState('')
   const [csrfToken, setCsrfToken] = useState('')
   const [challengeToken, setChallengeToken] = useState('')
+  const [isNewUser, setIsNewUser] = useState(false)
+  const [nameInput, setNameInput] = useState('')
+  const [nameError, setNameError] = useState('')
+  const [name, setName] = useState('')
   const passwordInputRef = useRef<HTMLInputElement>(null)
   const newPasswordInputRef = useRef<HTMLInputElement>(null)
   const otp = useOtpInput(submitCode)
@@ -65,26 +69,6 @@ function LoginCodeForm() {
     if (step === 'set-password') newPasswordInputRef.current?.focus()
   }, [step])
 
-  async function requestCode(address: string) {
-    await run(async () => {
-      const res = await fetch('/api/auth/request-login-code', {
-        method: HTTP_METHOD.POST,
-        headers: JSON_HEADERS,
-        body: JSON.stringify({ email: address }),
-      })
-      let resData: { csrfToken?: string; error?: string } = {}
-      try { resData = await res.json() } catch { /* no body */ }
-      if (!res.ok) {
-        setError(resData.error === 'code_rate_limited' ? AUTH_ERRORS.codeTooFrequent : AUTH_ERRORS.generic)
-        return
-      }
-      setCsrfToken(resData.csrfToken ?? '')
-      setEmail(address)
-      otp.reset()
-      setStep('code')
-    })
-  }
-
   async function handleEmailSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!emailInput.trim()) {
@@ -96,11 +80,97 @@ function LoginCodeForm() {
       return
     }
     setEmailError('')
-    await requestCode(emailInput)
+
+    await run(async () => {
+      const checkRes = await fetch('/api/auth/check-email', {
+        method: HTTP_METHOD.POST,
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ email: emailInput.trim() }),
+      })
+      if (!checkRes.ok) {
+        setError(AUTH_ERRORS.generic)
+        return
+      }
+      const checkData = await checkRes.json() as { registered: boolean }
+
+      if (!checkData.registered) {
+        setIsNewUser(true)
+        setEmail(emailInput.trim())
+        setStep('name')
+        return
+      }
+
+      setIsNewUser(false)
+      const res = await fetch('/api/auth/request-login-code', {
+        method: HTTP_METHOD.POST,
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ email: emailInput.trim() }),
+      })
+      let resData: { csrfToken?: string; error?: string } = {}
+      try { resData = await res.json() } catch { /* no body */ }
+      if (!res.ok) {
+        setError(resData.error === 'code_rate_limited' ? AUTH_ERRORS.codeTooFrequent : AUTH_ERRORS.generic)
+        return
+      }
+      setCsrfToken(resData.csrfToken ?? '')
+      setEmail(emailInput.trim())
+      otp.reset()
+      setStep('code')
+    })
+  }
+
+  async function handleNameSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (!nameInput.trim()) {
+      setNameError('Введите имя, чтобы продолжить')
+      return
+    }
+    setNameError('')
+
+    await run(async () => {
+      const res = await fetch('/api/auth/register', {
+        method: HTTP_METHOD.POST,
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ email, name: nameInput.trim() }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null) as { error?: string } | null
+        setError(data?.error === 'code_rate_limited' ? AUTH_ERRORS.codeTooFrequent : AUTH_ERRORS.generic)
+        return
+      }
+      const data = await res.json() as { csrfToken?: string }
+      setCsrfToken(data.csrfToken ?? '')
+      setName(nameInput.trim())
+      otp.reset()
+      setStep('code')
+    })
   }
 
   async function submitCode(code: string) {
     await run(async () => {
+      if (isNewUser) {
+        const verifyRes = await fetch('/api/auth/verify-registration-code', {
+          method: HTTP_METHOD.POST,
+          headers: { ...JSON_HEADERS, 'x-csrf-token': csrfToken },
+          body: JSON.stringify({ email, code, name }),
+        })
+        const verifyData = await verifyRes.json().catch(() => ({})) as { error?: string }
+        if (!verifyRes.ok) {
+          setError(mapOtpVerifyError(verifyData.error))
+          otp.reset({ focus: true })
+          return
+        }
+        const result = await signIn(LOGIN_CODE_PROVIDER_ID, { email, code, redirect: false })
+        if (result?.error) {
+          setError(AUTH_ERRORS.invalidCode)
+          otp.reset({ focus: true })
+        } else {
+          router.push(callbackUrl)
+          router.refresh()
+        }
+        return
+      }
+
       const verifyRes = await fetch('/api/auth/verify-login-code', {
         method: HTTP_METHOD.POST,
         headers: { ...JSON_HEADERS, 'x-csrf-token': csrfToken },
@@ -140,6 +210,12 @@ function LoginCodeForm() {
 
   function goBackToEmail() {
     setStep('email')
+    otp.reset()
+    setError(null)
+  }
+
+  function goBackToName() {
+    setStep('name')
     otp.reset()
     setError(null)
   }
@@ -221,7 +297,7 @@ function LoginCodeForm() {
             <p className={styles.subtitle}>
               {isRegistered
                 ? 'Регистрация прошла успешно. Войдите в аккаунт.'
-                : 'Введите почту, чтобы получить код для входа.'}
+                : 'Введите почту, чтобы войти или создать аккаунт.'}
             </p>
           </div>
 
@@ -243,7 +319,7 @@ function LoginCodeForm() {
             />
             <div className={styles.actions}>
               <Button type="submit" size="lg" fullWidth loading={loading} disabled={loading}>
-                Получить код
+                Продолжить
               </Button>
               <Button as="a" href={ROUTES.register} variant="secondary" size="lg" fullWidth>
                 Зарегистрироваться
@@ -253,14 +329,51 @@ function LoginCodeForm() {
         </>
       )}
 
+      {step === 'name' && (
+        <>
+          <div className={styles.header}>
+            <h1 className={styles.title}>Регистрация</h1>
+            <p className={styles.subtitle}>Введите имя, чтобы создать аккаунт</p>
+          </div>
+
+          <FormError message={error} />
+
+          <form onSubmit={handleNameSubmit} className={styles.form}>
+            <Input
+              id="name"
+              name="name"
+              type="text"
+              placeholder="Имя"
+              aria-label="Имя"
+              value={nameInput}
+              onChange={e => { setNameInput(e.target.value); setNameError('') }}
+              autoComplete="name"
+              required
+              error={nameError}
+              className={styles.fieldInput}
+            />
+            <div className={styles.actions}>
+              <Button type="submit" size="lg" fullWidth loading={loading} disabled={loading}>
+                Получить код
+              </Button>
+              <Button type="button" variant="secondary" size="lg" fullWidth onClick={goBackToEmail} disabled={loading}>
+                Назад
+              </Button>
+            </div>
+          </form>
+        </>
+      )}
+
       {step === 'code' && (
         <OtpStep
           title="Введите код"
-          subtitle={`Если вы зарегистрированы, на ${email} придёт код`}
+          subtitle={isNewUser
+            ? `Код подтверждения отправлен на ${email}`
+            : `Если вы зарегистрированы, на ${email} придёт код`}
           otp={otp}
           error={error}
           loading={loading}
-          onBack={goBackToEmail}
+          onBack={isNewUser ? goBackToName : goBackToEmail}
         />
       )}
 

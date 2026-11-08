@@ -1,0 +1,119 @@
+.page {
+  padding: 0 var(--page-gutter);
+}
+
+.inner {
+  max-width: var(--size-col-1);
+}
+
+.titleSection {
+  padding-top: var(--space-7);
+}
+
+.pageTitle {
+  composes: text-display from global;
+}
+
+.content {
+  padding-top: var(--space-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+}
+
+/* Profile card */
+
+.profileCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.sectionTitle {
+  composes: text-h1 from global;
+}
+
+.profileRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fieldLabel {
+  composes: text-label from global;
+  color: var(--color-muted-foreground);
+}
+
+.editLink {
+  composes: text-label from global;
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.editBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.fieldInput :global(input) {
+  padding: var(--space-3) var(--space-4);
+}
+
+.editActions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.fieldValue {
+  composes: text-body from global;
+}
+
+/* Upcoming / Past sections */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.emptyText {
+  composes: text-body-l from global;
+  color: var(--color-muted-foreground);
+}
+
+/* Support banner */
+
+.bannerSection {
+  padding-top: var(--space-7);
+  padding-bottom: var(--space-10);
+}
+
+.noticeBanner {
+  margin-inline: 0;
+  align-self: stretch;
+}
+
+@media (min-width: 1248px) {
+  .titleSection {
+    padding-top: var(--space-10);
+  }
+
+  .content {
+    padding-top: var(--space-10);
+    gap: var(--space-8);
+  }
+
+  .profileCard {
+    max-width: 368px;
+  }
+
+  .bannerSection {
+    padding-top: var(--space-10);
+    padding-bottom: var(--space-7);
+  }
+}

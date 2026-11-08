@@ -55,6 +55,10 @@ export async function POST(req: Request) {
         },
       })
 
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[dev] registration code for ${email}: ${code}`)
+      }
+
       await sendMail({ to: email, kind: 'login-code', data: { code, name } })
     }
   } catch (err) {

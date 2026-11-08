@@ -8,6 +8,12 @@ import { auth } from "@/lib/auth";
 export const metadata: Metadata = {
   title: "Birdwatching Moscow",
   description: "Бердвотчинг в Москве, экспедиции по России и за границей",
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.png', type: 'image/png', sizes: '32x32' },
+    ],
+  },
 };
 
 export default async function RootLayout({
