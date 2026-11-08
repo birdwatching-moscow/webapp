@@ -15,11 +15,17 @@ const prisma = new PrismaClient({ adapter })
 const EMAIL = 'polinasmekhova+2@gmail.com'
 
 async function main() {
-  const targetUser = await prisma.user.findFirst({
+  let targetUser = await prisma.user.findFirst({
     where: { email: EMAIL, deletedAt: null },
     select: { id: true },
   })
-  if (!targetUser) throw new Error(`User ${EMAIL} not found — register first`)
+  if (!targetUser) {
+    targetUser = await prisma.user.create({
+      data: { email: EMAIL, name: 'Test User' },
+      select: { id: true },
+    })
+    console.log(`Created test user ${EMAIL}`)
+  }
 
   const guide = await prisma.teamMember.findFirst({ select: { id: true } })
   if (!guide) throw new Error('No team members found — run prisma seed first')
