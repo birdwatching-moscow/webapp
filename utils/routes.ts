@@ -1,3 +1,5 @@
+export const CONTACT_EMAIL = 'info@birdwatching.moscow'
+
 export const ROUTES = {
   // Public
   home:          '/',
