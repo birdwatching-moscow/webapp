@@ -1,0 +1,70 @@
+/* ─── Page wrapper ─────────────────────────────────────────────────────────── */
+
+.page {
+  padding-inline: var(--page-gutter);
+}
+
+/* ─── Hero ─────────────────────────────────────────────────────────────────── */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);        /* 12px */
+  padding-block: var(--space-8);  /* 64px */
+  max-width: var(--size-text-max);
+}
+
+.heroTitle {
+  color: var(--color-foreground);
+}
+
+.heroSubtitle {
+  color: var(--color-muted-foreground);
+}
+
+/* ─── FAQ content ───────────────────────────────────────────────────────────── */
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);        /* 48px */
+  max-width: var(--size-text-max);
+  padding-bottom: var(--space-8); /* 64px */
+}
+
+.faqItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);        /* 12px */
+}
+
+.faqQ {
+  color: var(--color-foreground);
+}
+
+.faqA {
+  color: var(--color-foreground);
+  white-space: pre-line;
+}
+
+/* ─── CTA (NoticeBanner) ────────────────────────────────────────────────────── */
+
+.cta {
+  padding-bottom: var(--space-8); /* 64px */
+}
+
+/* ─── Desktop ───────────────────────────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .hero {
+    padding-block: var(--space-10); /* 96px */
+  }
+
+  .content {
+    padding-bottom: var(--space-10);
+  }
+
+  .cta {
+    padding-bottom: var(--space-10);
+  }
+}
