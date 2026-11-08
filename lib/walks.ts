@@ -1,5 +1,31 @@
 import { prisma } from '@/lib/prisma'
 
+export type PastWalkRow = {
+  id: string
+  slug: string
+  title: string
+  startsAt: Date
+  endsAt: Date | null
+}
+
+export async function getPastWalksForUser(userId: string): Promise<PastWalkRow[]> {
+  const tickets = await prisma.ticket.findMany({
+    where: {
+      userId,
+      walk: { startsAt: { lt: new Date() } },
+    },
+    select: {
+      walk: {
+        select: { id: true, slug: true, title: true, startsAt: true, endsAt: true },
+      },
+    },
+    orderBy: { walk: { startsAt: 'desc' } },
+    distinct: ['walkId'],
+  })
+
+  return tickets.map((t) => t.walk)
+}
+
 export type WalkTableRow = {
   id: string
   slug: string

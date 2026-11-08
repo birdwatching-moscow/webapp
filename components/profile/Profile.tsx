@@ -1,16 +1,22 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getPastWalksForUser } from '@/lib/walks'
 import { NoticeBanner } from '@/components/NoticeBanner/NoticeBanner'
 import { EditableName } from './EditableName'
+import { PastWalksGrid } from './PastWalksGrid'
 import styles from './profile.module.css'
 
 export const Profile = async () => {
   const session = await auth()
   const email = session?.user?.email ?? ''
+  const userId = session?.user?.id ?? ''
 
-  const user = session?.user?.id
-    ? await prisma.user.findUnique({ where: { id: session.user.id }, select: { name: true } })
-    : null
+  const [user, pastWalks] = await Promise.all([
+    userId
+      ? prisma.user.findUnique({ where: { id: userId }, select: { name: true } })
+      : null,
+    userId ? getPastWalksForUser(userId) : [],
+  ])
   const name = user?.name ?? ''
 
   return (
@@ -37,7 +43,10 @@ export const Profile = async () => {
 
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Прошедшие</h2>
-            <p className={styles.emptyText}>Здесь появятся прошедшие прогулки</p>
+            {pastWalks.length > 0
+              ? <PastWalksGrid walks={pastWalks} />
+              : <p className={styles.emptyText}>Здесь появятся прошедшие прогулки</p>
+            }
           </section>
 
         </div>
