@@ -21,6 +21,7 @@ jobs:
             git checkout staging
             git reset --hard origin/staging
             pnpm install
+            npx prisma@7 generate
             pnpm exec prisma db migrate
             pnpm build
             pm2 restart birdwatching
@@ -41,6 +42,7 @@ jobs:
             git checkout main
             git reset --hard origin/main
             pnpm install
+            npx prisma@7 generate
             pnpm exec prisma db migrate
             pnpm build
             pm2 restart birdwatching-prod
