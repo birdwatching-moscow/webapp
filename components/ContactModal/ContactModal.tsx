@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import axios from 'axios'
 import { Modal } from '@/components/ui/modal/Modal'
 import { Input } from '@/components/ui/input/Input'
 import { Button } from '@/components/ui/buttons/Button'
@@ -10,15 +11,42 @@ import styles from './ContactModal.module.css'
 
 export type ContactRequestType = 'EXPEDITION' | 'CERTIFICATE' | 'QUESTION' | 'PRIVATE_EVENT'
 
-type TypeConfig = { label: string; subtitle: string }
-
-const TYPE_CONFIG: Record<ContactRequestType, TypeConfig> = {
-  EXPEDITION:    { label: 'Заявка на экспедицию',         subtitle: 'Оставьте контакты — координатор уточнит детали.' },
-  CERTIFICATE:   { label: 'Заявка на сертификат',         subtitle: 'Оставьте контакты — мы свяжемся в течение 24 часов.' },
-  QUESTION:      { label: 'Задать вопрос',                subtitle: 'Напишите вопрос — мы ответим в ближайшее время.' },
-  PRIVATE_EVENT: { label: 'Заявка на частное мероприятие', subtitle: 'Оставьте контакты — мы подберём формат под вас.' },
+type TypeConfig = {
+  label: string
+  subtitle: React.ReactNode
+  successText: string
 }
 
+const TYPE_CONFIG: Record<ContactRequestType, TypeConfig> = {
+  EXPEDITION: {
+    label: 'Заявка на экспедицию',
+    subtitle: 'Оставьте контакты — координатор уточнит детали.',
+    successText: 'Спасибо, что написали. Мы свяжемся с вами в течение дня, чтобы уточнить детали участия.',
+  },
+  CERTIFICATE: {
+    label: 'Заявка на сертификат',
+    subtitle: 'Оставьте контакты — мы свяжемся в течение 24 часов.',
+    successText: 'Спасибо! Мы свяжемся с вами в течение 24 часов.',
+  },
+  QUESTION: {
+    label: 'Задать вопрос',
+    subtitle: 'Напишите вопрос — мы ответим в течение 24 часов.',
+    successText: 'Спасибо, что написали. Мы ответим в течение 24 часов.',
+  },
+  PRIVATE_EVENT: {
+    label: 'Заявка на частное мероприятие',
+    subtitle: (
+      <ul>
+        <li>желаемый диапазон дат для прогулки,</li>
+        <li>желаемое время начала</li>
+        <li>локацию,</li>
+        <li>количество участников,</li>
+        <li>какой вид прогулки нужен: наблюдение за птицами или натуралистика.</li>
+      </ul>
+    ),
+    successText: 'Спасибо, что написали. Мы отвечаем обычно в течение дня после предоставления данных и отвечаем в зависимости от: есть ли свободный гид для ваших критериев или что мы можем предложить, если нет.',
+  },
+}
 
 type ContactModalProps = {
   open: boolean
@@ -34,17 +62,22 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
   const [consent, setConsent]     = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [rateLimited, setRateLimited] = useState(false)
+  const [retryMinutes, setRetryMinutes] = useState(10)
   const [serverError, setServerError] = useState<string | null>(null)
 
   const config = TYPE_CONFIG[defaultType]
 
   const handleClose = () => {
-    setName('')
-    setEmail('')
-    setMessage('')
-    setHp('')
-    setConsent(false)
+    if (submitted) {
+      setName('')
+      setEmail('')
+      setMessage('')
+      setHp('')
+      setConsent(false)
+    }
     setSubmitted(false)
+    setRateLimited(false)
     setServerError(null)
     onClose()
   }
@@ -57,21 +90,36 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
     try {
       await submitContactRequest({ type: defaultType, name, email, message, _hp: hp })
       setSubmitted(true)
-    } catch {
-      setServerError('Не удалось отправить заявку. Попробуйте ещё раз.')
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 429) {
+        const retryAfterSec = Number(err.response.headers['retry-after']) || 600
+        setRetryMinutes(Math.ceil(retryAfterSec / 60))
+        setRateLimited(true)
+      } else {
+        setServerError('Не удалось отправить заявку. Попробуйте ещё раз.')
+      }
     } finally {
       setSubmitting(false)
     }
   }
 
+  const closeFooter = (rateLimited || submitted)
+    ? <Button onClick={handleClose} variant="outline" size="lg" fullWidth>Закрыть</Button>
+    : undefined
+
   return (
-    <Modal open={open} onClose={handleClose}>
-      {submitted ? (
-        <div className={styles.success}>
-          <p className={`text-body-l ${styles.successText}`}>
-            Спасибо! Мы получили вашу заявку и скоро свяжемся с вами.
+    <Modal open={open} onClose={handleClose} title="Оставить заявку" footer={closeFooter}>
+      {rateLimited ? (
+        <div className={styles.rateLimitBox}>
+          <p className={`text-h3 ${styles.rateLimitTitle}`}>Нужно немного передохнуть</p>
+          <p className={`text-body ${styles.rateLimitText}`}>
+            Вы исчерпали лимит обращений на данный момент. Мы сможем принять ваш следующий запрос через {retryMinutes} минут.
           </p>
-          <Button onClick={handleClose} fullWidth>Закрыть</Button>
+        </div>
+      ) : submitted ? (
+        <div className={styles.rateLimitBox}>
+          <p className={`text-h3 ${styles.rateLimitTitle}`}>Заявка отправлена</p>
+          <p className={`text-body ${styles.rateLimitText}`}>{config.successText}</p>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className={styles.form}>
@@ -86,10 +134,9 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
             aria-hidden="true"
             className={styles.honeypot}
           />
-          <div className={styles.formHeader}>
-            <h2 className={`text-h2 ${styles.formTitle}`}>{config.label}</h2>
-            <p className={styles.subtitle}>{config.subtitle}</p>
-          </div>
+
+          <p className={`text-h3 ${styles.formTitle}`}>{config.label}</p>
+          <div className={styles.subtitle}>{config.subtitle}</div>
 
           <div className={styles.fields}>
             <Input

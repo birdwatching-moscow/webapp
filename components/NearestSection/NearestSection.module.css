@@ -11,6 +11,10 @@
   line-height: 32px;
 }
 
+.moreButton {
+  min-width: 260px;
+}
+
 @media (min-width: 1248px) {
   .moreButton {
     max-width: 406px;

@@ -5,19 +5,21 @@ interface NearestSectionProps {
   heading?: string
   moreHref?: string
   showMoreButton?: boolean
-  children: React.ReactNode
+  isEmpty?: boolean
+  children?: React.ReactNode
 }
 
 export const NearestSection = ({
   heading = 'Ближайшие',
   moreHref,
   showMoreButton = false,
+  isEmpty = false,
   children,
 }: NearestSectionProps) => (
   <div className={styles.wrapper}>
-    <h2 className={styles.heading}>{heading}</h2>
-    {children}
-    {showMoreButton && moreHref && (
+    {!isEmpty && <h2 className={styles.heading}>{heading}</h2>}
+    {!isEmpty && children}
+    {(showMoreButton || isEmpty) && moreHref && (
       <Button as="a" size="lg" fullWidth href={moreHref} className={styles.moreButton}>
         Подробнее
       </Button>
