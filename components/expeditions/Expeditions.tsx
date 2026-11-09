@@ -12,7 +12,7 @@ export const Expeditions = async () => {
         <div className={styles.imageWrapper}>
           <div className={styles.mediaContainer}>
             <Image
-              src="/images/home-expeditions.png"
+              src="/placeholders/videos-placeholder.png"
               alt=""
               fill
               priority
