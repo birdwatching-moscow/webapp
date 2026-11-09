@@ -43,14 +43,12 @@
 }
 
 .faqA {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: var(--font-size-lg);  /* 18px */
+  line-height: 24px;
   color: var(--color-foreground);
   white-space: pre-line;
-}
-
-/* ─── CTA (NoticeBanner) ────────────────────────────────────────────────────── */
-
-.cta {
-  padding-bottom: var(--space-8); /* 64px */
 }
 
 /* ─── Desktop ───────────────────────────────────────────────────────────────── */
@@ -61,10 +59,6 @@
   }
 
   .content {
-    padding-bottom: var(--space-10);
-  }
-
-  .cta {
     padding-bottom: var(--space-10);
   }
 }

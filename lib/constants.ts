@@ -75,3 +75,5 @@ export const POSTBOX_SMTP_HOST = 'postbox.cloud.yandex.net'
 export const POSTBOX_SMTP_PORT = 587
 export const POSTBOX_DEFAULT_FROM_ADDRESS = 'no-reply@localhost'
 export const POSTBOX_DEFAULT_FROM_NAME = 'Птицы Москвы'
+
+export const ADMIN_EMAIL = 'birdwatching@mail.ru'

@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { Button } from '@/components/ui/buttons/Button'
 import { ROUTES } from '@/utils/routes'
 import styles from './not-found.module.css'
@@ -14,6 +15,22 @@ export default function NotFound() {
         <Button as="a" href={ROUTES.home} size="lg" fullWidth className={styles.cta}>
           Перейти на главную
         </Button>
+      </div>
+      <div className={styles.imageWrapper}>
+        <Image
+          src="/placeholders/hero-media.png"
+          alt=""
+          fill
+          className={styles.placeholder}
+          aria-hidden
+        />
+        <Image
+          src="/404-image.png"
+          alt="Птичье гнездо"
+          fill
+          className={styles.image}
+          priority
+        />
       </div>
     </main>
   )

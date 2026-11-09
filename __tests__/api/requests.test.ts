@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { expeditionFindUniqueMock, requestCreateMock } = vi.hoisted(() => ({
+const { expeditionFindUniqueMock, requestCreateMock, checkContactFormRateLimitMock, sendMailMock } = vi.hoisted(() => ({
   expeditionFindUniqueMock: vi.fn(),
   requestCreateMock: vi.fn(),
+  checkContactFormRateLimitMock: vi.fn(),
+  sendMailMock: vi.fn(),
 }))
 
 vi.mock('@/lib/prisma', () => ({
@@ -10,6 +12,14 @@ vi.mock('@/lib/prisma', () => ({
     expedition: { findUnique: expeditionFindUniqueMock },
     request: { create: requestCreateMock },
   },
+}))
+
+vi.mock('@/lib/rateLimit', () => ({
+  checkContactFormRateLimit: checkContactFormRateLimitMock,
+}))
+
+vi.mock('@/lib/mail', () => ({
+  sendMail: sendMailMock,
 }))
 
 import { POST } from '@/app/api/requests/route'
@@ -34,6 +44,8 @@ beforeEach(() => {
   vi.clearAllMocks()
   expeditionFindUniqueMock.mockResolvedValue(ACTIVE_EXPEDITION)
   requestCreateMock.mockResolvedValue(CREATED_REQUEST)
+  checkContactFormRateLimitMock.mockReturnValue({ allowed: true, retryAfterSeconds: 0 })
+  sendMailMock.mockResolvedValue(undefined)
 })
 
 // ─── SC1: valid EXPEDITION body ───────────────────────────────────────────────
@@ -65,7 +77,7 @@ describe('POST /api/requests — EXPEDITION happy path', () => {
         data: expect.objectContaining({
           type: 'EXPEDITION',
           expeditionId: EXPEDITION_ID,
-          status: 'NEW',
+          status: 'OPEN',
           name: 'Полина Смехова',
           email: 'polina@example.com',
         }),
@@ -122,7 +134,7 @@ describe('POST /api/requests — PRIVATE_WALK happy path', () => {
         data: expect.objectContaining({
           type: 'PRIVATE_WALK',
           expeditionId: null,
-          status: 'NEW',
+          status: 'OPEN',
         }),
       }),
     )
@@ -143,14 +155,14 @@ describe('POST /api/requests — PRIVATE_WALK happy path', () => {
 // ─── SC3: EXPEDITION with no expeditionId ────────────────────────────────────
 
 describe('POST /api/requests — EXPEDITION validation', () => {
-  it('returns 400 when type=EXPEDITION and expeditionId is missing', async () => {
+  it('accepts EXPEDITION without expeditionId (general inquiry)', async () => {
     const res = await POST(makePost({
       type: 'EXPEDITION',
       name: 'Полина',
       email: 'polina@example.com',
       message: 'Хочу',
     }))
-    expect(res.status).toBe(HTTP_STATUS_BAD_REQUEST)
+    expect(res.status).toBe(201)
   })
 
   // ─── SC4: non-existent expeditionId ───────────────────────────────────────

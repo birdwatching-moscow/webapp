@@ -222,6 +222,15 @@ svg {
   line-height: 16px;
 }
 
+.text-link {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.text-link:hover {
+  text-decoration: underline;
+}
+
 @media (min-width: 1248px) {
   .text-display { font-size: var(--font-size-5xl); line-height: 58px; }
   .text-h1      { font-size: var(--font-size-4xl); line-height: 44px; }

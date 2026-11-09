@@ -6,7 +6,7 @@ import {
   POSTBOX_DEFAULT_FROM_NAME,
 } from '@/lib/constants'
 
-export type MailKind = 'welcome' | 'password-reset' | 'order-paid' | 'login-code' | 'already-registered'
+export type MailKind = 'welcome' | 'password-reset' | 'order-paid' | 'login-code' | 'already-registered' | 'contact-request'
 
 interface MailTemplate {
   subject: string
@@ -106,6 +106,17 @@ function alreadyRegisteredTemplate(data: Record<string, string>): MailTemplate {
   }
 }
 
+function contactRequestTemplate(data: Record<string, string>): MailTemplate {
+  const { label, name, email, message } = data
+  const subject = `${label}: ${email}`
+  const text = `Имя: ${name}\nПочта: ${email}\nКомментарий: ${message}`
+  return {
+    subject,
+    html: `<p><b>Имя:</b> ${name}</p><p><b>Почта:</b> ${email}</p><p><b>Комментарий:</b> ${message}</p>`,
+    text,
+  }
+}
+
 function buildTemplate(kind: MailKind, data: Record<string, string>): MailTemplate {
   switch (kind) {
     case 'welcome':
@@ -118,6 +129,8 @@ function buildTemplate(kind: MailKind, data: Record<string, string>): MailTempla
       return loginCodeTemplate(data)
     case 'already-registered':
       return alreadyRegisteredTemplate(data)
+    case 'contact-request':
+      return contactRequestTemplate(data)
   }
 }
 

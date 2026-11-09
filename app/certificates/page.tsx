@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
-import { NoticeBanner } from '@/components/NoticeBanner/NoticeBanner'
-import { CONTACT_EMAIL } from '@/utils/routes'
+import { CertificatesCTA } from './CertificatesCTA'
 import styles from './certificates.module.css'
 
 export const metadata: Metadata = {
@@ -8,22 +7,28 @@ export const metadata: Metadata = {
   description: 'Сертификат — удобный подарок для друзей, коллег и близких. Действует 1 год, от 1000 до 15000 рублей.',
 }
 
-const FAQ_ITEMS = [
+const EMAIL = 'birdwatching@mail.ru'
+
+const EmailLink = () => (
+  <a href={`mailto:${EMAIL}`} className="text-link">{EMAIL}</a>
+)
+
+const FAQ_ITEMS: { q: string; a: React.ReactNode }[] = [
   {
     q: 'Сколько действует сертификат?',
     a: '1 год с даты покупки.',
   },
   {
     q: 'Как воспользоваться сертификатом?',
-    a: 'Нужно написать на почту и указать:\n• код, указанный на сертификате (или фото)\n• событие, на которое хотите записаться\n• количество билетов\n• наличие бинокля',
+    a: <>{'Нужно написать на '}<EmailLink/>{' и указать:\n• код, указанный на сертификате (или фото)\n• событие, на которое хотите записаться\n• количество билетов\n• наличие бинокля'}</>,
   },
   {
     q: 'Какой номинал сертификата возможен?',
-    a: 'От 1000 до 15 000 рублей.',
+    a: 'От 1000 до 15 000 рублей.',
   },
   {
     q: 'Как получить сертификат?',
-    a: 'Напишите на почту и укажите:\n• номинал\n• для кого/от кого, если это нужно указать на сертификате\n\nВ течение 24 часов мы сделаем электронный сертификат и пришлём вам на почту.',
+    a: <>{'Напишите на '}<EmailLink/>{' и укажите:\n• номинал\n• для кого/от кого, если это нужно указать на сертификате\n\nВ течение 24 часов мы сделаем электронный сертификат и пришлём вам на почту.'}</>,
   },
   {
     q: 'На какие события распространяется сертификат?',
@@ -48,17 +53,14 @@ export default function CertificatesPage() {
         {FAQ_ITEMS.map((item) => (
           <div key={item.q} className={styles.faqItem}>
             <h2 className={`text-h2 ${styles.faqQ}`}>{item.q}</h2>
-            <p className={`text-body-l ${styles.faqA}`}>{item.a}</p>
+            <p className={styles.faqA}>{item.a}</p>
           </div>
         ))}
       </section>
 
       {/* CTA */}
-      <section>
-        <NoticeBanner
-          text="Если остались вопросы или вы хотите заказать сертификат"
-          buttons={[{ label: 'Написать', href: `mailto:${CONTACT_EMAIL}` }]}
-        />
+      <section className={styles.cta}>
+        <CertificatesCTA />
       </section>
 
     </main>

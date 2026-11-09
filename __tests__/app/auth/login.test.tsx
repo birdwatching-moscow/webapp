@@ -38,28 +38,36 @@ function fillOtpCode(code: string) {
   }
 }
 
-// Default fetch mock: request-login-code (step 1) passes through ok;
-// verify-login-code (step 2) returns { next: 'session' } for the USER path.
+// Registered user: check-email → { registered: true }, then request-login-code → ok
 function stubFetchForUser() {
   vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+    if (String(url).includes('check-email')) {
+      return Promise.resolve({ ok: true, json: async () => ({ registered: true }) })
+    }
     if (String(url).includes('verify-login-code')) {
       return Promise.resolve({ ok: true, json: async () => ({ next: 'session' }) })
     }
-    return Promise.resolve({ ok: true, json: async () => ({}) })
+    return Promise.resolve({ ok: true, json: async () => ({ csrfToken: 'test-csrf' }) })
   }))
 }
 
 function stubFetchForAdmin(challengeToken = 'tok123') {
   vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+    if (String(url).includes('check-email')) {
+      return Promise.resolve({ ok: true, json: async () => ({ registered: true }) })
+    }
     if (String(url).includes('verify-login-code')) {
       return Promise.resolve({ ok: true, json: async () => ({ next: 'password', challengeToken }) })
     }
-    return Promise.resolve({ ok: true, json: async () => ({}) })
+    return Promise.resolve({ ok: true, json: async () => ({ csrfToken: 'test-csrf' }) })
   }))
 }
 
 function stubFetchForAdminNoPassword(verifyChallengeToken = 'tok123', newChallengeToken = 'newtoken456') {
   vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+    if (String(url).includes('check-email')) {
+      return Promise.resolve({ ok: true, json: async () => ({ registered: true }) })
+    }
     if (String(url).includes('verify-login-code')) {
       return Promise.resolve({
         ok: true,
@@ -72,7 +80,7 @@ function stubFetchForAdminNoPassword(verifyChallengeToken = 'tok123', newChallen
         json: async () => ({ challengeToken: newChallengeToken }),
       })
     }
-    return Promise.resolve({ ok: true, json: async () => ({}) })
+    return Promise.resolve({ ok: true, json: async () => ({ csrfToken: 'test-csrf' }) })
   }))
 }
 
@@ -113,7 +121,7 @@ describe('LoginPage — step 1 (email)', () => {
 async function submitEmail(email = 'user@test.com') {
   render(<LoginPage />)
   fireEvent.change(screen.getByLabelText(C.emailField), { target: { value: email } })
-  fireEvent.submit(screen.getByRole('button', { name: LC.requestCode }))
+  fireEvent.submit(screen.getByRole('button', { name: 'Продолжить' }))
   await waitFor(() => screen.getByLabelText(`Цифра 1 из ${LOGIN_CODE_LENGTH}`))
 }
 
