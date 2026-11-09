@@ -13,22 +13,22 @@ interface HomeExpeditionsProps {
 const SECTION_DESCRIPTION =
   'Мы собираем поездки по России и миру, чтобы видеть редкие виды, узнавать новые территории и проживать маршрут не спеша — в компании людей, которым так же важно быть внимательными к природе.'
 
-export const HomeExpeditions = ({ expeditions }: HomeExpeditionsProps) => (
-  <section className={styles.section}>
-    <SectionIntro title="Экспедиции" description={SECTION_DESCRIPTION} />
+export const HomeExpeditions = ({ expeditions }: HomeExpeditionsProps) => {
+  if (expeditions.length === 0) return null
 
-    <PhotoCard src="/images/home-expeditions.png" alt="Участники экспедиции" />
+  return (
+    <section className={styles.section}>
+      <SectionIntro title="Экспедиции" description={SECTION_DESCRIPTION} />
 
-    <NearestSection
-      moreHref={ROUTES.expeditions}
-      showMoreButton
-      emptyMessage={expeditions.length === 0 ? 'Здесь появятся предстоящие экспедиции' : undefined}
-    >
-      <div className={styles.cards}>
-        {expeditions.map((exp) => (
-          <ExpeditionCard key={exp.id} expedition={exp} />
-        ))}
-      </div>
-    </NearestSection>
-  </section>
-)
+      <PhotoCard src="/images/home-expeditions.png" alt="Участники экспедиции" />
+
+      <NearestSection moreHref={ROUTES.expeditions} showMoreButton>
+        <div className={styles.cards}>
+          {expeditions.map((exp) => (
+            <ExpeditionCard key={exp.id} expedition={exp} />
+          ))}
+        </div>
+      </NearestSection>
+    </section>
+  )
+}

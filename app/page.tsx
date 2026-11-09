@@ -24,7 +24,7 @@ export default async function Home() {
       <Hero />
       <HomeAbout />
       <HomeWalks />
-      <WalksTable walks={walks} showMoreButton />
+      <WalksTable walks={walks} showMoreButton={walks.length > 0} />
       <HomeExpeditions expeditions={expeditions} />
       <HomePrivate />
       <HomeMedia />

@@ -12,12 +12,14 @@ export interface WalksTableProps {
   showMoreButton?: boolean
 }
 
-export const WalksTable = ({ walks, showMoreButton = false }: WalksTableProps) => (
+export const WalksTable = ({ walks, showMoreButton = false }: WalksTableProps) => {
+  if (walks.length === 0) return null
+
+  return (
   <section data-testid="walks-table" className={styles.section}>
     <NearestSection
       moreHref={ROUTES.walks}
       showMoreButton={showMoreButton}
-      emptyMessage={walks.length === 0 ? 'Здесь появятся предстоящие прогулки' : undefined}
     >
       <div className={styles.table} role="list">
         <div className={styles.headerRow} role="presentation">
@@ -53,4 +55,5 @@ export const WalksTable = ({ walks, showMoreButton = false }: WalksTableProps) =
       </div>
     </NearestSection>
   </section>
-)
+  )
+}
