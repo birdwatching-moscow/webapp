@@ -1,7 +1,5 @@
-import nodemailer from 'nodemailer'
+import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses'
 import {
-  POSTBOX_SMTP_HOST,
-  POSTBOX_SMTP_PORT,
   POSTBOX_DEFAULT_FROM_ADDRESS,
   POSTBOX_DEFAULT_FROM_NAME,
 } from '@/lib/constants'
@@ -14,16 +12,12 @@ interface MailTemplate {
   text: string
 }
 
-// Created once at module load. Auth credentials may be absent in local dev —
-// no connection is attempted until sendMail() is called, and sendMail() guards
-// on POSTBOX_SMTP_USER before ever touching the transporter.
-const transporter = nodemailer.createTransport({
-  host: POSTBOX_SMTP_HOST,
-  port: POSTBOX_SMTP_PORT,
-  secure: false, // STARTTLS on port 587
-  auth: {
-    user: process.env.POSTBOX_SMTP_USER,
-    pass: process.env.POSTBOX_SMTP_PASSWORD,
+const sesClient = new SESClient({
+  endpoint: 'https://postbox.cloud.yandex.net',
+  region: 'ru-central1',
+  credentials: {
+    accessKeyId:     process.env.POSTBOX_KEY_ID     ?? '',
+    secretAccessKey: process.env.POSTBOX_KEY_SECRET ?? '',
   },
 })
 
@@ -139,8 +133,8 @@ export async function sendMail(args: {
   kind: MailKind
   data: Record<string, string>
 }): Promise<void> {
-  if (!process.env.POSTBOX_SMTP_USER) {
-    console.error('[mail] POSTBOX_SMTP_USER not set — skipping')
+  if (!process.env.POSTBOX_KEY_ID) {
+    console.error('[mail] POSTBOX_KEY_ID not set — skipping')
     return
   }
 
@@ -149,13 +143,17 @@ export async function sendMail(args: {
   const { subject, html, text } = buildTemplate(args.kind, args.data)
 
   try {
-    await transporter.sendMail({
-      from: `"${fromName}" <${fromAddress}>`,
-      to: args.to,
-      subject,
-      html,
-      text,
-    })
+    await sesClient.send(new SendEmailCommand({
+      Source: `"${fromName}" <${fromAddress}>`,
+      Destination: { ToAddresses: [args.to] },
+      Message: {
+        Subject: { Data: subject, Charset: 'UTF-8' },
+        Body: {
+          Html: { Data: html, Charset: 'UTF-8' },
+          Text: { Data: text, Charset: 'UTF-8' },
+        },
+      },
+    }))
   } catch (err) {
     console.error('[mail] send failed:', err)
   }
