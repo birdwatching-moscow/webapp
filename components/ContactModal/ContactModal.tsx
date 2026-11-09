@@ -11,13 +11,33 @@ import styles from './ContactModal.module.css'
 
 export type ContactRequestType = 'EXPEDITION' | 'CERTIFICATE' | 'QUESTION' | 'PRIVATE_EVENT'
 
-type TypeConfig = { label: string; subtitle: string }
+type TypeConfig = {
+  label: string
+  subtitle: string
+  successText: string
+}
 
 const TYPE_CONFIG: Record<ContactRequestType, TypeConfig> = {
-  EXPEDITION:    { label: 'Заявка на экспедицию',         subtitle: 'Оставьте контакты — координатор уточнит детали.' },
-  CERTIFICATE:   { label: 'Заявка на сертификат',         subtitle: 'Оставьте контакты — мы свяжемся в течение 24 часов.' },
-  QUESTION:      { label: 'Задать вопрос',                subtitle: 'Напишите вопрос — мы ответим в ближайшее время.' },
-  PRIVATE_EVENT: { label: 'Заявка на частное мероприятие', subtitle: 'Оставьте контакты — мы подберём формат под вас.' },
+  EXPEDITION: {
+    label: 'Заявка на экспедицию',
+    subtitle: 'Оставьте контакты — координатор уточнит детали.',
+    successText: 'Спасибо, что написали. Мы свяжемся с вами в течение дня, чтобы уточнить детали участия.',
+  },
+  CERTIFICATE: {
+    label: 'Заявка на сертификат',
+    subtitle: 'Оставьте контакты — мы свяжемся в течение 24 часов.',
+    successText: 'Спасибо! Мы свяжемся с вами в течение 24 часов.',
+  },
+  QUESTION: {
+    label: 'Задать вопрос',
+    subtitle: 'Напишите вопрос — мы ответим в ближайшее время.',
+    successText: 'Спасибо, что написали. Мы ответим в ближайшее время.',
+  },
+  PRIVATE_EVENT: {
+    label: 'Заявка на частное мероприятие',
+    subtitle: 'Оставьте контакты — мы подберём формат под вас.',
+    successText: 'Спасибо, что написали. Мы отвечаем обычно в течение дня после предоставления данных и отвечаем в зависимости от: есть ли свободный гид для ваших критериев или что мы можем предложить, если нет.',
+  },
 }
 
 type ContactModalProps = {
@@ -88,11 +108,12 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
           <Button onClick={handleClose} variant="outline" size="lg" fullWidth>Закрыть</Button>
         </div>
       ) : submitted ? (
-        <div className={styles.success}>
-          <p className={`text-body-l ${styles.successText}`}>
-            Спасибо! Мы получили вашу заявку и скоро свяжемся с вами.
-          </p>
-          <Button onClick={handleClose} fullWidth>Закрыть</Button>
+        <div className={styles.rateLimited}>
+          <div className={styles.rateLimitBox}>
+            <p className={`text-h3 ${styles.rateLimitTitle}`}>Заявка отправлена</p>
+            <p className={`text-body ${styles.rateLimitText}`}>{config.successText}</p>
+          </div>
+          <Button onClick={handleClose} variant="outline" size="lg" fullWidth>Закрыть</Button>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className={styles.form}>

@@ -152,18 +152,8 @@
   align-self: stretch;
 }
 
-/* ─── Error / Success ───────────────────────────────────────────────────────── */
+/* ─── Error ─────────────────────────────────────────────────────────────────── */
 
 .error {
   color: var(--color-error);
-}
-
-.success {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
-}
-
-.successText {
-  color: var(--color-foreground);
 }
