@@ -47,7 +47,7 @@ export const Modal = ({ open, onClose, title, children, footer }: ModalProps) =>
   if (!open) return null;
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
+    <div className={styles.overlay}>
       <div className={styles.dialogWrapper}>
         <button className={styles.closeBtn} onClick={onClose} aria-label="Закрыть">
           <CloseIcon />

@@ -39,13 +39,15 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
   const config = TYPE_CONFIG[defaultType]
 
   const handleClose = () => {
-    setName('')
-    setEmail('')
-    setMessage('')
-    setHp('')
-    setConsent(false)
-    setSubmitted(false)
-    setServerError(null)
+    if (submitted) {
+      setName('')
+      setEmail('')
+      setMessage('')
+      setHp('')
+      setConsent(false)
+      setSubmitted(false)
+      setServerError(null)
+    }
     onClose()
   }
 
