@@ -1,0 +1,27 @@
+/* Extra rows (index 3+) hidden on mobile by default */
+.extraRow {
+  display: none;
+}
+
+/* When expanded, show extra rows */
+.expanded .extraRow {
+  display: grid;
+}
+
+.expandButton {
+  padding: var(--space-6) 0 var(--space-2);
+}
+
+/* ─── Desktop (min-width: 1248px) ─────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  /* Always show extra rows on desktop */
+  .extraRow {
+    display: grid !important;
+  }
+
+  /* Never show expand button on desktop */
+  .expandButton {
+    display: none !important;
+  }
+}

@@ -1,0 +1,20 @@
+/* ─── Mobile ──────────────────────────────────────────────────────────────── */
+
+.section {
+  padding-inline: var(--page-gutter);
+  padding-top: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.heading {
+  margin: 0;
+}
+
+/* Flex-wrap mirrors the Figma HORIZONTAL WRAP layout: cards grow to fill each row */
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+}

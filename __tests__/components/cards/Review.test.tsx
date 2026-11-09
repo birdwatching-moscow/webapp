@@ -32,9 +32,9 @@ describe('Review — content', () => {
 })
 
 describe('Review — author photo', () => {
-  it('renders placeholder role="img" when authorImageUrl is not provided', () => {
-    const { container } = render(<Review {...base} />)
-    expect(container.querySelector('[role="img"]')).toBeInTheDocument()
+  it('renders img with authorName alt using the default image when authorImageUrl is not provided', () => {
+    render(<Review {...base} />)
+    expect(screen.getByAltText(base.authorName)).toBeInTheDocument()
   })
 
   it('renders img element with authorName as alt when authorImageUrl is provided', () => {

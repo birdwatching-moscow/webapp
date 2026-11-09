@@ -133,17 +133,12 @@ export async function sendMail(args: {
   kind: MailKind
   data: Record<string, string>
 }): Promise<void> {
-  console.log('[mail] sendMail called, kind:', args.kind, 'to:', args.to, 'key set:', !!process.env.POSTBOX_KEY_ID)
-  if (!process.env.POSTBOX_KEY_ID) {
-    console.error('[mail] POSTBOX_KEY_ID not set — skipping')
-    return
-  }
+  if (!process.env.POSTBOX_KEY_ID) return
 
   const fromAddress = process.env.POSTBOX_FROM_ADDRESS || POSTBOX_DEFAULT_FROM_ADDRESS
   const fromName = process.env.POSTBOX_FROM_NAME || POSTBOX_DEFAULT_FROM_NAME
   const { subject, html, text } = buildTemplate(args.kind, args.data)
 
-  console.log('[mail] sending to:', args.to, 'from:', process.env.POSTBOX_FROM_ADDRESS)
   try {
     await sesClient.send(new SendEmailCommand({
       FromEmailAddress: `"${fromName}" <${fromAddress}>`,
@@ -160,7 +155,5 @@ export async function sendMail(args: {
     }))
   } catch (err) {
     console.error('[mail] send failed:', err)
-    return
   }
-  console.log('[mail] sent ok to:', args.to)
 }
