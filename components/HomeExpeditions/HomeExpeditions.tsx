@@ -14,7 +14,13 @@ const SECTION_DESCRIPTION =
   'Мы собираем поездки по России и миру, чтобы видеть редкие виды, узнавать новые территории и проживать маршрут не спеша — в компании людей, которым так же важно быть внимательными к природе.'
 
 export const HomeExpeditions = ({ expeditions }: HomeExpeditionsProps) => {
-  if (expeditions.length === 0) return null
+  if (expeditions.length === 0) {
+    return (
+      <section className={styles.section}>
+        <NearestSection moreHref={ROUTES.expeditions} isEmpty />
+      </section>
+    )
+  }
 
   return (
     <section className={styles.section}>

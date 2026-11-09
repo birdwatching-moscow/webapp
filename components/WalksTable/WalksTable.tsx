@@ -17,7 +17,7 @@ export const WalksTable = ({ walks, showMoreButton = false }: WalksTableProps) =
     <NearestSection
       moreHref={ROUTES.walks}
       showMoreButton={showMoreButton}
-      emptyMessage={walks.length === 0 ? 'Здесь появятся предстоящие прогулки' : undefined}
+      isEmpty={walks.length === 0}
     >
       <div className={styles.table} role="list">
         <div className={styles.headerRow} role="presentation">

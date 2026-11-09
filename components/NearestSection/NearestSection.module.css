@@ -11,11 +11,6 @@
   line-height: 32px;
 }
 
-.emptyMessage {
-  margin: 0;
-  color: var(--color-muted-foreground);
-}
-
 .moreButton {
   min-width: 260px;
 }
