@@ -11,6 +11,15 @@
   line-height: 32px;
 }
 
+.emptyMessage {
+  margin: 0;
+  color: var(--color-muted-foreground);
+}
+
+.moreButton {
+  min-width: 260px;
+}
+
 @media (min-width: 1248px) {
   .moreButton {
     max-width: 406px;
