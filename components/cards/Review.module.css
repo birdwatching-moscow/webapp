@@ -1,10 +1,9 @@
+/* ─── Mobile (matches EditorialCard: full-width, auto height) ─────────────── */
+
 .root {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  height: 399px;
-  min-width: 320px;
-  max-width: 406px;
-  flex: 1 0 0;
   border: var(--stroke-default) solid var(--color-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -21,7 +20,6 @@
   align-items: flex-start;
   gap: var(--space-4);
   padding: var(--space-5);
-  height: 100%;
   color: inherit;
   text-decoration: none;
 }
@@ -47,4 +45,20 @@
 
 .body {
   font-weight: 500;
+}
+
+/* ─── Desktop: Figma dimensions ───────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .root {
+    width: auto;
+    height: 399px;
+    min-width: 320px;
+    max-width: 406px;
+    flex: 1 0 0;
+  }
+
+  .inner {
+    height: 100%;
+  }
 }
