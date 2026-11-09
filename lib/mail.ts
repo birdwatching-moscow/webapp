@@ -1,4 +1,4 @@
-import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses'
+import { SESv2Client, SendEmailCommand } from '@aws-sdk/client-sesv2'
 import {
   POSTBOX_DEFAULT_FROM_ADDRESS,
   POSTBOX_DEFAULT_FROM_NAME,
@@ -12,7 +12,7 @@ interface MailTemplate {
   text: string
 }
 
-const sesClient = new SESClient({
+const sesClient = new SESv2Client({
   endpoint: 'https://postbox.cloud.yandex.net',
   region: 'ru-central1',
   credentials: {
@@ -146,13 +146,15 @@ export async function sendMail(args: {
   console.log('[mail] sending to:', args.to, 'from:', process.env.POSTBOX_FROM_ADDRESS)
   try {
     await sesClient.send(new SendEmailCommand({
-      Source: `"${fromName}" <${fromAddress}>`,
+      FromEmailAddress: `"${fromName}" <${fromAddress}>`,
       Destination: { ToAddresses: [args.to] },
-      Message: {
-        Subject: { Data: subject, Charset: 'UTF-8' },
-        Body: {
-          Html: { Data: html, Charset: 'UTF-8' },
-          Text: { Data: text, Charset: 'UTF-8' },
+      Content: {
+        Simple: {
+          Subject: { Data: subject, Charset: 'UTF-8' },
+          Body: {
+            Html: { Data: html, Charset: 'UTF-8' },
+            Text: { Data: text, Charset: 'UTF-8' },
+          },
         },
       },
     }))

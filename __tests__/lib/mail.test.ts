@@ -4,20 +4,22 @@ const { sesClientSendSpy } = vi.hoisted(() => ({
   sesClientSendSpy: vi.fn(),
 }))
 
-vi.mock('@aws-sdk/client-ses', () => ({
+vi.mock('@aws-sdk/client-sesv2', () => ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  SESClient: function (this: any) { this.send = sesClientSendSpy },
+  SESv2Client: function (this: any) { this.send = sesClientSendSpy },
   SendEmailCommand: function (input: unknown) { return input },
 }))
 
 import { sendMail } from '@/lib/mail'
 
 type SesInput = {
-  Source: string
+  FromEmailAddress: string
   Destination: { ToAddresses: string[] }
-  Message: {
-    Subject: { Data: string }
-    Body: { Html: { Data: string }; Text: { Data: string } }
+  Content: {
+    Simple: {
+      Subject: { Data: string }
+      Body: { Html: { Data: string }; Text: { Data: string } }
+    }
   }
 }
 
@@ -44,8 +46,8 @@ describe('sendMail — welcome', () => {
     expect(sesClientSendSpy).toHaveBeenCalledTimes(1)
     const input = sesClientSendSpy.mock.calls[0][0] as SesInput
     expect(input.Destination.ToAddresses[0]).toBe('newuser@example.com')
-    expect(input.Message.Subject.Data).toBe('Добро пожаловать в Birdwatching Moscow!')
-    expect(input.Message.Body.Html.Data).toContain('Иван')
+    expect(input.Content.Simple.Subject.Data).toBe('Добро пожаловать в Birdwatching Moscow!')
+    expect(input.Content.Simple.Body.Html.Data).toContain('Иван')
   })
 })
 
@@ -59,8 +61,8 @@ describe('sendMail — password-reset', () => {
 
     expect(sesClientSendSpy).toHaveBeenCalledTimes(1)
     const input = sesClientSendSpy.mock.calls[0][0] as SesInput
-    expect(input.Message.Subject.Data).toBe('Сброс пароля')
-    expect(input.Message.Body.Html.Data).toContain('https://birdwatching-moscow.ru/reset-password/abc123')
+    expect(input.Content.Simple.Subject.Data).toBe('Сброс пароля')
+    expect(input.Content.Simple.Body.Html.Data).toContain('https://birdwatching-moscow.ru/reset-password/abc123')
   })
 })
 
@@ -74,8 +76,8 @@ describe('sendMail — order-paid', () => {
 
     expect(sesClientSendSpy).toHaveBeenCalledTimes(1)
     const input = sesClientSendSpy.mock.calls[0][0] as SesInput
-    expect(input.Message.Subject.Data).toBe('Заказ оплачен — ваши билеты готовы')
-    expect(input.Message.Body.Html.Data).toContain('order-12345')
+    expect(input.Content.Simple.Subject.Data).toBe('Заказ оплачен — ваши билеты готовы')
+    expect(input.Content.Simple.Body.Html.Data).toContain('order-12345')
   })
 })
 
