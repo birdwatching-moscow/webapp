@@ -4,12 +4,17 @@ const IP_MAX_REQUESTS = 2
 const EMAIL_WINDOW_MS = 60_000
 const EMAIL_MAX_REQUESTS = 1
 
+const CONTACT_FORM_WINDOW_MS = 10 * 60_000  // 10 minutes
+const CONTACT_FORM_MAX_REQUESTS = 3
+
 const ipStore = new Map<string, { count: number; expiresAt: number }>()
 const emailStore = new Map<string, { count: number; expiresAt: number }>()
+const contactFormStore = new Map<string, { count: number; expiresAt: number }>()
 
 export function _resetStoreForTesting(): void {
   ipStore.clear()
   emailStore.clear()
+  contactFormStore.clear()
 }
 
 function check(
@@ -40,4 +45,8 @@ export function checkRateLimit(ip: string): { allowed: boolean; retryAfterSecond
 
 export function checkEmailCodeRateLimit(email: string): { allowed: boolean; retryAfterSeconds: number } {
   return check(emailStore, email, EMAIL_MAX_REQUESTS, EMAIL_WINDOW_MS)
+}
+
+export function checkContactFormRateLimit(ip: string): { allowed: boolean; retryAfterSeconds: number } {
+  return check(contactFormStore, ip, CONTACT_FORM_MAX_REQUESTS, CONTACT_FORM_WINDOW_MS)
 }

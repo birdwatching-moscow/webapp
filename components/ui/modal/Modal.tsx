@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { CloseIcon } from '@/components/icons/CloseIcon';
 import styles from './Modal.module.css';
 
 type ModalProps = {
   open: boolean;
   onClose: () => void;
-  title: string;
+  title?: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
 };
@@ -47,20 +48,22 @@ export const Modal = ({ open, onClose, title, children, footer }: ModalProps) =>
 
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="modal-title"
-        className={styles.dialog}
-        onClick={e => e.stopPropagation()}
-      >
-        <div className={styles.header}>
-          <h2 id="modal-title" className={styles.title}>{title}</h2>
-          <button className={styles.close} onClick={onClose} aria-label="Закрыть">✕</button>
+      <div className={styles.dialogWrapper}>
+        <button className={styles.closeBtn} onClick={onClose} aria-label="Закрыть">
+          <CloseIcon />
+        </button>
+        <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={title ? 'modal-title' : undefined}
+          className={styles.dialog}
+          onClick={e => e.stopPropagation()}
+        >
+          {title && <h2 id="modal-title" className={styles.title}>{title}</h2>}
+          <div className={styles.body}>{children}</div>
+          {footer && <div className={styles.footer}>{footer}</div>}
         </div>
-        <div className={styles.body}>{children}</div>
-        {footer && <div className={styles.footer}>{footer}</div>}
       </div>
     </div>
   );

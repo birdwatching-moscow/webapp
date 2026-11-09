@@ -32,11 +32,17 @@ enum OrderStatus {
 enum RequestType {
   PRIVATE_WALK
   EXPEDITION
+  CERTIFICATE
+  QUESTION
+  PRIVATE_EVENT
 }
 
 enum RequestStatus {
   NEW
   WAITLIST
+  OPEN
+  IN_PROGRESS
+  CLOSED
 }
 
 model User {

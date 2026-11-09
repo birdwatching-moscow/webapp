@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, startTransition } from 'react'
 import Link from 'next/link'
 import { NoticeBanner } from '@/components/NoticeBanner/NoticeBanner'
 import styles from './cookie-consent.module.css'
@@ -20,7 +20,7 @@ export const CookieConsent = () => {
 
   useEffect(() => {
     try {
-      if (!localStorage.getItem(STORAGE_KEY)) setVisible(true)
+      if (!localStorage.getItem(STORAGE_KEY)) startTransition(() => setVisible(true))
     } catch {
       // localStorage blocked (private mode) — don't show
     }

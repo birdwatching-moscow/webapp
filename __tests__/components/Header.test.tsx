@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 
-const { useSessionMock, signOutMock, usePathnameMock } = vi.hoisted(() => ({
+const { useSessionMock, signOutMock, usePathnameMock, useRouterMock } = vi.hoisted(() => ({
   useSessionMock: vi.fn(),
   signOutMock: vi.fn(),
   usePathnameMock: vi.fn(),
+  useRouterMock: vi.fn(),
 }))
 
 vi.mock('next-auth/react', () => ({
@@ -14,6 +15,7 @@ vi.mock('next-auth/react', () => ({
 
 vi.mock('next/navigation', () => ({
   usePathname: usePathnameMock,
+  useRouter: useRouterMock,
 }))
 
 import { Header } from '@/components/Header'
@@ -21,6 +23,10 @@ import { Header } from '@/components/Header'
 const SESSION_UNAUTH = { status: 'unauthenticated', data: null } as const
 const SESSION_AUTH   = { status: 'authenticated', data: { user: { name: 'Test', email: 'test@test.com' } } } as const
 const SESSION_LOAD   = { status: 'loading', data: null } as const
+
+beforeEach(() => {
+  useRouterMock.mockReturnValue({ refresh: vi.fn() })
+})
 
 function renderHeader() {
   return render(<Header />)

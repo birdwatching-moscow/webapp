@@ -1,0 +1,153 @@
+/* ─── Honeypot (hidden from humans, visible to bots) ───────────────────────── */
+
+.honeypot {
+  display: none;
+}
+
+/* ─── Form layout ───────────────────────────────────────────────────────────── */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);       /* 24px */
+}
+
+/* ─── Form header ───────────────────────────────────────────────────────────── */
+
+.formHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.formTitle {
+  color: var(--color-foreground);
+  /* typography via text-h2 global class */
+}
+
+.subtitle {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: var(--font-size-lg);  /* 18px */
+  line-height: 24px;
+  color: var(--color-muted-foreground);
+}
+
+/* ─── Fields ────────────────────────────────────────────────────────────────── */
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);       /* 16px between inputs */
+  width: 100%;
+}
+
+/* override Input component defaults within the modal */
+.fields input,
+.fields textarea {
+  border-color: var(--color-border);
+  border-radius: var(--radius-lg);
+  max-width: 406px;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 108px;
+  padding: var(--space-3) var(--space-4);
+  border: var(--stroke-default) solid var(--color-border);
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: var(--font-size-md);
+  line-height: 20px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.textarea::placeholder {
+  color: var(--color-muted-foreground);
+}
+
+.textarea:focus {
+  border-color: var(--color-primary);
+  border-width: var(--stroke-focus);
+}
+
+/* ─── Consent ───────────────────────────────────────────────────────────────── */
+
+.consent {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+.checkbox {
+  flex-shrink: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-lg);
+  border: var(--stroke-default) solid var(--color-input-border);
+  background: var(--color-background);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+  position: relative;
+}
+
+.checkbox:checked {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.checkbox:checked::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='10' viewBox='0 0 12 10' fill='none'%3E%3Cpath d='M1 5L4.5 8.5L11 1.5' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px 10px no-repeat;
+}
+
+.checkbox:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.consentText {
+  color: var(--color-foreground);
+}
+
+.consentLink {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.consentLink:hover {
+  text-decoration: underline;
+}
+
+/* ─── Submit button ─────────────────────────────────────────────────────────── */
+
+.submitBtn {
+  min-width: 260px;
+  max-width: 406px;
+  align-self: stretch;
+}
+
+/* ─── Error / Success ───────────────────────────────────────────────────────── */
+
+.error {
+  color: var(--color-error);
+}
+
+.success {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.successText {
+  color: var(--color-foreground);
+}
