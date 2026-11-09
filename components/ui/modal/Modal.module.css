@@ -32,7 +32,7 @@
 
 .header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-4);
   width: 100%;
 }
@@ -41,7 +41,8 @@
   flex: 1;
   font-family: 'Montserrat', sans-serif;
   font-weight: 600;
-  font-size: var(--font-size-3xl);
+  font-size: 24px;
+  font-style: normal;
   line-height: 1.2;
   color: var(--color-foreground);
   margin: 0;
@@ -53,8 +54,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
   background: none;
   border: none;
   cursor: pointer;
@@ -65,6 +67,9 @@
 
 .body {
   width: 100%;
+  border: var(--stroke-default) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
 }
 
 .footer {
@@ -80,10 +85,10 @@
   }
 
   .dialog {
-    width: 406px;
+    width: 454px;
     max-height: none;
-    padding: var(--space-5) var(--space-6);
-    border-radius: var(--radius-lg);
-    border: var(--stroke-default) solid var(--color-border);
+    padding: var(--space-5) var(--space-4);
+    justify-content: center;
+    align-items: center;
   }
 }

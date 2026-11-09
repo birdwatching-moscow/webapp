@@ -13,7 +13,7 @@ export type ContactRequestType = 'EXPEDITION' | 'CERTIFICATE' | 'QUESTION' | 'PR
 
 type TypeConfig = {
   label: string
-  subtitle: string
+  subtitle: React.ReactNode
   successText: string
 }
 
@@ -30,12 +30,20 @@ const TYPE_CONFIG: Record<ContactRequestType, TypeConfig> = {
   },
   QUESTION: {
     label: 'Задать вопрос',
-    subtitle: 'Напишите вопрос — мы ответим в ближайшее время.',
-    successText: 'Спасибо, что написали. Мы ответим в ближайшее время.',
+    subtitle: 'Напишите вопрос — мы ответим в течение 24 часов.',
+    successText: 'Спасибо, что написали. Мы ответим в течение 24 часов.',
   },
   PRIVATE_EVENT: {
     label: 'Заявка на частное мероприятие',
-    subtitle: 'Оставьте контакты — мы подберём формат под вас.',
+    subtitle: (
+      <ul>
+        <li>желаемый диапазон дат для прогулки,</li>
+        <li>желаемое время начала</li>
+        <li>локацию,</li>
+        <li>количество участников,</li>
+        <li>какой вид прогулки нужен: наблюдение за птицами или натуралистика.</li>
+      </ul>
+    ),
     successText: 'Спасибо, что написали. Мы отвечаем обычно в течение дня после предоставления данных и отвечаем в зависимости от: есть ли свободный гид для ваших критериев или что мы можем предложить, если нет.',
   },
 }
@@ -95,25 +103,23 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
     }
   }
 
+  const closeFooter = (rateLimited || submitted)
+    ? <Button onClick={handleClose} variant="outline" size="lg" fullWidth>Закрыть</Button>
+    : undefined
+
   return (
-    <Modal open={open} onClose={handleClose} title={config.label}>
+    <Modal open={open} onClose={handleClose} title="Оставить заявку" footer={closeFooter}>
       {rateLimited ? (
-        <div className={styles.rateLimited}>
-          <div className={styles.rateLimitBox}>
-            <p className={`text-h3 ${styles.rateLimitTitle}`}>Нужно немного передохнуть</p>
-            <p className={`text-body ${styles.rateLimitText}`}>
-              Вы исчерпали лимит обращений на данный момент. Мы сможем принять ваш следующий запрос через {retryMinutes} минут.
-            </p>
-          </div>
-          <Button onClick={handleClose} variant="outline" size="lg" fullWidth>Закрыть</Button>
+        <div className={styles.rateLimitBox}>
+          <p className={`text-h3 ${styles.rateLimitTitle}`}>Нужно немного передохнуть</p>
+          <p className={`text-body ${styles.rateLimitText}`}>
+            Вы исчерпали лимит обращений на данный момент. Мы сможем принять ваш следующий запрос через {retryMinutes} минут.
+          </p>
         </div>
       ) : submitted ? (
-        <div className={styles.rateLimited}>
-          <div className={styles.rateLimitBox}>
-            <p className={`text-h3 ${styles.rateLimitTitle}`}>Заявка отправлена</p>
-            <p className={`text-body ${styles.rateLimitText}`}>{config.successText}</p>
-          </div>
-          <Button onClick={handleClose} variant="outline" size="lg" fullWidth>Закрыть</Button>
+        <div className={styles.rateLimitBox}>
+          <p className={`text-h3 ${styles.rateLimitTitle}`}>Заявка отправлена</p>
+          <p className={`text-body ${styles.rateLimitText}`}>{config.successText}</p>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className={styles.form}>
@@ -129,7 +135,8 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
             className={styles.honeypot}
           />
 
-          <p className={styles.subtitle}>{config.subtitle}</p>
+          <p className={`text-h3 ${styles.formTitle}`}>{config.label}</p>
+          <div className={styles.subtitle}>{config.subtitle}</div>
 
           <div className={styles.fields}>
             <Input
