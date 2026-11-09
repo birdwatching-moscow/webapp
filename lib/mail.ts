@@ -102,7 +102,7 @@ function alreadyRegisteredTemplate(data: Record<string, string>): MailTemplate {
 
 function contactRequestTemplate(data: Record<string, string>): MailTemplate {
   const { label, name, email, message } = data
-  const subject = `${label}: ${email}`
+  const subject = `${name} — ${label}`
   const text = `Имя: ${name}\nПочта: ${email}\nКомментарий: ${message}`
   return {
     subject,
