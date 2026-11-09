@@ -13,28 +13,22 @@ interface HomeExpeditionsProps {
 const SECTION_DESCRIPTION =
   'Мы собираем поездки по России и миру, чтобы видеть редкие виды, узнавать новые территории и проживать маршрут не спеша — в компании людей, которым так же важно быть внимательными к природе.'
 
-export const HomeExpeditions = ({ expeditions }: HomeExpeditionsProps) => {
-  if (expeditions.length === 0) {
-    return (
-      <section className={styles.section}>
-        <NearestSection moreHref={ROUTES.expeditions} isEmpty />
-      </section>
-    )
-  }
+export const HomeExpeditions = ({ expeditions }: HomeExpeditionsProps) => (
+  <section className={styles.section}>
+    <SectionIntro title="Экспедиции" description={SECTION_DESCRIPTION} />
 
-  return (
-    <section className={styles.section}>
-      <SectionIntro title="Экспедиции" description={SECTION_DESCRIPTION} />
+    <PhotoCard src="/images/home-expeditions.png" alt="Участники экспедиции" />
 
-      <PhotoCard src="/images/home-expeditions.png" alt="Участники экспедиции" />
-
-      <NearestSection moreHref={ROUTES.expeditions} showMoreButton>
-        <div className={styles.cards}>
-          {expeditions.map((exp) => (
-            <ExpeditionCard key={exp.id} expedition={exp} />
-          ))}
-        </div>
-      </NearestSection>
-    </section>
-  )
-}
+    <NearestSection
+      moreHref={ROUTES.expeditions}
+      showMoreButton={expeditions.length > 0}
+      isEmpty={expeditions.length === 0}
+    >
+      <div className={styles.cards}>
+        {expeditions.map((exp) => (
+          <ExpeditionCard key={exp.id} expedition={exp} />
+        ))}
+      </div>
+    </NearestSection>
+  </section>
+)
