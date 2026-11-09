@@ -22,7 +22,6 @@ export const Modal = ({ open, onClose, title, children, footer }: ModalProps) =>
     return () => document.removeEventListener('keydown', handleKey);
   }, [open, onClose]);
 
-  // Focus trap
   useEffect(() => {
     if (!open) return;
     const el = dialogRef.current;
@@ -48,22 +47,21 @@ export const Modal = ({ open, onClose, title, children, footer }: ModalProps) =>
 
   return (
     <div className={styles.overlay}>
-      <div className={styles.dialogWrapper}>
-        <button className={styles.closeBtn} onClick={onClose} aria-label="Закрыть">
-          <CloseIcon />
-        </button>
-        <div
-          ref={dialogRef}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby={title ? 'modal-title' : undefined}
-          className={styles.dialog}
-          onClick={e => e.stopPropagation()}
-        >
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? 'modal-title' : undefined}
+        className={styles.dialog}
+      >
+        <div className={styles.header}>
           {title && <h2 id="modal-title" className={styles.title}>{title}</h2>}
-          <div className={styles.body}>{children}</div>
-          {footer && <div className={styles.footer}>{footer}</div>}
+          <button className={styles.closeBtn} onClick={onClose} aria-label="Закрыть">
+            <CloseIcon />
+          </button>
         </div>
+        <div className={styles.body}>{children}</div>
+        {footer && <div className={styles.footer}>{footer}</div>}
       </div>
     </div>
   );

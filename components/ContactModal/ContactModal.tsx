@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import axios from 'axios'
 import { Modal } from '@/components/ui/modal/Modal'
 import { Input } from '@/components/ui/input/Input'
 import { Button } from '@/components/ui/buttons/Button'
@@ -19,7 +20,6 @@ const TYPE_CONFIG: Record<ContactRequestType, TypeConfig> = {
   PRIVATE_EVENT: { label: 'Заявка на частное мероприятие', subtitle: 'Оставьте контакты — мы подберём формат под вас.' },
 }
 
-
 type ContactModalProps = {
   open: boolean
   onClose: () => void
@@ -34,6 +34,8 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
   const [consent, setConsent]     = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [rateLimited, setRateLimited] = useState(false)
+  const [retryMinutes, setRetryMinutes] = useState(10)
   const [serverError, setServerError] = useState<string | null>(null)
 
   const config = TYPE_CONFIG[defaultType]
@@ -45,9 +47,10 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
       setMessage('')
       setHp('')
       setConsent(false)
-      setSubmitted(false)
-      setServerError(null)
     }
+    setSubmitted(false)
+    setRateLimited(false)
+    setServerError(null)
     onClose()
   }
 
@@ -59,16 +62,32 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
     try {
       await submitContactRequest({ type: defaultType, name, email, message, _hp: hp })
       setSubmitted(true)
-    } catch {
-      setServerError('Не удалось отправить заявку. Попробуйте ещё раз.')
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 429) {
+        const retryAfterSec = Number(err.response.headers['retry-after']) || 600
+        setRetryMinutes(Math.ceil(retryAfterSec / 60))
+        setRateLimited(true)
+      } else {
+        setServerError('Не удалось отправить заявку. Попробуйте ещё раз.')
+      }
     } finally {
       setSubmitting(false)
     }
   }
 
   return (
-    <Modal open={open} onClose={handleClose}>
-      {submitted ? (
+    <Modal open={open} onClose={handleClose} title={config.label}>
+      {rateLimited ? (
+        <div className={styles.rateLimited}>
+          <div className={styles.rateLimitBox}>
+            <p className={`text-h3 ${styles.rateLimitTitle}`}>Нужно немного передохнуть</p>
+            <p className={`text-body ${styles.rateLimitText}`}>
+              Вы исчерпали лимит обращений на данный момент. Мы сможем принять ваш следующий запрос через {retryMinutes} минут.
+            </p>
+          </div>
+          <Button onClick={handleClose} variant="outline" size="lg" fullWidth>Закрыть</Button>
+        </div>
+      ) : submitted ? (
         <div className={styles.success}>
           <p className={`text-body-l ${styles.successText}`}>
             Спасибо! Мы получили вашу заявку и скоро свяжемся с вами.
@@ -88,10 +107,8 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
             aria-hidden="true"
             className={styles.honeypot}
           />
-          <div className={styles.formHeader}>
-            <h2 className={`text-h2 ${styles.formTitle}`}>{config.label}</h2>
-            <p className={styles.subtitle}>{config.subtitle}</p>
-          </div>
+
+          <p className={styles.subtitle}>{config.subtitle}</p>
 
           <div className={styles.fields}>
             <Input
