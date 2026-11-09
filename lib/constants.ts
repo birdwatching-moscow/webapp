@@ -74,4 +74,4 @@ export const ORDER_STATUS_POLL_INTERVAL_MS = 2000
 export const POSTBOX_DEFAULT_FROM_ADDRESS = 'no-reply@localhost'
 export const POSTBOX_DEFAULT_FROM_NAME = 'Птицы Москвы'
 
-export const ADMIN_EMAIL = 'birdwatching@mail.ru'
+export const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'birdwatching@mail.ru'
