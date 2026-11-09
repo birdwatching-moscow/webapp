@@ -1,16 +1,13 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import type { WalkTableRow } from '@/lib/walks'
+import { WalksExpandable } from '@/components/walks-page/WalksExpandable'
 
 vi.mock('next/link', () => ({
   default: ({ href, children, ...props }: { href: string; children: React.ReactNode; [key: string]: unknown }) => (
     <a href={href} {...props}>{children}</a>
   ),
 }))
-
-// WalksExpandable does not exist yet — these tests will fail until implementation
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { WalksExpandable } = require('@/components/walks-page/WalksExpandable')
 
 const aug9_8am = new Date('2026-08-09T05:00:00.000Z')
 
