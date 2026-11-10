@@ -1,8 +1,8 @@
 import { z } from 'zod'
 import { MAX_EMAIL } from '@/lib/constants'
 
-const MAX_REQUEST_NAME    = 100
-const MAX_REQUEST_MESSAGE = 2000
+export const MAX_REQUEST_NAME    = 100
+export const MAX_REQUEST_MESSAGE = 2000
 
 const baseName    = z.string().min(1).max(MAX_REQUEST_NAME)
 const baseEmail   = z.string().email().max(MAX_EMAIL)
