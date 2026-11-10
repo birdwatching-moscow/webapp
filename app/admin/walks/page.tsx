@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/buttons/Button'
 import { buildWalksWhere } from '@/lib/admin/walksWhere'
 import { WalksFilters } from './WalksFilters'
 import { ExportButton } from './ExportButton'
+import { WalksTable } from './WalksTable'
 import styles from './walks.module.css'
 
 const PAGE_SIZE = 20
@@ -151,6 +152,22 @@ export default async function WalksPage({
   const to = skip + walks.length
   const showStatus = activeTab === 'all'
 
+  const rows = walks.map(w => {
+    const statusInfo = getStatusInfo(w.status, w.startsAt, now)
+    return {
+      id:            w.id,
+      title:         w.title,
+      dateStr:       w.startsAt.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' }).replace(' г.', ''),
+      timeStr:       w.startsAt.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+      endsAtTimeStr: w.endsAt ? w.endsAt.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : null,
+      guideName:     w.guide.name,
+      ticketCount:   w._count.tickets,
+      capacity:      w.capacity,
+      statusLabel:   statusInfo.label,
+      statusCls:     statusInfo.cls,
+    }
+  })
+
   const pageHref = (p: number) =>
     activeTab === 'all' ? allTabHref(filters, p) : tabHref(activeTab, p)
 
@@ -204,53 +221,7 @@ export default async function WalksPage({
         <p className={styles.empty}>{EMPTY_LABEL[activeTab]}</p>
       ) : (
         <>
-          <div className={styles.tableWrapper}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Название</th>
-                  <th>Дата и время</th>
-                  <th>Гид</th>
-                  <th>Билеты</th>
-                  {showStatus && <th>Статус</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {walks.map(w => {
-                  const statusInfo = getStatusInfo(w.status, w.startsAt, now)
-                  return (
-                    <tr key={w.id}>
-                      <td>
-                        <Link href={`/admin/walks/${w.id}`} className={styles.nameLink}>
-                          {w.title}
-                        </Link>
-                      </td>
-                      <td>
-                        <div className={styles.dateCell}>
-                          <span>{w.startsAt.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' }).replace(' г.', '')}</span>
-                          <span className={styles.dateTime}>
-                            {w.startsAt.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
-                            {w.endsAt && ` – ${w.endsAt.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`}
-                          </span>
-                        </div>
-                      </td>
-                      <td className={styles.muted}>{w.guide.name}</td>
-                      <td className={styles.tickets}>
-                        {w._count.tickets} / {w.capacity}
-                      </td>
-                      {showStatus && (
-                        <td>
-                          <span className={[styles.badge, styles[statusInfo.cls as keyof typeof styles]].join(' ')}>
-                            {statusInfo.label}
-                          </span>
-                        </td>
-                      )}
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+          <WalksTable rows={rows} showStatus={showStatus} />
 
           {activeTab === 'all' && (
             <p className={styles.countLine}>

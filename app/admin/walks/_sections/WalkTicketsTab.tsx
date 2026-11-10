@@ -188,10 +188,10 @@ export function WalkTicketsTab({ walkId }: Props) {
         footer={
           <div className={ticketStyles.modalFooter}>
             <Button fullWidth variant="secondary" onClick={() => { setPendingDelete(null); setDeleteError(null) }} disabled={deleting}>
-              Отмена
+              Назад
             </Button>
             <Button fullWidth variant="destructive" onClick={confirmDelete} disabled={deleting}>
-              {deleting ? 'Удаление…' : 'Удалить'}
+              {deleting ? '…' : 'Удалить'}
             </Button>
           </div>
         }

@@ -295,15 +295,13 @@
   background: color-mix(in srgb, var(--color-primary) 4%, transparent);
 }
 
+.tableRow {
+  cursor: pointer;
+}
+
 .nameLink {
   font-weight: 600;
   color: var(--color-foreground);
-  transition: color 0.15s;
-  text-decoration: none;
-}
-
-.nameLink:hover {
-  color: var(--color-primary);
 }
 
 .muted {

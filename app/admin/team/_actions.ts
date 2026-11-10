@@ -41,12 +41,12 @@ export async function reorderTeamMembers(orderedIds: number[]): Promise<void> {
 export async function deleteTeamMember(id: number): Promise<void> {
   await requireAdmin()
   const [walkCount, expeditionCount] = await Promise.all([
-    prisma.walk.count({ where: { guideId: id } }),
-    prisma.expedition.count({ where: { guides: { some: { id } } } }),
+    prisma.walk.count({ where: { guideId: id, status: 'ACTIVE' } }),
+    prisma.expedition.count({ where: { guides: { some: { id } }, status: 'ACTIVE' } }),
   ])
   const total = walkCount + expeditionCount
   if (total > 0) {
-    throw new Error(`Этот участник назначен гидом на ${total} событий. Сначала снимите его с событий.`)
+    throw new Error(`Участник назначен гидом на ${total} активных ${total === 1 ? 'событие' : 'события'}. Сначала снимите его с событий.`)
   }
   await prisma.teamMember.delete({ where: { id } })
 }

@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { RequestStatus, RequestType } from '@/generated/prisma/client'
 import { Modal } from '@/components/ui/modal/Modal'
+import { Button } from '@/components/ui/buttons/Button'
 import { StatusPicker } from './StatusPicker'
+import { deleteRequest } from './_actions'
 import styles from './requests.module.css'
 
 export type RequestRow = {
@@ -37,11 +39,40 @@ interface Props {
   requests: RequestRow[]
 }
 
-export function RequestsTable({ requests }: Props) {
+export function RequestsTable({ requests: initialRequests }: Props) {
+  const [rows, setRows] = useState(initialRequests)
   const [active, setActive] = useState<RequestRow | null>(null)
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [isDeleting, startDeleting] = useTransition()
+
+  function handleDeleteClick(id: string) {
+    setActive(null)
+    setDeleteError(null)
+    setPendingDeleteId(id)
+  }
+
+  function confirmDelete() {
+    const id = pendingDeleteId
+    setPendingDeleteId(null)
+    if (!id) return
+    setDeleteError(null)
+    startDeleting(async () => {
+      try {
+        await deleteRequest(id)
+        setRows(prev => prev.filter(r => r.id !== id))
+      } catch (err) {
+        setDeleteError(err instanceof Error ? err.message : 'Ошибка при удалении')
+      }
+    })
+  }
+
+  const pendingDeleteRow = rows.find(r => r.id === pendingDeleteId)
 
   return (
     <>
+      {deleteError && <p className={styles.error}>{deleteError}</p>}
+
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
           <thead>
@@ -51,16 +82,17 @@ export function RequestsTable({ requests }: Props) {
               <th>Тип</th>
               <th>Статус</th>
               <th>Дата</th>
+              <th />
             </tr>
           </thead>
           <tbody>
-            {requests.map(r => (
+            {rows.map(r => (
               <tr
                 key={r.id}
                 className={styles.tableRow}
                 onClick={e => {
-                  // don't open modal when clicking the status picker
                   if ((e.target as HTMLElement).closest('[data-status-picker]')) return
+                  if ((e.target as HTMLElement).closest('[data-row-action]')) return
                   setActive(r)
                 }}
               >
@@ -71,6 +103,15 @@ export function RequestsTable({ requests }: Props) {
                   <StatusPicker id={r.id} status={r.status} />
                 </td>
                 <td className={styles.dateCell}>{r.createdAt}</td>
+                <td className={styles.actionCell} data-row-action="" onClick={e => e.stopPropagation()}>
+                  <button
+                    className={styles.dangerBtn}
+                    onClick={() => handleDeleteClick(r.id)}
+                    aria-label={`Удалить заявку от ${r.name}`}
+                  >
+                    Удалить
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -115,6 +156,28 @@ export function RequestsTable({ requests }: Props) {
           </div>
         </Modal>
       )}
+
+      <Modal
+        open={pendingDeleteId !== null}
+        onClose={() => setPendingDeleteId(null)}
+        title="Удалить заявку?"
+        footer={
+          <div className={styles.modalFooter}>
+            <Button fullWidth variant="secondary" onClick={() => setPendingDeleteId(null)}>
+              Назад
+            </Button>
+            <Button fullWidth variant="destructive" onClick={confirmDelete} disabled={isDeleting}>
+              {isDeleting ? '…' : 'Удалить'}
+            </Button>
+          </div>
+        }
+      >
+        <p className={styles.modalText}>
+          {pendingDeleteRow
+            ? `Заявка от «${pendingDeleteRow.name}» будет удалена без возможности восстановления.`
+            : 'Заявка будет удалена без возможности восстановления.'}
+        </p>
+      </Modal>
     </>
   )
 }
