@@ -85,9 +85,12 @@ model Walk {
   status        EventStatus @default(DRAFT)
   coverPhotoUrl String      @db.VarChar(2048)
   galleryUrl    String?     @db.VarChar(2048)
-  emailSubject  String?     @db.VarChar(255)
-  emailBody     String?     @db.Text
-  publishedAt   DateTime?
+  emailSubject          String?  @db.VarChar(255)
+  emailBody             String?  @db.Text
+  reminderDaysBefore    Int?
+  purchaseEmailSubject  String?  @db.VarChar(255)
+  purchaseEmailBody     String?  @db.Text
+  publishedAt           DateTime?
   publishedBy   String?
   createdAt     DateTime    @default(now())
 

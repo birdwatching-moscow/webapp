@@ -37,8 +37,11 @@ export default async function EditWalkPage({ params }: { params: Promise<{ id: s
         guideId:      walk.guideId,
         guideId2:     walk.guideId2,
         status:       walk.status,
-        emailSubject: walk.emailSubject,
-        emailBody:    walk.emailBody,
+        purchaseEmailSubject: walk.purchaseEmailSubject,
+        purchaseEmailBody:    walk.purchaseEmailBody,
+        emailSubject:         walk.emailSubject,
+        emailBody:            walk.emailBody,
+        reminderDaysBefore:   walk.reminderDaysBefore,
         ticketTypes:  walk.ticketTypes.map(t => ({
           name:         t.name,
           priceKopecks: t.priceKopecks,

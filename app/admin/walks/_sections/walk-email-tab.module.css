@@ -1,0 +1,76 @@
+.subTabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.subTab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-muted-foreground);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.subTab:hover {
+  color: var(--color-foreground);
+}
+
+.subTabActive {
+  color: var(--color-foreground);
+  border-bottom-color: var(--color-primary);
+}
+
+/* ── Reminder days selector ────────────────────────── */
+
+.reminderDaysRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.reminderDaysOptions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.reminderDayBtn {
+  width: 2.5rem;
+  height: var(--size-control-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-muted-foreground);
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.reminderDayBtn:hover:not(:disabled) {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.reminderDayBtnActive {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+}
+
+.reminderDayBtn:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
