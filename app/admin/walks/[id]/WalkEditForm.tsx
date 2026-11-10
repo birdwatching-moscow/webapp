@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/buttons/Button'
 import { Modal } from '@/components/ui/modal/Modal'
 import { updateWalkFull, publishWalk, cancelWalk, deleteWalk } from '@/app/admin/walks/_actions'
+import { CopyWalkButton } from './CopyWalkButton'
 import { ROUTES } from '@/utils/routes'
 import type { Guide, TicketTypeRow } from '@/app/admin/walks/_sections/types'
 import { makeKey } from '@/app/admin/walks/_sections/types'
@@ -45,7 +46,7 @@ const STATUS_LABELS: Record<string, string> = {
   DRAFT: 'Черновик',
   ACTIVE: 'Активна',
   CANCELLED: 'Отменена',
-  PAST: 'Прошла',
+  PAST: 'Завершена',
 }
 
 function statusBadgeClass(status: string) {
@@ -85,8 +86,10 @@ export function WalkEditForm({ walk, guides }: Props) {
   const [reminderDaysBefore, setReminderDaysBefore] = useState(walk.reminderDaysBefore ?? 1)
   const [formTab, setFormTab]           = useState<'walk' | 'email' | 'tickets'>('walk')
 
-  const [isDirty, setIsDirty]   = useState(false)
-  const [error, setError]       = useState<string | null>(null)
+  const [isDirty, setIsDirty]       = useState(false)
+  const [copied, setCopied]         = useState(false)
+  const [publishSuccess, setPublishSuccess] = useState(false)
+  const [error, setError]           = useState<string | null>(null)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
   const [showDangerConfirm, setShowDangerConfirm] = useState<'cancel' | 'delete' | null>(null)
   const [saving, startSave]     = useTransition()
@@ -208,9 +211,10 @@ export function WalkEditForm({ walk, guides }: Props) {
     startPublish(async () => {
       try {
         await publishWalk(walk.id)
+        setPublishSuccess(true)
         router.refresh()
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Ошибка при публикации')
+        setError('Прогулка не опубликована: ' + (e instanceof Error ? e.message : 'неизвестная ошибка'))
       }
     })
   }
@@ -242,6 +246,7 @@ export function WalkEditForm({ walk, guides }: Props) {
             {STATUS_LABELS[walk.status] ?? walk.status}
           </span>
           {isDirty && <span className={styles.dirtyHint}>Несохранённые изменения</span>}
+          <CopyWalkButton walkId={walk.id} disabled={saving} onError={setError} onSuccess={() => setCopied(true)} />
           {isEditable && (
             <Button size="sm" variant="outline" onClick={handleSave} disabled={saving || !isDirty}>
               {saving ? 'Сохранение…' : 'Сохранить'}
@@ -259,6 +264,18 @@ export function WalkEditForm({ walk, guides }: Props) {
           )}
         </div>
       </div>
+
+      {copied && (
+        <div className={styles.readonlyBanner} style={{ color: 'var(--color-success, #1f7a3b)', borderColor: 'var(--color-success, #1f7a3b)' }}>
+          Копия сохранена в Черновиках
+        </div>
+      )}
+
+      {publishSuccess && (
+        <div className={styles.readonlyBanner} style={{ color: 'var(--color-success, #1f7a3b)', borderColor: 'var(--color-success, #1f7a3b)' }}>
+          Прогулка успешно опубликована
+        </div>
+      )}
 
       {!isEditable && (
         <div className={styles.readonlyBanner}>

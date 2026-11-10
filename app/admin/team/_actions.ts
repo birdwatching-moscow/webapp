@@ -29,6 +29,34 @@ export async function updateTeamMember(id: number, input: TeamMemberInput): Prom
   await prisma.teamMember.update({ where: { id }, data: input })
 }
 
+export type SaveMemberState = { success: true } | { success: false; error: string } | null
+
+export async function saveTeamMemberForm(
+  _prev: SaveMemberState,
+  formData: FormData,
+): Promise<SaveMemberState> {
+  try {
+    await requireAdmin()
+    const id = parseInt(formData.get('memberId') as string, 10)
+    const sortOrder = parseInt(formData.get('sortOrder') as string, 10)
+    const link = ((formData.get('profileLink') as string) ?? '').trim()
+    await prisma.teamMember.update({
+      where: { id },
+      data: {
+        name:         formData.get('name') as string,
+        photoUrl:     formData.get('photoUrl') as string,
+        education:    (formData.get('education') as string) || undefined,
+        achievements: (formData.get('achievements') as string) || undefined,
+        profileLinks: link ? [link] : [],
+        sortOrder,
+      },
+    })
+    return { success: true }
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : 'Ошибка при сохранении' }
+  }
+}
+
 export async function reorderTeamMembers(orderedIds: number[]): Promise<void> {
   await requireAdmin()
   await prisma.$transaction(

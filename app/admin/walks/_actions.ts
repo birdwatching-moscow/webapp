@@ -19,7 +19,6 @@ export type UpdateWalkFullData = {
   location: string
   coverPhotoUrl: string
   guideId: number
-  guideId2?: number
   ticketTypes: TicketTypeInput[]
   purchaseEmailSubject?: string
   purchaseEmailBody?: string
@@ -44,7 +43,6 @@ export async function updateWalkFull(id: string, data: UpdateWalkFullData): Prom
         location: data.location,
         coverPhotoUrl: data.coverPhotoUrl,
         guide:  { connect: { id: data.guideId } },
-        guide2: data.guideId2 ? { connect: { id: data.guideId2 } } : { disconnect: true },
         priceKopecks,
         capacity,
         purchaseEmailSubject: data.purchaseEmailSubject ?? null,
@@ -109,7 +107,6 @@ export async function createWalkFull(data: UpdateWalkFullData): Promise<string> 
       priceKopecks,
       capacity,
       guideId: data.guideId,
-      guideId2: data.guideId2 ?? null,
       purchaseEmailSubject: data.purchaseEmailSubject ?? null,
       purchaseEmailBody: data.purchaseEmailBody ?? null,
       emailSubject: data.emailSubject ?? null,
@@ -179,12 +176,17 @@ export async function publishWalk(id: string): Promise<void> {
   const walk = await prisma.walk.findFirst({ where: { id } })
   if (!walk) throw new Error('Прогулка не найдена')
   if (walk.status === 'ACTIVE') throw new Error('Прогулка уже опубликована')
+  let publishedBy = walk.publishedBy
+  if (!publishedBy) {
+    const userExists = await prisma.user.count({ where: { id: session.user.id } }) > 0
+    if (userExists) publishedBy = session.user.id
+  }
   await prisma.walk.update({
     where: { id },
     data: {
       status: 'ACTIVE',
       publishedAt: walk.publishedAt ?? new Date(),
-      publishedBy: walk.publishedBy ?? session.user.id,
+      publishedBy,
     },
   })
 }
@@ -226,6 +228,66 @@ export async function deleteWalk(id: string): Promise<void> {
   }
 
   await prisma.walk.update({ where: { id }, data: { status: 'DELETED' } })
+}
+
+export async function copyWalk(id: string): Promise<string> {
+  await requireAdmin()
+  const walk = await prisma.walk.findFirst({
+    where: { id },
+    include: { ticketTypes: { orderBy: { sortOrder: 'asc' } } },
+  })
+  if (!walk) throw new Error('Прогулка не найдена')
+
+  const now = new Date()
+  const newStartsAt = new Date(walk.startsAt)
+  newStartsAt.setFullYear(now.getFullYear(), now.getMonth(), now.getDate() + 7)
+
+  let newEndsAt: Date | null = null
+  if (walk.endsAt) {
+    const duration = walk.endsAt.getTime() - walk.startsAt.getTime()
+    newEndsAt = new Date(newStartsAt.getTime() + duration)
+  }
+
+  const slug = await ensureUniqueSlug(walk.title, async (s) => {
+    const existing = await prisma.walk.findFirst({ where: { slug: s } })
+    return existing != null
+  })
+
+  const newWalk = await prisma.walk.create({
+    data: {
+      slug,
+      title: walk.title,
+      subtitle: walk.subtitle,
+      description: walk.description,
+      startsAt: newStartsAt,
+      endsAt: newEndsAt,
+      location: walk.location,
+      coverPhotoUrl: walk.coverPhotoUrl,
+      priceKopecks: walk.priceKopecks,
+      capacity: walk.capacity,
+      guideId: walk.guideId,
+      purchaseEmailSubject: walk.purchaseEmailSubject,
+      purchaseEmailBody: walk.purchaseEmailBody,
+      emailSubject: walk.emailSubject,
+      emailBody: walk.emailBody,
+      reminderDaysBefore: walk.reminderDaysBefore,
+      status: 'DRAFT',
+    },
+  })
+
+  if (walk.ticketTypes.length > 0) {
+    await prisma.ticketType.createMany({
+      data: walk.ticketTypes.map((t, i) => ({
+        walkId: newWalk.id,
+        name: t.name,
+        priceKopecks: t.priceKopecks,
+        capacity: t.capacity,
+        sortOrder: i,
+      })),
+    })
+  }
+
+  return newWalk.id
 }
 
 export async function deleteTicket(ticketId: string): Promise<void> {

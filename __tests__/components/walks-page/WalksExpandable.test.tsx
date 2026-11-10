@@ -12,14 +12,16 @@ vi.mock('next/link', () => ({
 const aug9_8am = new Date('2026-08-09T05:00:00.000Z')
 
 const makeWalk = (n: number): WalkTableRow => ({
-  id:           `walk-${n}`,
-  slug:         `walk-slug-${n}`,
-  title:        `Прогулка ${n}`,
-  startsAt:     new Date(aug9_8am.getTime() + n * 86400_000),
-  endsAt:       null,
-  priceKopecks: 95000,
-  capacity:     10,
-  ticketsSold:  n,
+  id:                `walk-${n}`,
+  slug:              `walk-slug-${n}`,
+  title:             `Прогулка ${n}`,
+  startsAt:          new Date(aug9_8am.getTime() + n * 86400_000),
+  endsAt:            null,
+  priceKopecks:      95000,
+  minPriceKopecks:   95000,
+  ticketTypeCount:   1,
+  capacity:          10,
+  ticketsSold:       n,
 })
 
 const walk1 = makeWalk(1)
@@ -57,9 +59,15 @@ describe('WalksExpandable — walk rows', () => {
     expect(links.some(l => l.getAttribute('href') === '/walks/walk-slug-2')).toBe(true)
   })
 
-  it('shows "от 950 ₽" for priceKopecks = 95000', () => {
+  it('shows plain price for single ticket type', () => {
     render(<WalksExpandable walks={[walk1]} />)
-    expect(screen.getByText('от 950 ₽')).toBeInTheDocument()
+    expect(screen.getByText('950 ₽')).toBeInTheDocument()
+  })
+
+  it('shows "от X" when ticketTypeCount > 1', () => {
+    const multiType = { ...makeWalk(1), ticketTypeCount: 2, minPriceKopecks: 80000 }
+    render(<WalksExpandable walks={[multiType]} />)
+    expect(screen.getByText('от 800 ₽')).toBeInTheDocument()
   })
 
   it('shows "нет билетов" when available === 0', () => {

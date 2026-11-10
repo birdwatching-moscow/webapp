@@ -35,6 +35,28 @@
   margin: 0;
 }
 
+/* ── Banner ──────────────────────────────────────── */
+
+.banner {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid;
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
+.bannerSuccess {
+  color: #1f7a3b;
+  border-color: #1f7a3b;
+  background: color-mix(in srgb, #1f7a3b 6%, transparent);
+}
+
+.bannerError {
+  color: var(--color-error);
+  border-color: var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 6%, transparent);
+}
+
 /* ── Section ─────────────────────────────────────── */
 
 .section {

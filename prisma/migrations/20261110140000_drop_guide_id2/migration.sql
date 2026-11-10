@@ -1,0 +1,1 @@
+ALTER TABLE "Walk" DROP COLUMN IF EXISTS "guideId2";

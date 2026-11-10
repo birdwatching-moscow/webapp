@@ -25,18 +25,16 @@ const EMPTY_LABEL: Record<Tab, string> = {
   all:    'Нет прогулок',
 }
 
-type StatusKey = 'ACTIVE' | 'DRAFT' | 'CANCELLED' | 'PAST'
+type StatusKey = 'ACTIVE' | 'DRAFT' | 'PAST' | 'CANCELLED'
 
 const STATUS_INFO: Record<StatusKey, { label: string; cls: string }> = {
   ACTIVE:    { label: 'Активна',   cls: 'badgeACTIVE' },
   DRAFT:     { label: 'Черновик',  cls: 'badgeDRAFT' },
+  PAST:      { label: 'Завершена', cls: 'badgePAST' },
   CANCELLED: { label: 'Отменена',  cls: 'badgeCANCELLED' },
-  PAST:      { label: 'Прошла',    cls: 'badgePAST' },
 }
 
-
-function getStatusInfo(status: string, startsAt: Date, now: Date) {
-  if (status === 'ACTIVE' && startsAt < now) return STATUS_INFO.PAST
+function getStatusInfo(status: string) {
   return STATUS_INFO[status as StatusKey] ?? { label: status, cls: 'badgeACTIVE' }
 }
 
@@ -153,7 +151,7 @@ export default async function WalksPage({
   const showStatus = activeTab === 'all'
 
   const rows = walks.map(w => {
-    const statusInfo = getStatusInfo(w.status, w.startsAt, now)
+    const statusInfo = getStatusInfo(w.status)
     return {
       id:            w.id,
       title:         w.title,
