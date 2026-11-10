@@ -14,6 +14,7 @@ import { WalkSectionGuides } from '@/app/admin/walks/_sections/WalkSectionGuides
 import { WalkSectionCover } from '@/app/admin/walks/_sections/WalkSectionCover'
 import { WalkSectionTickets } from '@/app/admin/walks/_sections/WalkSectionTickets'
 import { WalkEmailTab } from '@/app/admin/walks/_sections/WalkEmailTab'
+import { WalkTicketsTab } from '@/app/admin/walks/_sections/WalkTicketsTab'
 import styles from './walk-edit.module.css'
 
 type WalkData = {
@@ -84,7 +85,7 @@ export function WalkEditForm({ walk, guides }: Props) {
   const [emailSubject, setEmailSubject] = useState(walk.emailSubject ?? '')
   const [emailBody, setEmailBody]       = useState(walk.emailBody ?? '')
   const [reminderDaysBefore, setReminderDaysBefore] = useState(walk.reminderDaysBefore ?? 1)
-  const [formTab, setFormTab]           = useState<'walk' | 'email'>('walk')
+  const [formTab, setFormTab]           = useState<'walk' | 'email' | 'tickets'>('walk')
 
   const [isDirty, setIsDirty]   = useState(false)
   const [error, setError]       = useState<string | null>(null)
@@ -289,6 +290,15 @@ export function WalkEditForm({ walk, guides }: Props) {
         >
           Email
         </button>
+        {walk.status !== 'DRAFT' && (
+          <button
+            type="button"
+            className={[styles.formTab, formTab === 'tickets' ? styles.formTabActive : ''].filter(Boolean).join(' ')}
+            onClick={() => setFormTab('tickets')}
+          >
+            Билеты
+          </button>
+        )}
       </nav>
 
       {formTab === 'walk' && (
@@ -330,6 +340,10 @@ export function WalkEditForm({ walk, guides }: Props) {
             requireAll={requireAll}
           />
         </div>
+      )}
+
+      {formTab === 'tickets' && walk.status !== 'DRAFT' && (
+        <WalkTicketsTab walkId={walk.id} />
       )}
 
       {formTab === 'email' && (

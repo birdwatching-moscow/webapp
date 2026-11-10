@@ -109,6 +109,7 @@ async function handleSucceeded(
       orderId: order.id,
       userId: order.userId,
       walkId: item.walkId,
+      hasBinoculars: item.hasBinoculars ?? null,
     }))
   )
 

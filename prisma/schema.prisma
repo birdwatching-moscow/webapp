@@ -195,6 +195,7 @@ model OrderItem {
   quantity         Int
   // Snapshot of Walk.priceKopecks at checkout time — a later admin price edit must not change an in-flight order
   unitPriceKopecks Int
+  hasBinoculars    Boolean?
   createdAt        DateTime @default(now())
 
   order Order @relation(fields: [orderId], references: [id])
@@ -204,11 +205,12 @@ model OrderItem {
 }
 
 model Ticket {
-  id        String   @id @default(uuid())
-  orderId   String
-  userId    String
-  walkId    String
-  createdAt DateTime @default(now())
+  id            String   @id @default(uuid())
+  orderId       String
+  userId        String
+  walkId        String
+  hasBinoculars Boolean?
+  createdAt     DateTime @default(now())
 
   order Order @relation(fields: [orderId], references: [id])
   user  User  @relation(fields: [userId], references: [id])

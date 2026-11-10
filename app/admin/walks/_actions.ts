@@ -227,3 +227,122 @@ export async function deleteWalk(id: string): Promise<void> {
 
   await prisma.walk.update({ where: { id }, data: { status: 'DELETED' } })
 }
+
+export async function deleteTicket(ticketId: string): Promise<void> {
+  await requireAdmin()
+  const ticket = await prisma.ticket.findFirst({ where: { id: ticketId } })
+  if (!ticket) throw new Error('Билет не найден')
+  await prisma.ticket.delete({ where: { id: ticketId } })
+}
+
+export async function exportWalkParticipants(walkId: string): Promise<{ b64: string; filename: string }> {
+  await requireAdmin()
+
+  const walk = await prisma.walk.findFirst({
+    where: { id: walkId },
+    select: { title: true, startsAt: true },
+  })
+  if (!walk) throw new Error('Прогулка не найдена')
+
+  const tickets = await prisma.ticket.findMany({
+    where: { walkId },
+    select: {
+      createdAt: true,
+      hasBinoculars: true,
+      user: { select: { name: true, email: true } },
+      order: {
+        select: {
+          status: true,
+          paidAt: true,
+          orderItems: {
+            where: { walkId },
+            select: { unitPriceKopecks: true },
+          },
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  const { default: ExcelJS } = await import('exceljs')
+  const wb = new ExcelJS.Workbook()
+  const ws = wb.addWorksheet('Участники')
+
+  ws.columns = [
+    { header: 'Имя',          key: 'name',         width: 30 },
+    { header: 'Email',        key: 'email',        width: 36 },
+    { header: 'Статус',       key: 'status',       width: 18 },
+    { header: 'Сумма (₽)',    key: 'price',        width: 14 },
+    { header: 'Дата покупки', key: 'date',         width: 20 },
+    { header: 'Бинокль',      key: 'binoculars',   width: 12 },
+  ]
+  ws.getRow(1).font = { bold: true }
+
+  const STATUS_LABELS: Record<string, string> = {
+    PAID: 'Оплачен', PENDING: 'Ожидает', AWAITING_PAYMENT: 'Ожидает оплаты',
+    FAILED: 'Ошибка', EXPIRED: 'Истёк',
+  }
+
+  for (const t of tickets) {
+    const kopecks = t.order.orderItems[0]?.unitPriceKopecks ?? null
+    ws.addRow({
+      name:       t.user.name,
+      email:      t.user.email,
+      status:     STATUS_LABELS[t.order.status] ?? t.order.status,
+      price:      kopecks != null ? kopecks / 100 : '',
+      date:       t.order.paidAt ?? t.createdAt,
+      binoculars: t.hasBinoculars == null ? '—' : t.hasBinoculars ? 'Да' : 'Нет',
+    })
+  }
+
+  const buffer = await wb.xlsx.writeBuffer()
+  const b64 = Buffer.from(buffer as ArrayBuffer).toString('base64')
+  const dateStr = walk.startsAt.toISOString().slice(0, 10)
+  const safeName = walk.title.replace(/[^\wа-яёА-ЯЁ\s-]/gi, '').trim().slice(0, 40)
+  return { b64, filename: `участники-${safeName}-${dateStr}.xlsx` }
+}
+
+export type WalkTicketRow = {
+  id: string
+  createdAt: string
+  userName: string
+  userEmail: string
+  orderStatus: string
+  paidAt: string | null
+  unitPriceKopecks: number | null
+  hasBinoculars: boolean | null
+}
+
+export async function getWalkTickets(walkId: string): Promise<WalkTicketRow[]> {
+  await requireAdmin()
+  const tickets = await prisma.ticket.findMany({
+    where: { walkId },
+    select: {
+      id: true,
+      createdAt: true,
+      hasBinoculars: true,
+      user: { select: { name: true, email: true } },
+      order: {
+        select: {
+          status: true,
+          paidAt: true,
+          orderItems: {
+            where: { walkId },
+            select: { unitPriceKopecks: true },
+          },
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+  return tickets.map(t => ({
+    id: t.id,
+    createdAt: t.createdAt.toISOString(),
+    userName: t.user.name,
+    userEmail: t.user.email,
+    orderStatus: t.order.status,
+    paidAt: t.order.paidAt?.toISOString() ?? null,
+    unitPriceKopecks: t.order.orderItems[0]?.unitPriceKopecks ?? null,
+    hasBinoculars: t.hasBinoculars,
+  }))
+}

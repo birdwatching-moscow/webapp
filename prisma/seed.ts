@@ -210,6 +210,7 @@ async function main() {
           walkId: soldOutWalk.id,
           quantity: soldOutWalk.capacity,
           unitPriceKopecks: soldOutWalk.priceKopecks,
+          hasBinoculars: true,
         },
       },
     },
@@ -220,6 +221,7 @@ async function main() {
       orderId: soldOutOrder.id,
       userId: admin.id,
       walkId: soldOutWalk.id,
+      hasBinoculars: true,
     })),
   })
 
@@ -231,13 +233,13 @@ async function main() {
       totalKopecks: 150000 * 2,
       expiresAt: now,
       paidAt: now,
-      orderItems: { create: { walkId: walk1.id, quantity: 2, unitPriceKopecks: 150000 } },
+      orderItems: { create: { walkId: walk1.id, quantity: 2, unitPriceKopecks: 150000, hasBinoculars: true } },
     },
   })
   await prisma.ticket.createMany({
     data: [
-      { orderId: order1a.id, userId: buyer1.id, walkId: walk1.id },
-      { orderId: order1a.id, userId: buyer1.id, walkId: walk1.id },
+      { orderId: order1a.id, userId: buyer1.id, walkId: walk1.id, hasBinoculars: true },
+      { orderId: order1a.id, userId: buyer1.id, walkId: walk1.id, hasBinoculars: true },
     ],
   })
 
@@ -248,10 +250,10 @@ async function main() {
       totalKopecks: 90000,
       expiresAt: now,
       paidAt: now,
-      orderItems: { create: { walkId: walk1.id, quantity: 1, unitPriceKopecks: 90000 } },
+      orderItems: { create: { walkId: walk1.id, quantity: 1, unitPriceKopecks: 90000, hasBinoculars: false } },
     },
   })
-  await prisma.ticket.create({ data: { orderId: order1b.id, userId: buyer2.id, walkId: walk1.id } })
+  await prisma.ticket.create({ data: { orderId: order1b.id, userId: buyer2.id, walkId: walk1.id, hasBinoculars: false } })
 
   // Walk 3: 5 tickets sold across 3 buyers
   const order3a = await prisma.order.create({
@@ -261,13 +263,13 @@ async function main() {
       totalKopecks: 130000 * 2,
       expiresAt: now,
       paidAt: now,
-      orderItems: { create: { walkId: walk3.id, quantity: 2, unitPriceKopecks: 130000 } },
+      orderItems: { create: { walkId: walk3.id, quantity: 2, unitPriceKopecks: 130000, hasBinoculars: false } },
     },
   })
   await prisma.ticket.createMany({
     data: [
-      { orderId: order3a.id, userId: buyer1.id, walkId: walk3.id },
-      { orderId: order3a.id, userId: buyer1.id, walkId: walk3.id },
+      { orderId: order3a.id, userId: buyer1.id, walkId: walk3.id, hasBinoculars: false },
+      { orderId: order3a.id, userId: buyer1.id, walkId: walk3.id, hasBinoculars: false },
     ],
   })
 
@@ -278,13 +280,13 @@ async function main() {
       totalKopecks: 130000 * 2,
       expiresAt: now,
       paidAt: now,
-      orderItems: { create: { walkId: walk3.id, quantity: 2, unitPriceKopecks: 130000 } },
+      orderItems: { create: { walkId: walk3.id, quantity: 2, unitPriceKopecks: 130000, hasBinoculars: true } },
     },
   })
   await prisma.ticket.createMany({
     data: [
-      { orderId: order3b.id, userId: buyer2.id, walkId: walk3.id },
-      { orderId: order3b.id, userId: buyer2.id, walkId: walk3.id },
+      { orderId: order3b.id, userId: buyer2.id, walkId: walk3.id, hasBinoculars: true },
+      { orderId: order3b.id, userId: buyer2.id, walkId: walk3.id, hasBinoculars: true },
     ],
   })
 
@@ -295,10 +297,10 @@ async function main() {
       totalKopecks: 130000,
       expiresAt: now,
       paidAt: now,
-      orderItems: { create: { walkId: walk3.id, quantity: 1, unitPriceKopecks: 130000 } },
+      orderItems: { create: { walkId: walk3.id, quantity: 1, unitPriceKopecks: 130000, hasBinoculars: true } },
     },
   })
-  await prisma.ticket.create({ data: { orderId: order3c.id, userId: buyer3.id, walkId: walk3.id } })
+  await prisma.ticket.create({ data: { orderId: order3c.id, userId: buyer3.id, walkId: walk3.id, hasBinoculars: true } })
 
   const daysFromNow = (days: number) =>
     new Date(now.getFullYear(), now.getMonth(), now.getDate() + days, 8, 0, 0)
