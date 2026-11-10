@@ -82,6 +82,28 @@ type WalkInput = {
   endsAt?: string
 }
 
+export async function createWalkDraft(title: string, guideId: number): Promise<string> {
+  await requireAdmin()
+  const slug = await ensureUniqueSlug(title, async (s) => {
+    const existing = await prisma.walk.findFirst({ where: { slug: s } })
+    return existing != null
+  })
+  const walk = await prisma.walk.create({
+    data: {
+      slug,
+      title,
+      description: '',
+      startsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      location: '',
+      coverPhotoUrl: '',
+      priceKopecks: 0,
+      capacity: 0,
+      guideId,
+    },
+  })
+  return walk.id
+}
+
 export async function createWalk(input: WalkInput): Promise<string> {
   await requireAdmin()
   const slug = input.slug ?? await ensureUniqueSlug(input.title, async (s) => {
