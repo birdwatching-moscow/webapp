@@ -1,30 +1,25 @@
-import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { ROUTES } from '@/utils/routes'
+import { Button } from '@/components/ui/buttons/Button'
+import { TeamList } from './TeamList'
+import styles from './team.module.css'
 
 export default async function TeamPage() {
-  const members = await prisma.teamMember.findMany({ orderBy: { sortOrder: 'asc' } })
+  const members = await prisma.teamMember.findMany({
+    select: { id: true, name: true, photoUrl: true, sortOrder: true },
+    orderBy: { sortOrder: 'asc' },
+  })
 
   return (
-    <div>
-      <h1>Команда</h1>
-      <Link href={ROUTES.admin.teamNew}>Добавить участника</Link>
-      <table>
-        <thead>
-          <tr>
-            <th>Имя</th>
-            <th>Порядок</th>
-          </tr>
-        </thead>
-        <tbody>
-          {members.map((m) => (
-            <tr key={m.id}>
-              <td><a href={`/admin/team/${m.id}`}>{m.name}</a></td>
-              <td>{m.sortOrder}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className={styles.page}>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Команда</h1>
+        <Button as="a" href={ROUTES.admin.teamNew} size="sm">
+          + Добавить участника
+        </Button>
+      </div>
+
+      <TeamList initialMembers={members} />
     </div>
   )
 }

@@ -29,8 +29,13 @@ export async function updateTeamMember(id: number, input: TeamMemberInput): Prom
   await prisma.teamMember.update({ where: { id }, data: input })
 }
 
-export async function reorderTeamMembers(_orderedIds: number[]): Promise<void> {
+export async function reorderTeamMembers(orderedIds: number[]): Promise<void> {
   await requireAdmin()
+  await prisma.$transaction(
+    orderedIds.map((id, index) =>
+      prisma.teamMember.update({ where: { id }, data: { sortOrder: index + 1 } })
+    )
+  )
 }
 
 export async function deleteTeamMember(id: number): Promise<void> {
