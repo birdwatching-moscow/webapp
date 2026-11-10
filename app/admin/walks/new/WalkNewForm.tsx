@@ -24,12 +24,6 @@ function makeKey() {
   return Math.random().toString(36).slice(2)
 }
 
-function defaultStartsAt(): string {
-  const d = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-  d.setSeconds(0, 0)
-  return d.toISOString().slice(0, 16)
-}
-
 const MAX_TICKETS = 5
 
 export function WalkNewForm({ guides }: Props) {
@@ -38,11 +32,11 @@ export function WalkNewForm({ guides }: Props) {
   const [title, setTitle]       = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [description, setDescription] = useState('')
-  const [startsAt, setStartsAt] = useState(defaultStartsAt)
+  const [startsAt, setStartsAt] = useState('')
   const [endsAt, setEndsAt]     = useState('')
   const [location, setLocation] = useState('')
   const [coverUrl, setCoverUrl]         = useState('')
-  const [guideId, setGuideId]           = useState(String(guides[0]?.id ?? ''))
+  const [guideId, setGuideId]           = useState('')
   const [guideId2, setGuideId2]         = useState('')
   const [tickets, setTickets]           = useState<TicketTypeRow[]>([
     { key: makeKey(), name: 'Стандартный', priceRub: '', capacity: '' },
@@ -80,6 +74,7 @@ export function WalkNewForm({ guides }: Props) {
   function handleSubmit() {
     setError(null)
     if (!title.trim()) { setError('Название обязательно'); return }
+    if (!startsAt) { setError('Укажите дату начала'); return }
     if (!guideId) { setError('Выберите гида'); return }
     startCreate(async () => {
       try {
@@ -117,7 +112,7 @@ export function WalkNewForm({ guides }: Props) {
         </button>
         <div className={styles.topBarRight}>
           <span className={[styles.badge, styles.badgeDRAFT].join(' ')}>Новая</span>
-          <Button size="sm" onClick={handleSubmit} disabled={pending || !title.trim()}>
+          <Button size="sm" onClick={handleSubmit} disabled={pending || !title.trim() || !startsAt || !guideId}>
             {pending ? 'Создание…' : 'Создать черновик'}
           </Button>
         </div>
@@ -194,7 +189,7 @@ export function WalkNewForm({ guides }: Props) {
           <h2 className={styles.sectionTitle}>Дата и место</h2>
           <div className={`${styles.fieldRow} ${styles.fieldRow2}`}>
             <div className={styles.field}>
-              <label className={styles.label}>Начало</label>
+              <label className={`${styles.label} ${styles.required}`}>Начало</label>
               <input
                 className={styles.input}
                 type="datetime-local"
@@ -238,6 +233,7 @@ export function WalkNewForm({ guides }: Props) {
                 }}
                 required
               >
+                <option value="" disabled>Выберите гида</option>
                 {guides.map(g => (
                   <option key={g.id} value={g.id}>{g.name}</option>
                 ))}
