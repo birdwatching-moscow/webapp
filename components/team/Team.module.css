@@ -1,0 +1,107 @@
+/* ─── Mobile (base) ────────────────────────────────────────────────────────── */
+
+.page {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hero */
+
+.hero {
+  width: 100%;
+  padding-inline: var(--page-gutter);
+  padding-top: 64px;
+}
+
+.heroContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4); /* 16px mobile */
+}
+
+.heroTitle {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: var(--font-size-4xl); /* 40px mobile */
+  line-height: 44px;
+}
+
+.heroDesc {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  font-size: var(--font-size-xl); /* 20px */
+  line-height: 28px;
+  color: var(--color-muted-foreground);
+}
+
+/* Team section */
+
+.teamSection {
+  width: 100%;
+  padding-inline: var(--page-gutter);
+  padding-top: 64px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6); /* 32px title→grid */
+}
+
+.teamTitle {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: var(--font-size-4xl); /* 40px */
+  line-height: 44px;
+}
+
+.teamGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+/* Override TeamCard defaults so each card fills its grid cell */
+.teamCard {
+  min-width: 0;
+  max-width: none;
+  width: 100%;
+}
+
+/* Notice section */
+
+.noticeSection {
+  width: 100%;
+  padding-inline: var(--page-gutter);
+  padding-top: 64px;
+}
+
+/* ─── Desktop (min-width: 1248px) ──────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .hero {
+    padding-top: var(--space-10); /* 96px */
+  }
+
+  .heroContent {
+    gap: 12px;
+  }
+
+  .heroDesc {
+    max-width: 60%;
+  }
+
+  .heroTitle {
+    font-size: var(--font-size-5xl); /* 56px */
+    line-height: 60px;
+  }
+
+  .teamSection {
+    padding-top: var(--space-10); /* 96px */
+  }
+
+  .teamGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .noticeSection {
+    padding-top: var(--space-10); /* 96px */
+  }
+}
