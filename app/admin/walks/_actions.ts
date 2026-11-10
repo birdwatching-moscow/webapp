@@ -4,6 +4,59 @@ import { prisma } from '@/lib/prisma'
 import { isAdmin } from '@/lib/auth/permissions'
 import { ensureUniqueSlug } from '@/lib/admin/slug'
 
+export type TicketTypeInput = {
+  name: string
+  priceKopecks: number | null
+  capacity: number
+}
+
+export type UpdateWalkFullData = {
+  title: string
+  subtitle?: string
+  description: string
+  startsAt: string
+  endsAt?: string
+  location: string
+  coverPhotoUrl: string
+  guideId: number
+  guideId2?: number
+  ticketTypes: TicketTypeInput[]
+}
+
+export async function updateWalkFull(id: string, data: UpdateWalkFullData): Promise<void> {
+  await requireAdmin()
+  const capacity = data.ticketTypes.reduce((sum, t) => sum + t.capacity, 0)
+  const priceKopecks = data.ticketTypes[0]?.priceKopecks ?? 0
+  await prisma.$transaction([
+    prisma.walk.update({
+      where: { id },
+      data: {
+        title: data.title,
+        subtitle: data.subtitle ?? null,
+        description: data.description,
+        startsAt: new Date(data.startsAt),
+        endsAt: data.endsAt ? new Date(data.endsAt) : null,
+        location: data.location,
+        coverPhotoUrl: data.coverPhotoUrl,
+        guideId: data.guideId,
+        guideId2: data.guideId2 ?? null,
+        priceKopecks,
+        capacity,
+      },
+    }),
+    prisma.ticketType.deleteMany({ where: { walkId: id } }),
+    prisma.ticketType.createMany({
+      data: data.ticketTypes.map((t, i) => ({
+        walkId: id,
+        name: t.name,
+        priceKopecks: t.priceKopecks,
+        capacity: t.capacity,
+        sortOrder: i,
+      })),
+    }),
+  ])
+}
+
 async function requireAdmin() {
   const session = await auth()
   if (!session || !isAdmin(session.user.role)) throw new Error('Недостаточно прав')

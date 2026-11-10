@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Prisma } from '@prisma/client'
+import { Prisma } from '@/generated/prisma/client'
 import { prisma } from '@/lib/prisma'
 import { ROUTES } from '@/utils/routes'
 import { Button } from '@/components/ui/buttons/Button'
@@ -117,13 +117,13 @@ export default async function WalksPage({
     if (toStr) and.push({ startsAt: { lte: new Date(toStr + 'T23:59:59') } })
 
     if (selectedStatuses.length > 0) {
-      const statusOr: Prisma.WalkWhereInput[] = selectedStatuses.flatMap(s => {
-        if (s === 'active')    return [{ status: 'ACTIVE' as const, startsAt: { gte: now } }]
-        if (s === 'past')      return [{ status: 'ACTIVE' as const, startsAt: { lt: now } }]
-        if (s === 'draft')     return [{ status: 'DRAFT' as const }]
-        if (s === 'cancelled') return [{ status: 'CANCELLED' as const }]
-        return []
-      })
+      const statusOr: Prisma.WalkWhereInput[] = []
+      for (const s of selectedStatuses) {
+        if (s === 'active')    statusOr.push({ status: 'ACTIVE', startsAt: { gte: now } })
+        if (s === 'past')      statusOr.push({ status: 'ACTIVE', startsAt: { lt:  now } })
+        if (s === 'draft')     statusOr.push({ status: 'DRAFT' })
+        if (s === 'cancelled') statusOr.push({ status: 'CANCELLED' })
+      }
       and.push({ OR: statusOr })
     } else {
       and.push({ status: { not: 'DELETED' as const } })
