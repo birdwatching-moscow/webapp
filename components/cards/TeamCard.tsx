@@ -1,5 +1,5 @@
 import { ImagePlaceholder } from '@/components/ui/image-placeholder/ImagePlaceholder'
-import { Button } from '@/components/ui/buttons/Button'
+import { getProfileLinkLabel } from '@/utils/profileLink'
 import styles from './TeamCard.module.css'
 
 export type TeamCardProps = {
@@ -20,11 +20,18 @@ export const TeamCard = ({ name, role, details, imageUrl, imageAlt, ebirdHref, c
         <ImagePlaceholder ratio="1-1" src={imageUrl} alt={imageAlt} />
       </div>
       <div className={styles.info}>
-        <p className="text-h2">{name}</p>
-        <p className={`text-body ${styles.role}`}>{role}</p>
-        <p className={`text-body-l ${styles.details}`}>{details}</p>
+        <p className={styles.name}>{name}</p>
+        <p className={styles.role}>{role}</p>
+        <p className={styles.details}>{details}</p>
         {ebirdHref !== undefined && (
-          <Button as="a" href={ebirdHref} variant="ghost" size="sm">eBird</Button>
+          <a
+            href={ebirdHref}
+            className={styles.profileLink}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {getProfileLinkLabel(ebirdHref)}
+          </a>
         )}
       </div>
     </article>

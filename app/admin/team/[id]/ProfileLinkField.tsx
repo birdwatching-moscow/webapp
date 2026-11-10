@@ -1,36 +1,28 @@
 'use client'
 
 import { useState } from 'react'
+import {
+  type ProfileLinkPlatform,
+  PROFILE_LINK_PLATFORMS,
+  detectProfileLinkPlatform,
+} from '@/utils/profileLink'
 import styles from './member-edit.module.css'
 
-type Platform = 'ebird' | 'rubirds'
-
-const PLATFORMS: { value: Platform; label: string }[] = [
-  { value: 'ebird',   label: 'eBird' },
-  { value: 'rubirds', label: 'RU-BIRDS' },
-]
-
-const PLACEHOLDERS: Record<Platform, string> = {
-  ebird:   'https://ebird.org/profile/...',
-  rubirds: 'https://ru-birds.ru/users/...',
-}
-
-function detectPlatform(url: string): Platform {
-  if (url.includes('ru-birds.ru')) return 'rubirds'
-  return 'ebird'
-}
-
 export function ProfileLinkField({ defaultValue }: { defaultValue: string }) {
-  const [platform, setPlatform] = useState<Platform>(() => detectPlatform(defaultValue))
+  const [platform, setPlatform] = useState<ProfileLinkPlatform>(
+    () => detectProfileLinkPlatform(defaultValue)
+  )
+
+  const placeholder = PROFILE_LINK_PLATFORMS.find((p) => p.value === platform)!.placeholder
 
   return (
     <div className={styles.profileLinkRow}>
       <select
         className={styles.select}
         value={platform}
-        onChange={e => setPlatform(e.target.value as Platform)}
+        onChange={(e) => setPlatform(e.target.value as ProfileLinkPlatform)}
       >
-        {PLATFORMS.map(p => (
+        {PROFILE_LINK_PLATFORMS.map((p) => (
           <option key={p.value} value={p.value}>{p.label}</option>
         ))}
       </select>
@@ -39,7 +31,7 @@ export function ProfileLinkField({ defaultValue }: { defaultValue: string }) {
         name="profileLink"
         className={styles.input}
         defaultValue={defaultValue}
-        placeholder={PLACEHOLDERS[platform]}
+        placeholder={placeholder}
       />
     </div>
   )
