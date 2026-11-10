@@ -1,19 +1,25 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { authMock, walkMock, ticketMock } = vi.hoisted(() => ({
-  authMock: vi.fn(),
-  walkMock: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
-  ticketMock: { count: vi.fn() },
-}))
+const { authMock, walkMock, ticketMock, ticketTypeMock, $transactionMock } = vi.hoisted(() => {
+  const $transactionMock = vi.fn((ops: unknown[]) => Promise.all(ops))
+  return {
+    authMock: vi.fn(),
+    walkMock: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
+    ticketMock: { count: vi.fn() },
+    ticketTypeMock: { deleteMany: vi.fn().mockResolvedValue({}), createMany: vi.fn().mockResolvedValue({}) },
+    $transactionMock,
+  }
+})
 
 vi.mock('@/lib/auth', () => ({ auth: authMock }))
 vi.mock('@/lib/prisma', () => ({
-  prisma: { walk: walkMock, ticket: ticketMock },
+  prisma: { walk: walkMock, ticket: ticketMock, ticketType: ticketTypeMock, $transaction: $transactionMock },
 }))
 
 import {
   createWalk,
   updateWalk,
+  updateWalkFull,
   cancelWalk,
   publishWalk,
   deleteWalk,
@@ -155,5 +161,142 @@ describe('restoreWalk', () => {
   it('throws when startsAt is in the past and no newStartsAt is provided', async () => {
     walkMock.findFirst.mockResolvedValue({ id: 'walk-1', status: 'CANCELLED', startsAt: new Date(PAST) })
     await expect(restoreWalk('walk-1')).rejects.toThrow()
+  })
+})
+
+const FULL_PAYLOAD = {
+  title: 'Утки на пруду',
+  subtitle: 'Осенний маршрут',
+  description: 'Описание',
+  startsAt: FUTURE,
+  endsAt: FUTURE,
+  location: 'Парк',
+  coverPhotoUrl: 'https://example.com/cover.jpg',
+  guideId: 1,
+  guideId2: undefined as number | undefined,
+  emailSubject: 'Напоминание о прогулке',
+  emailBody: 'Ждём вас!',
+  ticketTypes: [
+    { name: 'Стандартный', priceKopecks: 50000, capacity: 10 },
+  ],
+}
+
+describe('updateWalkFull — permissions', () => {
+  it('throws "Недостаточно прав" when unauthenticated', async () => {
+    authMock.mockResolvedValue(null)
+    await expect(updateWalkFull('walk-1', FULL_PAYLOAD)).rejects.toThrow('Недостаточно прав')
+  })
+})
+
+describe('updateWalkFull — email fields', () => {
+  beforeEach(() => {
+    walkMock.update.mockResolvedValue({ id: 'walk-1' })
+    ticketTypeMock.deleteMany.mockResolvedValue({})
+    ticketTypeMock.createMany.mockResolvedValue({})
+  })
+
+  it('persists emailSubject and emailBody when provided', async () => {
+    await updateWalkFull('walk-1', FULL_PAYLOAD)
+    expect(walkMock.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          emailSubject: 'Напоминание о прогулке',
+          emailBody: 'Ждём вас!',
+        }),
+      })
+    )
+  })
+
+  it('stores null when email fields are omitted', async () => {
+    const { emailSubject: _s, emailBody: _b, ...payloadWithout } = FULL_PAYLOAD
+    await updateWalkFull('walk-1', payloadWithout)
+    expect(walkMock.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ emailSubject: null, emailBody: null }),
+      })
+    )
+  })
+})
+
+describe('updateWalkFull — guide relation', () => {
+  beforeEach(() => {
+    walkMock.update.mockResolvedValue({ id: 'walk-1' })
+    ticketTypeMock.deleteMany.mockResolvedValue({})
+    ticketTypeMock.createMany.mockResolvedValue({})
+  })
+
+  it('uses guide: { connect } instead of raw guideId', async () => {
+    await updateWalkFull('walk-1', FULL_PAYLOAD)
+    expect(walkMock.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ guide: { connect: { id: 1 } } }),
+      })
+    )
+    // Raw guideId must not appear directly in the payload
+    const call = walkMock.update.mock.calls[0][0]
+    expect(call.data).not.toHaveProperty('guideId')
+  })
+
+  it('disconnects guide2 when guideId2 is not provided', async () => {
+    await updateWalkFull('walk-1', { ...FULL_PAYLOAD, guideId2: undefined })
+    expect(walkMock.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ guide2: { disconnect: true } }),
+      })
+    )
+  })
+
+  it('connects guide2 when guideId2 is provided', async () => {
+    await updateWalkFull('walk-1', { ...FULL_PAYLOAD, guideId2: 5 })
+    expect(walkMock.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ guide2: { connect: { id: 5 } } }),
+      })
+    )
+  })
+})
+
+describe('updateWalkFull — ticket types', () => {
+  beforeEach(() => {
+    walkMock.update.mockResolvedValue({ id: 'walk-1' })
+    ticketTypeMock.deleteMany.mockResolvedValue({})
+    ticketTypeMock.createMany.mockResolvedValue({})
+  })
+
+  it('deletes existing ticket types then creates new ones in a transaction', async () => {
+    await updateWalkFull('walk-1', FULL_PAYLOAD)
+    expect(ticketTypeMock.deleteMany).toHaveBeenCalledWith({ where: { walkId: 'walk-1' } })
+    expect(ticketTypeMock.createMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.arrayContaining([
+          expect.objectContaining({ walkId: 'walk-1', name: 'Стандартный', priceKopecks: 50000, capacity: 10 }),
+        ]),
+      })
+    )
+  })
+
+  it('calculates total capacity as sum of all ticket types', async () => {
+    const payload = {
+      ...FULL_PAYLOAD,
+      ticketTypes: [
+        { name: 'Взрослый', priceKopecks: 50000, capacity: 8 },
+        { name: 'Детский', priceKopecks: 25000, capacity: 4 },
+      ],
+    }
+    await updateWalkFull('walk-1', payload)
+    expect(walkMock.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ capacity: 12 }),
+      })
+    )
+  })
+
+  it('uses first ticket type price as priceKopecks on the walk', async () => {
+    await updateWalkFull('walk-1', FULL_PAYLOAD)
+    expect(walkMock.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ priceKopecks: 50000 }),
+      })
+    )
   })
 })

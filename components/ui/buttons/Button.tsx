@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import styles from './Button.module.css';
 
-type ButtonVariant = 'default' | 'secondary' | 'outline' | 'ghost';
+type ButtonVariant = 'default' | 'secondary' | 'outline' | 'ghost' | 'destructive';
 type ButtonSize    = 'default' | 'sm' | 'lg';
 
 type BaseProps = {

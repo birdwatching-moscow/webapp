@@ -73,6 +73,7 @@ model Walk {
   id            String      @id @default(uuid())
   slug          String      @unique @db.VarChar(200)
   title         String      @db.VarChar(150)
+  subtitle      String?     @db.VarChar(300)
   description   String      @db.Text
   startsAt      DateTime
   endsAt        DateTime?
@@ -80,19 +81,37 @@ model Walk {
   priceKopecks  Int
   capacity      Int
   guideId       Int
+  guideId2      Int?
   status        EventStatus @default(DRAFT)
   coverPhotoUrl String      @db.VarChar(2048)
   galleryUrl    String?     @db.VarChar(2048)
+  emailSubject  String?     @db.VarChar(255)
+  emailBody     String?     @db.Text
   publishedAt   DateTime?
   publishedBy   String?
   createdAt     DateTime    @default(now())
 
-  guide      TeamMember  @relation(fields: [guideId], references: [id])
-  publisher  User?       @relation("WalkPublisher", fields: [publishedBy], references: [id])
-  tickets    Ticket[]
-  orderItems OrderItem[]
+  guide       TeamMember  @relation("WalkPrimaryGuide",   fields: [guideId],  references: [id])
+  guide2      TeamMember? @relation("WalkSecondaryGuide", fields: [guideId2], references: [id])
+  publisher   User?       @relation("WalkPublisher", fields: [publishedBy], references: [id])
+  tickets     Ticket[]
+  orderItems  OrderItem[]
+  ticketTypes TicketType[]
 
   @@index([status, startsAt])
+}
+
+model TicketType {
+  id           Int     @id @default(autoincrement())
+  walkId       String
+  name         String  @db.VarChar(100)
+  priceKopecks Int?
+  capacity     Int     @default(0)
+  sortOrder    Int     @default(0)
+
+  walk Walk @relation(fields: [walkId], references: [id])
+
+  @@index([walkId])
 }
 
 model Expedition {
@@ -139,7 +158,8 @@ model TeamMember {
   profileLinks String[]
   sortOrder    Int
 
-  walks       Walk[]
+  walks       Walk[]  @relation("WalkPrimaryGuide")
+  walks2      Walk[]  @relation("WalkSecondaryGuide")
   expeditions Expedition[]
 }
 

@@ -63,6 +63,16 @@
   color: var(--color-primary-foreground);
 }
 
+.destructive {
+  background: var(--color-error);
+  color: #fff;
+  padding: 0 var(--space-5);
+}
+
+.destructive:hover:not(:disabled):not([aria-disabled='true']) {
+  opacity: 0.88;
+}
+
 .ghost {
   background: transparent;
   color: var(--color-primary);
