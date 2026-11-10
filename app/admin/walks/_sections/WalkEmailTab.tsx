@@ -52,7 +52,7 @@ export function WalkEmailTab({
       {subTab === 'purchase' && (
         <section className={styles.section}>
           <p className={styles.emailNote}>
-            Письмо отправляется участнику сразу после покупки билета. Если не заполнено — используется шаблон по умолчанию.
+            Письмо отправляется участнику сразу после покупки билета.
           </p>
           <div className={styles.field}>
             <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Тема письма</label>
