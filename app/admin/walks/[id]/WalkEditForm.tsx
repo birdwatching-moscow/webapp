@@ -29,6 +29,8 @@ type WalkData = {
   guideId: number
   guideId2: number | null
   status: string
+  emailSubject: string | null
+  emailBody: string | null
   ticketTypes: { name: string; priceKopecks: number | null; capacity: number }[]
 }
 
@@ -78,10 +80,13 @@ export function WalkEditForm({ walk, guides }: Props) {
   const [startsAt, setStartsAt] = useState(walk.startsAt)
   const [endsAt, setEndsAt]     = useState(walk.endsAt)
   const [location, setLocation] = useState(walk.location)
-  const [coverUrl, setCoverUrl] = useState(walk.coverPhotoUrl)
-  const [guideId, setGuideId]   = useState(String(walk.guideId))
-  const [guideId2, setGuideId2] = useState(walk.guideId2 ? String(walk.guideId2) : '')
-  const [tickets, setTickets]   = useState<TicketTypeRow[]>(() => initialTickets(walk.ticketTypes))
+  const [coverUrl, setCoverUrl]         = useState(walk.coverPhotoUrl)
+  const [guideId, setGuideId]           = useState(String(walk.guideId))
+  const [guideId2, setGuideId2]         = useState(walk.guideId2 ? String(walk.guideId2) : '')
+  const [tickets, setTickets]           = useState<TicketTypeRow[]>(() => initialTickets(walk.ticketTypes))
+  const [emailSubject, setEmailSubject] = useState(walk.emailSubject ?? '')
+  const [emailBody, setEmailBody]       = useState(walk.emailBody ?? '')
+  const [formTab, setFormTab]           = useState<'walk' | 'email'>('walk')
 
   const [isDirty, setIsDirty]   = useState(false)
   const [error, setError]       = useState<string | null>(null)
@@ -105,6 +110,8 @@ export function WalkEditForm({ walk, guides }: Props) {
     if (!guideId) errors.push('Гид')
     if (!coverUrl.trim()) errors.push('URL фото')
     if (!tickets.some(t => t.name.trim() !== '' && t.priceRub !== '' && t.capacity !== '')) errors.push('хотя бы один билет с названием, ценой и количеством')
+    if (!emailSubject.trim()) errors.push('Тема письма')
+    if (!emailBody.trim()) errors.push('Текст письма')
     return errors
   }
 
@@ -143,6 +150,8 @@ export function WalkEditForm({ walk, guides }: Props) {
       coverPhotoUrl: coverUrl.trim(),
       guideId: Number(guideId),
       guideId2: guideId2 ? Number(guideId2) : undefined,
+      emailSubject: emailSubject.trim() || undefined,
+      emailBody: emailBody.trim() || undefined,
       ticketTypes: tickets.map(t => ({
         name: t.name.trim() || 'Без названия',
         priceKopecks: t.priceRub !== '' ? Math.round(parseFloat(t.priceRub) * 100) : null,
@@ -266,7 +275,25 @@ export function WalkEditForm({ walk, guides }: Props) {
         </div>
       )}
 
-      <div className={styles.sections}>
+      <nav className={styles.formTabs}>
+        <button
+          type="button"
+          className={[styles.formTab, formTab === 'walk' ? styles.formTabActive : ''].filter(Boolean).join(' ')}
+          onClick={() => setFormTab('walk')}
+        >
+          Описание прогулки
+        </button>
+        <button
+          type="button"
+          className={[styles.formTab, formTab === 'email' ? styles.formTabActive : ''].filter(Boolean).join(' ')}
+          onClick={() => setFormTab('email')}
+        >
+          Email
+          {(emailSubject || emailBody) && <span className={styles.formTabDot} />}
+        </button>
+      </nav>
+
+      {formTab === 'walk' && <div className={styles.sections}>
 
         {/* ── Основное ───────────────────────────────── */}
         <section className={styles.section}>
@@ -506,7 +533,36 @@ export function WalkEditForm({ walk, guides }: Props) {
           )}
         </section>
 
-      </div>
+      </div>}
+
+      {formTab === 'email' && <div className={styles.sections}>
+        <section className={styles.section}>
+          <p className={styles.emailNote}>
+            Эти поля используются при отправке уведомлений участникам. Если не заполнены — используется шаблон по умолчанию.
+          </p>
+          <div className={styles.field}>
+            <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Тема письма</label>
+            <input
+              className={styles.input}
+              value={emailSubject}
+              onChange={e => { setEmailSubject(e.target.value); markDirty() }}
+              disabled={!isEditable}
+              placeholder="Например: Напоминание о прогулке «Название»"
+            />
+          </div>
+          <div className={styles.field}>
+            <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Текст письма</label>
+            <textarea
+              className={styles.textarea}
+              value={emailBody}
+              onChange={e => { setEmailBody(e.target.value); markDirty() }}
+              disabled={!isEditable}
+              rows={12}
+              placeholder="Текст письма участникам..."
+            />
+          </div>
+        </section>
+      </div>}
 
       <Modal
         open={showLeaveConfirm}

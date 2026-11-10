@@ -21,6 +21,8 @@ export type UpdateWalkFullData = {
   guideId: number
   guideId2?: number
   ticketTypes: TicketTypeInput[]
+  emailSubject?: string
+  emailBody?: string
 }
 
 export async function updateWalkFull(id: string, data: UpdateWalkFullData): Promise<void> {
@@ -38,10 +40,12 @@ export async function updateWalkFull(id: string, data: UpdateWalkFullData): Prom
         endsAt: data.endsAt ? new Date(data.endsAt) : null,
         location: data.location,
         coverPhotoUrl: data.coverPhotoUrl,
-        guideId: data.guideId,
-        guideId2: data.guideId2 ?? null,
+        guide:  { connect: { id: data.guideId } },
+        guide2: data.guideId2 ? { connect: { id: data.guideId2 } } : { disconnect: true },
         priceKopecks,
         capacity,
+        emailSubject: data.emailSubject ?? null,
+        emailBody: data.emailBody ?? null,
       },
     }),
     prisma.ticketType.deleteMany({ where: { walkId: id } }),

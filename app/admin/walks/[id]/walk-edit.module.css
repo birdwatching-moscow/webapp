@@ -74,6 +74,48 @@
   color: var(--color-muted-foreground);
 }
 
+/* ── Form tabs ───────────────────────────────────── */
+
+.formTabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.formTab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-muted-foreground);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.formTab:hover {
+  color: var(--color-foreground);
+}
+
+.formTabActive {
+  color: var(--color-foreground);
+  border-bottom-color: var(--color-primary);
+}
+
+.formTabDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  flex-shrink: 0;
+}
+
 /* ── Sections ────────────────────────────────────── */
 
 .sections {
@@ -342,6 +384,15 @@
 .addTicketBtn:disabled {
   opacity: var(--opacity-disabled);
   cursor: not-allowed;
+}
+
+/* ── Email tab ───────────────────────────────────── */
+
+.emailNote {
+  font-size: var(--font-size-sm);
+  color: var(--color-muted-foreground);
+  line-height: 1.5;
+  margin: 0;
 }
 
 /* ── Leave-confirm modal ─────────────────────────── */
