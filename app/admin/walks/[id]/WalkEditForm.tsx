@@ -288,7 +288,6 @@ export function WalkEditForm({ walk, guides }: Props) {
           onClick={() => setFormTab('email')}
         >
           Email
-          {(emailSubject || emailBody) && <span className={styles.formTabDot} />}
         </button>
       </nav>
 
