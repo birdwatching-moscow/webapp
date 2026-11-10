@@ -1,18 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { authMock, teamMemberMock, walkMock, expeditionMock } = vi.hoisted(() => ({
+const { authMock, teamMemberMock, walkMock, expeditionMock, transactionMock } = vi.hoisted(() => ({
   authMock: vi.fn(),
   teamMemberMock: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn() },
   walkMock: { count: vi.fn() },
   expeditionMock: { count: vi.fn() },
+  transactionMock: vi.fn(),
 }))
 
 vi.mock('@/lib/auth', () => ({ auth: authMock }))
 vi.mock('@/lib/prisma', () => ({
-  prisma: { teamMember: teamMemberMock, walk: walkMock, expedition: expeditionMock },
+  prisma: {
+    teamMember: teamMemberMock,
+    walk: walkMock,
+    expedition: expeditionMock,
+    $transaction: transactionMock,
+  },
 }))
 
-import { createTeamMember, updateTeamMember, deleteTeamMember } from '@/app/admin/team/_actions'
+import { createTeamMember, updateTeamMember, deleteTeamMember, reorderTeamMembers } from '@/app/admin/team/_actions'
 
 const ADMIN_SESSION = { user: { id: 'u1', role: 'ADMIN' as const, name: 'Admin' } }
 
@@ -72,5 +78,23 @@ describe('deleteTeamMember', () => {
     teamMemberMock.delete.mockResolvedValue({ id: 1 })
     await deleteTeamMember(1)
     expect(teamMemberMock.delete).toHaveBeenCalled()
+  })
+})
+
+describe('reorderTeamMembers', () => {
+  it('calls $transaction once', async () => {
+    transactionMock.mockResolvedValue([])
+    teamMemberMock.update.mockResolvedValue({})
+    await reorderTeamMembers([3, 1, 2])
+    expect(transactionMock).toHaveBeenCalledOnce()
+  })
+
+  it('assigns sortOrder 1-indexed by array position', async () => {
+    transactionMock.mockImplementation((ops: Promise<unknown>[]) => Promise.all(ops))
+    teamMemberMock.update.mockResolvedValue({})
+    await reorderTeamMembers([3, 1, 2])
+    expect(teamMemberMock.update).toHaveBeenNthCalledWith(1, { where: { id: 3 }, data: { sortOrder: 1 } })
+    expect(teamMemberMock.update).toHaveBeenNthCalledWith(2, { where: { id: 1 }, data: { sortOrder: 2 } })
+    expect(teamMemberMock.update).toHaveBeenNthCalledWith(3, { where: { id: 2 }, data: { sortOrder: 3 } })
   })
 })

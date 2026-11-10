@@ -29,6 +29,10 @@ export async function updateTeamMember(id: number, input: TeamMemberInput): Prom
   await prisma.teamMember.update({ where: { id }, data: input })
 }
 
+export async function reorderTeamMembers(_orderedIds: number[]): Promise<void> {
+  await requireAdmin()
+}
+
 export async function deleteTeamMember(id: number): Promise<void> {
   await requireAdmin()
   const [walkCount, expeditionCount] = await Promise.all([
