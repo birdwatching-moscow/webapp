@@ -81,7 +81,7 @@ export function WalkEmailTab({
       {subTab === 'reminder' && (
         <section className={styles.section}>
           <p className={styles.emailNote}>
-            Письмо-напоминание отправляется участникам за N дней до начала прогулки. Если не заполнено — не отправляется.
+            Напоминание отправляется за указанное количество дней до начала прогулки. Письмо отправляется только если заполнены и тема, и текст.
           </p>
           <div className={emailStyles.reminderDaysRow}>
             <label className={styles.label}>За сколько дней до прогулки</label>
