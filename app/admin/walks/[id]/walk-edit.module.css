@@ -100,6 +100,13 @@
   margin: 0;
 }
 
+.sectionHint {
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-error);
+}
+
 /* ── Fields ──────────────────────────────────────── */
 
 .fieldRow {
@@ -335,6 +342,21 @@
 .addTicketBtn:disabled {
   opacity: var(--opacity-disabled);
   cursor: not-allowed;
+}
+
+/* ── Leave-confirm modal ─────────────────────────── */
+
+.leaveModalFooter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.leaveModalText {
+  font-size: var(--font-size-sm);
+  color: var(--color-muted-foreground);
+  line-height: 1.5;
+  margin: 0;
 }
 
 .pricePlaceholder {

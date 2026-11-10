@@ -3,6 +3,7 @@
 import { useState, useEffect, useTransition, useId } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/buttons/Button'
+import { Modal } from '@/components/ui/modal/Modal'
 import { updateWalkFull, publishWalk } from '@/app/admin/walks/_actions'
 import { ROUTES } from '@/utils/routes'
 import styles from './walk-edit.module.css'
@@ -84,12 +85,28 @@ export function WalkEditForm({ walk, guides }: Props) {
 
   const [isDirty, setIsDirty]   = useState(false)
   const [error, setError]       = useState<string | null>(null)
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
   const [saving, startSave]     = useTransition()
   const [publishing, startPublish] = useTransition()
 
   const titleId = useId()
 
+  const requireAll = walk.status === 'ACTIVE'
+
   function markDirty() { setIsDirty(true) }
+
+  function getPublishErrors(): string[] {
+    const errors: string[] = []
+    if (!subtitle.trim()) errors.push('Подзаголовок')
+    if (!description.trim()) errors.push('Описание')
+    if (!startsAt) errors.push('Дата начала')
+    if (!endsAt) errors.push('Дата окончания')
+    if (!location.trim()) errors.push('Локация')
+    if (!guideId) errors.push('Гид')
+    if (!coverUrl.trim()) errors.push('URL фото')
+    if (!tickets.some(t => t.name.trim() !== '' && t.priceRub !== '' && t.capacity !== '')) errors.push('хотя бы один билет с названием, ценой и количеством')
+    return errors
+  }
 
   useEffect(() => {
     function onBeforeUnload(e: BeforeUnloadEvent) {
@@ -99,9 +116,20 @@ export function WalkEditForm({ walk, guides }: Props) {
     return () => window.removeEventListener('beforeunload', onBeforeUnload)
   }, [isDirty])
 
+  function walksListHref() {
+    if (walk.status === 'DRAFT') return `${ROUTES.admin.walks}?tab=draft`
+    if (walk.status === 'ACTIVE') return ROUTES.admin.walks
+    return `${ROUTES.admin.walks}?tab=all`
+  }
+
   function handleBack() {
-    if (isDirty && !window.confirm('Вы внесли изменения, которые ещё не сохранены.\nУйти и потерять их?')) return
-    router.push(ROUTES.admin.walks)
+    if (isDirty) { setShowLeaveConfirm(true); return }
+    router.push(walksListHref())
+  }
+
+  function confirmLeave() {
+    setShowLeaveConfirm(false)
+    router.push(walksListHref())
   }
 
   function buildPayload() {
@@ -125,10 +153,23 @@ export function WalkEditForm({ walk, guides }: Props) {
 
   function handleSave() {
     setError(null)
+    if (walk.status === 'ACTIVE') {
+      const errors = getPublishErrors()
+      if (errors.length > 0) {
+        setError(`Не заполнены обязательные поля: ${errors.join(', ')}`)
+        return
+      }
+    } else {
+      if (!title.trim()) {
+        setError('Название обязательно')
+        return
+      }
+    }
     startSave(async () => {
       try {
         await updateWalkFull(walk.id, buildPayload())
         setIsDirty(false)
+        router.push(walksListHref())
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Ошибка при сохранении')
       }
@@ -137,6 +178,15 @@ export function WalkEditForm({ walk, guides }: Props) {
 
   function handlePublish() {
     setError(null)
+    if (!title.trim()) {
+      setError('Название обязательно')
+      return
+    }
+    const errors = getPublishErrors()
+    if (errors.length > 0) {
+      setError(`Нельзя опубликовать: не заполнены — ${errors.join(', ')}`)
+      return
+    }
     startPublish(async () => {
       try {
         await publishWalk(walk.id)
@@ -233,12 +283,11 @@ export function WalkEditForm({ walk, guides }: Props) {
                 value={title}
                 onChange={e => { setTitle(e.target.value); markDirty() }}
                 disabled={!isEditable}
-                required
               />
             </div>
 
             <div className={styles.field} style={{ gridColumn: '1 / -1' }}>
-              <label className={styles.label}>Подзаголовок</label>
+              <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Подзаголовок</label>
               <input
                 className={styles.input}
                 value={subtitle}
@@ -249,14 +298,13 @@ export function WalkEditForm({ walk, guides }: Props) {
             </div>
 
             <div className={styles.field} style={{ gridColumn: '1 / -1' }}>
-              <label className={`${styles.label} ${styles.required}`}>Описание</label>
+              <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Описание</label>
               <textarea
                 className={styles.textarea}
                 value={description}
                 onChange={e => { setDescription(e.target.value); markDirty() }}
                 disabled={!isEditable}
                 rows={6}
-                required
               />
             </div>
           </div>
@@ -267,18 +315,17 @@ export function WalkEditForm({ walk, guides }: Props) {
           <h2 className={styles.sectionTitle}>Дата и место</h2>
           <div className={`${styles.fieldRow} ${styles.fieldRow2}`}>
             <div className={styles.field}>
-              <label className={`${styles.label} ${styles.required}`}>Начало</label>
+              <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Начало</label>
               <input
                 className={styles.input}
                 type="datetime-local"
                 value={startsAt}
                 onChange={e => { setStartsAt(e.target.value); markDirty() }}
                 disabled={!isEditable}
-                required
               />
             </div>
             <div className={styles.field}>
-              <label className={styles.label}>Окончание</label>
+              <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Окончание</label>
               <input
                 className={styles.input}
                 type="datetime-local"
@@ -289,13 +336,12 @@ export function WalkEditForm({ walk, guides }: Props) {
               />
             </div>
             <div className={styles.field} style={{ gridColumn: '1 / -1' }}>
-              <label className={`${styles.label} ${styles.required}`}>Локация</label>
+              <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Локация</label>
               <input
                 className={styles.input}
                 value={location}
                 onChange={e => { setLocation(e.target.value); markDirty() }}
                 disabled={!isEditable}
-                required
               />
             </div>
           </div>
@@ -306,7 +352,7 @@ export function WalkEditForm({ walk, guides }: Props) {
           <h2 className={styles.sectionTitle}>Гиды</h2>
           <div className={styles.guidesRow}>
             <div className={styles.guideField}>
-              <label className={`${styles.label} ${styles.required}`}>Гид</label>
+              <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Гид</label>
               <select
                 className={styles.select}
                 value={guideId}
@@ -375,7 +421,7 @@ export function WalkEditForm({ walk, guides }: Props) {
               <img src={coverUrl} alt="Обложка" className={styles.photoThumb} />
             )}
             <div className={styles.field} style={{ flex: 1 }}>
-              <label className={`${styles.label} ${styles.required}`}>URL фото</label>
+              <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>URL фото</label>
               <input
                 className={styles.input}
                 type="url"
@@ -391,7 +437,12 @@ export function WalkEditForm({ walk, guides }: Props) {
 
         {/* ── Билеты ─────────────────────────────────── */}
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Билеты</h2>
+          <h2 className={styles.sectionTitle}>
+            Билеты
+            {requireAll && !tickets.some(t => t.name.trim() !== '' && t.priceRub !== '' && t.capacity !== '') && (
+              <span className={styles.sectionHint}> — хотя бы один с названием, ценой и количеством *</span>
+            )}
+          </h2>
 
           <div className={styles.ticketList}>
             <div className={styles.ticketColLabels}>
@@ -456,6 +507,26 @@ export function WalkEditForm({ walk, guides }: Props) {
         </section>
 
       </div>
+
+      <Modal
+        open={showLeaveConfirm}
+        onClose={() => setShowLeaveConfirm(false)}
+        title="Несохранённые изменения"
+        footer={
+          <div className={styles.leaveModalFooter}>
+            <Button fullWidth variant="secondary" onClick={() => setShowLeaveConfirm(false)}>
+              Отмена
+            </Button>
+            <Button fullWidth variant="destructive" onClick={confirmLeave}>
+              Уйти без сохранения
+            </Button>
+          </div>
+        }
+      >
+        <p className={styles.leaveModalText}>
+          Вы внесли изменения, которые ещё не сохранены. Если уйти сейчас — они потеряются.
+        </p>
+      </Modal>
     </div>
   )
 }

@@ -259,6 +259,15 @@ export default async function WalksPage({
             </table>
           </div>
 
+          {activeTab === 'all' && (
+            <p className={styles.countLine}>
+              {hasFilters
+                ? `Показано ${walks.length} из ${total}`
+                : `Всего ${total}`}{' '}
+              {total === 1 ? 'прогулка' : total >= 2 && total <= 4 ? 'прогулки' : 'прогулок'}
+            </p>
+          )}
+
           {totalPages > 1 && (
             <div className={styles.paginationBar}>
               <span className={styles.paginationInfo}>

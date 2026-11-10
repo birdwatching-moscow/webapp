@@ -342,6 +342,12 @@
   font-size: var(--font-size-sm);
 }
 
+.countLine {
+  font-size: var(--font-size-sm);
+  color: var(--color-muted-foreground);
+  margin: 0;
+}
+
 /* Pagination */
 
 .paginationBar {
