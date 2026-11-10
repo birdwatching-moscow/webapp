@@ -4,7 +4,7 @@ import { useState, useEffect, useTransition, useId } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/buttons/Button'
 import { Modal } from '@/components/ui/modal/Modal'
-import { updateWalkFull, publishWalk } from '@/app/admin/walks/_actions'
+import { updateWalkFull, publishWalk, cancelWalk, deleteWalk } from '@/app/admin/walks/_actions'
 import { ROUTES } from '@/utils/routes'
 import styles from './walk-edit.module.css'
 
@@ -90,8 +90,10 @@ export function WalkEditForm({ walk, guides }: Props) {
   const [isDirty, setIsDirty]   = useState(false)
   const [error, setError]       = useState<string | null>(null)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+  const [showDangerConfirm, setShowDangerConfirm] = useState<'cancel' | 'delete' | null>(null)
   const [saving, startSave]     = useTransition()
   const [publishing, startPublish] = useTransition()
+  const [danger, startDanger]   = useTransition()
 
   const titleId = useId()
 
@@ -201,6 +203,24 @@ export function WalkEditForm({ walk, guides }: Props) {
         router.refresh()
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Ошибка при публикации')
+      }
+    })
+  }
+
+  // ── Danger actions ──────────────────────────────────────────
+  function confirmDanger() {
+    const action = showDangerConfirm
+    setShowDangerConfirm(null)
+    startDanger(async () => {
+      try {
+        if (action === 'cancel') {
+          await cancelWalk(walk.id)
+        } else {
+          await deleteWalk(walk.id)
+        }
+        router.push(ROUTES.admin.walks)
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Ошибка')
       }
     })
   }
@@ -560,6 +580,31 @@ export function WalkEditForm({ walk, guides }: Props) {
         </section>
       </div>}
 
+      {(walk.status === 'ACTIVE' || walk.status === 'DRAFT') && (
+        <div className={styles.dangerZone}>
+          {walk.status === 'ACTIVE' && (
+            <button
+              type="button"
+              className={styles.dangerBtn}
+              onClick={() => setShowDangerConfirm('cancel')}
+              disabled={danger}
+            >
+              Отменить прогулку
+            </button>
+          )}
+          {walk.status === 'DRAFT' && (
+            <button
+              type="button"
+              className={styles.dangerBtn}
+              onClick={() => setShowDangerConfirm('delete')}
+              disabled={danger}
+            >
+              Удалить черновик
+            </button>
+          )}
+        </div>
+      )}
+
       <Modal
         open={showLeaveConfirm}
         onClose={() => setShowLeaveConfirm(false)}
@@ -577,6 +622,28 @@ export function WalkEditForm({ walk, guides }: Props) {
       >
         <p className={styles.leaveModalText}>
           Вы внесли изменения, которые ещё не сохранены. Если уйти сейчас — они потеряются.
+        </p>
+      </Modal>
+
+      <Modal
+        open={showDangerConfirm !== null}
+        onClose={() => setShowDangerConfirm(null)}
+        title={showDangerConfirm === 'cancel' ? 'Отменить прогулку?' : 'Удалить черновик?'}
+        footer={
+          <div className={styles.leaveModalFooter}>
+            <Button fullWidth variant="secondary" onClick={() => setShowDangerConfirm(null)}>
+              Назад
+            </Button>
+            <Button fullWidth variant="destructive" onClick={confirmDanger} disabled={danger}>
+              {showDangerConfirm === 'cancel' ? 'Отменить прогулку' : 'Удалить'}
+            </Button>
+          </div>
+        }
+      >
+        <p className={styles.leaveModalText}>
+          {showDangerConfirm === 'cancel'
+            ? 'Прогулка перейдёт в статус «Отменена». Участники не будут уведомлены автоматически.'
+            : 'Черновик будет удалён без возможности восстановления.'}
         </p>
       </Modal>
     </div>
