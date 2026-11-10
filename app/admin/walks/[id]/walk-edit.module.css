@@ -159,6 +159,11 @@
 
 @media (min-width: 600px) {
   .fieldRow2 { grid-template-columns: 1fr 1fr; }
+  .fieldFullWidth { grid-column: 1 / -1; }
+}
+
+.photoUrlField {
+  flex: 1;
 }
 
 .field {
@@ -410,15 +415,3 @@
   margin: 0;
 }
 
-.pricePlaceholder {
-  display: flex;
-  align-items: center;
-  height: var(--size-control-sm);
-  padding: 0 var(--space-3);
-  font-size: var(--font-size-sm);
-  color: var(--color-muted-foreground);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-border) 20%, transparent);
-  cursor: not-allowed;
-}

@@ -68,7 +68,6 @@ function initialTickets(types: WalkData['ticketTypes']): TicketTypeRow[] {
 }
 
 const MAX_TICKETS = 5
-const MAX_GUIDES = 2
 
 export function WalkEditForm({ walk, guides }: Props) {
   const router = useRouter()
@@ -300,7 +299,7 @@ export function WalkEditForm({ walk, guides }: Props) {
           <h2 className={styles.sectionTitle}>Основное</h2>
 
           <div className={`${styles.fieldRow} ${styles.fieldRow2}`}>
-            <div className={styles.field} style={{ gridColumn: '1 / -1' }}>
+            <div className={`${styles.field} ${styles.fieldFullWidth}`}>
               <label className={`${styles.label} ${styles.required}`} htmlFor={titleId}>
                 Название
               </label>
@@ -313,7 +312,7 @@ export function WalkEditForm({ walk, guides }: Props) {
               />
             </div>
 
-            <div className={styles.field} style={{ gridColumn: '1 / -1' }}>
+            <div className={`${styles.field} ${styles.fieldFullWidth}`}>
               <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Подзаголовок</label>
               <input
                 className={styles.input}
@@ -324,7 +323,7 @@ export function WalkEditForm({ walk, guides }: Props) {
               />
             </div>
 
-            <div className={styles.field} style={{ gridColumn: '1 / -1' }}>
+            <div className={`${styles.field} ${styles.fieldFullWidth}`}>
               <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Описание</label>
               <textarea
                 className={styles.textarea}
@@ -362,7 +361,7 @@ export function WalkEditForm({ walk, guides }: Props) {
                 disabled={!isEditable}
               />
             </div>
-            <div className={styles.field} style={{ gridColumn: '1 / -1' }}>
+            <div className={`${styles.field} ${styles.fieldFullWidth}`}>
               <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Локация</label>
               <input
                 className={styles.input}
@@ -418,7 +417,6 @@ export function WalkEditForm({ walk, guides }: Props) {
                     className={styles.removeGuideBtn}
                     onClick={() => { setGuideId2(''); markDirty() }}
                     aria-label="Убрать второго гида"
-                    style={{ marginTop: 20 }}
                   >
                     ×
                   </button>
@@ -430,7 +428,6 @@ export function WalkEditForm({ walk, guides }: Props) {
                   type="button"
                   className={styles.addGuideBtn}
                   onClick={() => { setGuideId2(String(guide2Options[0].id)); markDirty() }}
-                  style={{ marginTop: 20 }}
                 >
                   + Второй гид
                 </button>
@@ -447,7 +444,7 @@ export function WalkEditForm({ walk, guides }: Props) {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={coverUrl} alt="Обложка" className={styles.photoThumb} />
             )}
-            <div className={styles.field} style={{ flex: 1 }}>
+            <div className={`${styles.field} ${styles.photoUrlField}`}>
               <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>URL фото</label>
               <input
                 className={styles.input}

@@ -3,7 +3,9 @@ import { Prisma } from '@/generated/prisma/client'
 import { prisma } from '@/lib/prisma'
 import { ROUTES } from '@/utils/routes'
 import { Button } from '@/components/ui/buttons/Button'
+import { buildWalksWhere } from '@/lib/admin/walksWhere'
 import { WalksFilters } from './WalksFilters'
+import { ExportButton } from './ExportButton'
 import styles from './walks.module.css'
 
 const PAGE_SIZE = 20
@@ -47,14 +49,19 @@ function tabHref(tab: Tab, page?: number) {
 
 type AllFilters = { q: string; from: string; to: string; statuses: string[]; guides: string[] }
 
+function filtersToSearchParams(filters: AllFilters): URLSearchParams {
+  const p = new URLSearchParams()
+  if (filters.q) p.set('q', filters.q)
+  if (filters.from) p.set('from', filters.from)
+  if (filters.to) p.set('to', filters.to)
+  filters.statuses.forEach(s => p.append('status', s))
+  filters.guides.forEach(g => p.append('guide', g))
+  return p
+}
+
 function allTabHref(filters: AllFilters, page?: number) {
-  const params = new URLSearchParams()
+  const params = filtersToSearchParams(filters)
   params.set('tab', 'all')
-  if (filters.q) params.set('q', filters.q)
-  if (filters.from) params.set('from', filters.from)
-  if (filters.to) params.set('to', filters.to)
-  filters.statuses.forEach(s => params.append('status', s))
-  filters.guides.forEach(g => params.append('guide', g))
   if (page && page > 1) params.set('page', String(page))
   return `${ROUTES.admin.walks}?${params.toString()}`
 }
@@ -108,38 +115,16 @@ export default async function WalksPage({
   const hasFilters = q !== '' || fromStr !== '' || toStr !== '' || selectedStatuses.length > 0 || selectedGuides.length > 0
 
   // Build where clause
-  let whereClause: Prisma.WalkWhereInput
-  if (activeTab === 'all') {
-    const and: Prisma.WalkWhereInput[] = []
-
-    if (q) and.push({ title: { contains: q, mode: 'insensitive' } })
-    if (fromStr) and.push({ startsAt: { gte: new Date(fromStr) } })
-    if (toStr) and.push({ startsAt: { lte: new Date(toStr + 'T23:59:59') } })
-
-    if (selectedStatuses.length > 0) {
-      const statusOr: Prisma.WalkWhereInput[] = []
-      for (const s of selectedStatuses) {
-        if (s === 'active')    statusOr.push({ status: 'ACTIVE', startsAt: { gte: now } })
-        if (s === 'past')      statusOr.push({ status: 'ACTIVE', startsAt: { lt:  now } })
-        if (s === 'draft')     statusOr.push({ status: 'DRAFT' })
-        if (s === 'cancelled') statusOr.push({ status: 'CANCELLED' })
-      }
-      and.push({ OR: statusOr })
-    } else {
-      and.push({ status: { not: 'DELETED' as const } })
-    }
-
-    if (selectedGuides.length > 0) {
-      and.push({ guideId: { in: selectedGuides.map(Number) } })
-    }
-
-    whereClause = and.length === 1 ? and[0] : { AND: and }
-  } else {
-    whereClause =
-      activeTab === 'active' ? { status: 'ACTIVE', startsAt: { gte: now } } :
-      activeTab === 'draft'  ? { status: 'DRAFT' } :
-      { status: { not: 'DELETED' as const } }
-  }
+  const whereClause: Prisma.WalkWhereInput =
+    activeTab === 'all' ? buildWalksWhere({
+      q, fromStr, toStr,
+      statuses: selectedStatuses,
+      guides: selectedGuides,
+      now,
+    }) :
+    activeTab === 'active' ? { status: 'ACTIVE', startsAt: { gte: now } } :
+    activeTab === 'draft'  ? { status: 'DRAFT' } :
+    { status: { not: 'DELETED' as const } }
 
   const orderByClause: { startsAt: 'asc' | 'desc' } =
     activeTab === 'all' ? { startsAt: 'desc' } : { startsAt: 'asc' }
@@ -201,10 +186,18 @@ export default async function WalksPage({
       </nav>
 
       {activeTab === 'all' && (
-        <WalksFilters
-          guides={allGuides}
-          initial={filters}
-        />
+        <>
+          <WalksFilters
+            guides={allGuides}
+            initial={filters}
+          />
+          <div className={styles.allTabActions}>
+            <ExportButton
+              href={`/api/admin/walks/export?${filtersToSearchParams(filters).toString()}`}
+              className={styles.exportBtn}
+            />
+          </div>
+        </>
       )}
 
       {walks.length === 0 ? (
