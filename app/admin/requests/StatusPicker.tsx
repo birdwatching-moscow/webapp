@@ -2,9 +2,8 @@
 
 import { useState, useRef, useEffect, useTransition } from 'react'
 import { createPortal } from 'react-dom'
-import { useRouter } from 'next/navigation'
 import { RequestStatus } from '@/generated/prisma/client'
-import { updateRequestStatus, deleteRequest } from './_actions'
+import { updateRequestStatus } from './_actions'
 import styles from './requests.module.css'
 
 const STATUS_OPTIONS: { value: RequestStatus; label: string; cls: string }[] = [
@@ -33,7 +32,6 @@ export function StatusPicker({ id, status }: Props) {
   const [pending, startTransition] = useTransition()
   const triggerRef = useRef<HTMLButtonElement>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
-  const router = useRouter()
 
   useEffect(() => {
     if (!open) return
@@ -66,16 +64,6 @@ export function StatusPicker({ id, status }: Props) {
     if (next === status) return
     startTransition(async () => {
       await updateRequestStatus(id, next)
-      router.refresh()
-    })
-  }
-
-  function handleDelete() {
-    setOpen(false)
-    if (!confirm('Удалить заявку? Это действие нельзя отменить.')) return
-    startTransition(async () => {
-      await deleteRequest(id)
-      router.refresh()
     })
   }
 
@@ -125,15 +113,6 @@ export function StatusPicker({ id, status }: Props) {
               )}
             </button>
           ))}
-          <div className={styles.statusPickerDivider} />
-          <button
-            type="button"
-            role="menuitem"
-            className={[styles.statusPickerOption, styles.statusPickerDeleteOption].join(' ')}
-            onClick={handleDelete}
-          >
-            Удалить заявку
-          </button>
         </div>,
         document.body,
       )}
