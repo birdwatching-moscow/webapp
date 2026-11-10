@@ -27,7 +27,6 @@ type WalkData = {
   location: string
   coverPhotoUrl: string
   guideId: number
-  guideId2: number | null
   status: string
   purchaseEmailSubject: string | null
   purchaseEmailBody: string | null
@@ -78,7 +77,6 @@ export function WalkEditForm({ walk, guides }: Props) {
   const [location, setLocation] = useState(walk.location)
   const [coverUrl, setCoverUrl]         = useState(walk.coverPhotoUrl)
   const [guideId, setGuideId]           = useState(String(walk.guideId))
-  const [guideId2, setGuideId2]         = useState(walk.guideId2 ? String(walk.guideId2) : '')
   const [tickets, setTickets]           = useState<TicketTypeRow[]>(() => initialTickets(walk.ticketTypes))
   const [purchaseEmailSubject, setPurchaseEmailSubject] = useState(walk.purchaseEmailSubject ?? '')
   const [purchaseEmailBody, setPurchaseEmailBody]       = useState(walk.purchaseEmailBody ?? '')
@@ -149,7 +147,6 @@ export function WalkEditForm({ walk, guides }: Props) {
       location: location.trim(),
       coverPhotoUrl: coverUrl.trim(),
       guideId: Number(guideId),
-      guideId2: guideId2 ? Number(guideId2) : undefined,
       purchaseEmailSubject: purchaseEmailSubject.trim() || undefined,
       purchaseEmailBody: purchaseEmailBody.trim() || undefined,
       emailSubject: emailSubject.trim() || undefined,
@@ -321,9 +318,8 @@ export function WalkEditForm({ walk, guides }: Props) {
             requireAll={requireAll}
           />
           <WalkSectionGuides
-            guides={guides} guideId={guideId} guideId2={guideId2}
+            guides={guides} guideId={guideId}
             onGuideId={v => { setGuideId(v); markDirty() }}
-            onGuideId2={v => { setGuideId2(v); markDirty() }}
             disabled={!isEditable}
             requireAll={requireAll}
           />

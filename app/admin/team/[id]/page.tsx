@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/buttons/Button'
 import { ROUTES } from '@/utils/routes'
 import { DeleteMemberButton } from './DeleteMemberButton'
 import { ProfileLinkField } from './ProfileLinkField'
+import { TeamPhotoField } from './TeamPhotoField'
 import styles from './member-edit.module.css'
 
 export default async function EditTeamMemberPage({ params }: { params: Promise<{ id: string }> }) {
@@ -40,33 +41,22 @@ export default async function EditTeamMemberPage({ params }: { params: Promise<{
         <div className={styles.section}>
           <p className={styles.sectionTitle}>Основное</p>
 
-          <div className={styles.fieldRow + ' ' + styles.fieldRow2}>
-            <div className={styles.field}>
-              <label htmlFor="name" className={styles.label}>
-                Имя <span className={styles.required}>*</span>
-              </label>
-              <input
-                id="name"
-                name="name"
-                className={styles.input}
-                defaultValue={member.name}
-                required
-              />
-            </div>
+          <div className={styles.field}>
+            <label htmlFor="name" className={styles.label}>
+              Имя <span className={styles.required}>*</span>
+            </label>
+            <input
+              id="name"
+              name="name"
+              className={styles.input}
+              defaultValue={member.name}
+              required
+            />
+          </div>
 
-            <div className={styles.field}>
-              <label htmlFor="photoUrl" className={styles.label}>
-                Фото (URL) <span className={styles.required}>*</span>
-              </label>
-              <input
-                id="photoUrl"
-                name="photoUrl"
-                type="url"
-                className={styles.input}
-                defaultValue={member.photoUrl}
-                required
-              />
-            </div>
+          <div className={styles.field}>
+            <span className={styles.label}>Фото</span>
+            <TeamPhotoField defaultValue={member.photoUrl} />
           </div>
 
           <div className={styles.field}>

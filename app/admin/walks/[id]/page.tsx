@@ -35,7 +35,6 @@ export default async function EditWalkPage({ params }: { params: Promise<{ id: s
         location:     walk.location,
         coverPhotoUrl: walk.coverPhotoUrl,
         guideId:      walk.guideId,
-        guideId2:     walk.guideId2,
         status:       walk.status,
         purchaseEmailSubject: walk.purchaseEmailSubject,
         purchaseEmailBody:    walk.purchaseEmailBody,
