@@ -13,6 +13,7 @@ async function main() {
   await prisma.ticket.deleteMany()
   await prisma.orderItem.deleteMany()
   await prisma.order.deleteMany()
+  await prisma.ticketType.deleteMany()
   await prisma.expeditionDay.deleteMany()
   await prisma.expedition.deleteMany()
   await prisma.walk.deleteMany()
@@ -27,6 +28,16 @@ async function main() {
       name: 'Администратор',
       role: Role.ADMIN,
     },
+  })
+
+  const buyer1 = await prisma.user.create({
+    data: { email: 'anna.sorokina@example.com', name: 'Анна Сорокина', role: Role.USER },
+  })
+  const buyer2 = await prisma.user.create({
+    data: { email: 'dmitry.volkov@example.com', name: 'Дмитрий Волков', role: Role.USER },
+  })
+  const buyer3 = await prisma.user.create({
+    data: { email: 'elena.zhuravleva@example.com', name: 'Елена Журавлёва', role: Role.USER },
   })
 
   const now = new Date()
@@ -76,7 +87,7 @@ async function main() {
   })
 
   // PLACEHOLDER: walk 1 — replace coverPhotoUrl with real S3 URL
-  await prisma.walk.create({
+  const walk1 = await prisma.walk.create({
     data: {
       slug: 'utrenniy-berdvoching-pokrovskoe-streshnevo',
       title: 'Утренний бёрдвотчинг в Покровском-Стрешнево',
@@ -92,6 +103,12 @@ async function main() {
       coverPhotoUrl: 'https://placeholder.example.com/covers/walk1.jpg',
       publishedAt: now,
       publishedBy: admin.id,
+      ticketTypes: {
+        create: [
+          { name: 'Взрослый',  priceKopecks: 150000, capacity: 10, sortOrder: 0 },
+          { name: 'Студентам', priceKopecks:  90000, capacity:  2, sortOrder: 1 },
+        ],
+      },
     },
   })
 
@@ -116,7 +133,7 @@ async function main() {
   })
 
   // PLACEHOLDER: walk 3 — replace coverPhotoUrl with real S3 URL
-  await prisma.walk.create({
+  const walk3 = await prisma.walk.create({
     data: {
       slug: 'kolomenskoe-pervye-perelyotnye',
       title: 'Коломенское: первые перелётные',
@@ -132,6 +149,11 @@ async function main() {
       coverPhotoUrl: 'https://placeholder.example.com/covers/walk3.jpg',
       publishedAt: now,
       publishedBy: admin.id,
+      ticketTypes: {
+        create: [
+          { name: 'Стандартный', priceKopecks: 130000, capacity: 10, sortOrder: 0 },
+        ],
+      },
     },
   })
 
@@ -201,6 +223,83 @@ async function main() {
     })),
   })
 
+  // Walk 1: 3 tickets sold (2 adult + 1 student)
+  const order1a = await prisma.order.create({
+    data: {
+      userId: buyer1.id,
+      status: OrderStatus.PAID,
+      totalKopecks: 150000 * 2,
+      expiresAt: now,
+      paidAt: now,
+      orderItems: { create: { walkId: walk1.id, quantity: 2, unitPriceKopecks: 150000 } },
+    },
+  })
+  await prisma.ticket.createMany({
+    data: [
+      { orderId: order1a.id, userId: buyer1.id, walkId: walk1.id },
+      { orderId: order1a.id, userId: buyer1.id, walkId: walk1.id },
+    ],
+  })
+
+  const order1b = await prisma.order.create({
+    data: {
+      userId: buyer2.id,
+      status: OrderStatus.PAID,
+      totalKopecks: 90000,
+      expiresAt: now,
+      paidAt: now,
+      orderItems: { create: { walkId: walk1.id, quantity: 1, unitPriceKopecks: 90000 } },
+    },
+  })
+  await prisma.ticket.create({ data: { orderId: order1b.id, userId: buyer2.id, walkId: walk1.id } })
+
+  // Walk 3: 5 tickets sold across 3 buyers
+  const order3a = await prisma.order.create({
+    data: {
+      userId: buyer1.id,
+      status: OrderStatus.PAID,
+      totalKopecks: 130000 * 2,
+      expiresAt: now,
+      paidAt: now,
+      orderItems: { create: { walkId: walk3.id, quantity: 2, unitPriceKopecks: 130000 } },
+    },
+  })
+  await prisma.ticket.createMany({
+    data: [
+      { orderId: order3a.id, userId: buyer1.id, walkId: walk3.id },
+      { orderId: order3a.id, userId: buyer1.id, walkId: walk3.id },
+    ],
+  })
+
+  const order3b = await prisma.order.create({
+    data: {
+      userId: buyer2.id,
+      status: OrderStatus.PAID,
+      totalKopecks: 130000 * 2,
+      expiresAt: now,
+      paidAt: now,
+      orderItems: { create: { walkId: walk3.id, quantity: 2, unitPriceKopecks: 130000 } },
+    },
+  })
+  await prisma.ticket.createMany({
+    data: [
+      { orderId: order3b.id, userId: buyer2.id, walkId: walk3.id },
+      { orderId: order3b.id, userId: buyer2.id, walkId: walk3.id },
+    ],
+  })
+
+  const order3c = await prisma.order.create({
+    data: {
+      userId: buyer3.id,
+      status: OrderStatus.PAID,
+      totalKopecks: 130000,
+      expiresAt: now,
+      paidAt: now,
+      orderItems: { create: { walkId: walk3.id, quantity: 1, unitPriceKopecks: 130000 } },
+    },
+  })
+  await prisma.ticket.create({ data: { orderId: order3c.id, userId: buyer3.id, walkId: walk3.id } })
+
   const daysFromNow = (days: number) =>
     new Date(now.getFullYear(), now.getMonth(), now.getDate() + days, 8, 0, 0)
 
@@ -219,6 +318,7 @@ async function main() {
       spotsLeft: 5,
       status: EventStatus.ACTIVE,
       coverPhotoUrl: EXPEDITION_COVER,
+      galleryUrls: [],
       publishedAt: now,
       publishedBy: admin.id,
       guides: { connect: [{ id: guide1.id }] },
@@ -238,6 +338,7 @@ async function main() {
       spotsLeft: 8,
       status: EventStatus.ACTIVE,
       coverPhotoUrl: EXPEDITION_COVER,
+      galleryUrls: [],
       publishedAt: now,
       publishedBy: admin.id,
       guides: { connect: [{ id: guide1.id }, { id: guide2.id }] },
@@ -256,6 +357,7 @@ async function main() {
       spotsLeft: 10,
       status: EventStatus.ACTIVE,
       coverPhotoUrl: EXPEDITION_COVER,
+      galleryUrls: [],
       publishedAt: now,
       publishedBy: admin.id,
       guides: { connect: [{ id: guide2.id }] },
@@ -274,6 +376,7 @@ async function main() {
       spotsLeft: 3,
       status: EventStatus.ACTIVE,
       coverPhotoUrl: EXPEDITION_COVER,
+      galleryUrls: [],
       publishedAt: now,
       publishedBy: admin.id,
       guides: { connect: [{ id: guide1.id }, { id: guide2.id }] },
