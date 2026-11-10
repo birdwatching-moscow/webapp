@@ -82,25 +82,43 @@ type WalkInput = {
   endsAt?: string
 }
 
-export async function createWalkDraft(title: string, guideId: number): Promise<string> {
+export async function createWalkFull(data: UpdateWalkFullData): Promise<string> {
   await requireAdmin()
-  const slug = await ensureUniqueSlug(title, async (s) => {
+  const slug = await ensureUniqueSlug(data.title, async (s) => {
     const existing = await prisma.walk.findFirst({ where: { slug: s } })
     return existing != null
   })
+  const capacity = data.ticketTypes.reduce((sum, t) => sum + t.capacity, 0)
+  const priceKopecks = data.ticketTypes[0]?.priceKopecks ?? 0
   const walk = await prisma.walk.create({
     data: {
       slug,
-      title,
-      description: '',
-      startsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      location: '',
-      coverPhotoUrl: '',
-      priceKopecks: 0,
-      capacity: 0,
-      guideId,
+      title: data.title,
+      subtitle: data.subtitle ?? null,
+      description: data.description,
+      startsAt: new Date(data.startsAt),
+      endsAt: data.endsAt ? new Date(data.endsAt) : null,
+      location: data.location,
+      coverPhotoUrl: data.coverPhotoUrl,
+      priceKopecks,
+      capacity,
+      guideId: data.guideId,
+      guideId2: data.guideId2 ?? null,
+      emailSubject: data.emailSubject ?? null,
+      emailBody: data.emailBody ?? null,
     },
   })
+  if (data.ticketTypes.length > 0) {
+    await prisma.ticketType.createMany({
+      data: data.ticketTypes.map((t, i) => ({
+        walkId: walk.id,
+        name: t.name,
+        priceKopecks: t.priceKopecks,
+        capacity: t.capacity,
+        sortOrder: i,
+      })),
+    })
+  }
   return walk.id
 }
 
