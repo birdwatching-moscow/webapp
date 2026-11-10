@@ -173,6 +173,7 @@ export function WalkEditForm({ walk, guides }: Props) {
 
   function handleSave() {
     setError(null)
+    if (startsAt && endsAt && endsAt <= startsAt) { setError('Дата окончания не может быть раньше даты начала'); setFormTab('walk'); return }
     const emailErrors = getEmailPairErrors()
     if (emailErrors.length > 0) { setError(emailErrors[0]); setFormTab('email'); return }
     if (walk.status === 'ACTIVE') {
@@ -198,6 +199,7 @@ export function WalkEditForm({ walk, guides }: Props) {
   function handlePublish() {
     setError(null)
     if (!title.trim()) { setError('Название обязательно'); return }
+    if (startsAt && endsAt && endsAt <= startsAt) { setError('Дата окончания не может быть раньше даты начала'); setFormTab('walk'); return }
     const emailErrors = getEmailPairErrors()
     if (emailErrors.length > 0) { setError(emailErrors[0]); setFormTab('email'); return }
     const errors = getPublishErrors()

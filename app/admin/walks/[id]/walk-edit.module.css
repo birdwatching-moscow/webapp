@@ -206,6 +206,20 @@
   border-color: var(--color-primary);
 }
 
+.inputError {
+  border-color: var(--color-error);
+}
+
+.inputError:focus {
+  border-color: var(--color-error);
+}
+
+.fieldError {
+  font-size: var(--font-size-xs);
+  color: var(--color-error);
+  margin-top: var(--space-1);
+}
+
 .input:disabled,
 .select:disabled,
 .textarea:disabled {

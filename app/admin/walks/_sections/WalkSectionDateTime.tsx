@@ -18,6 +18,8 @@ export function WalkSectionDateTime({
   disabled, requireAll, requireStartsAt,
 }: Props) {
   const startRequired = requireAll || requireStartsAt
+  const dateOrderError = startsAt && endsAt && endsAt <= startsAt
+
   return (
     <section className={styles.section}>
       <h2 className={styles.sectionTitle}>Дата и место</h2>
@@ -35,13 +37,15 @@ export function WalkSectionDateTime({
         <div className={styles.field}>
           <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Окончание</label>
           <input
-            className={styles.input}
+            className={`${styles.input}${dateOrderError ? ` ${styles.inputError}` : ''}`}
             type="datetime-local"
             value={endsAt}
-            min={startsAt || undefined}
             onChange={e => onEndsAt(e.target.value)}
             disabled={disabled}
           />
+          {dateOrderError && (
+            <span className={styles.fieldError}>Дата окончания не может быть раньше даты начала</span>
+          )}
         </div>
         <div className={`${styles.field} ${styles.fieldFullWidth}`}>
           <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Локация</label>
