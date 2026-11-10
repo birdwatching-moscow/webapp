@@ -22,6 +22,7 @@ const MS_PER_MINUTE = 60 * 1000
 const checkoutBodySchema = z.object({
   walkId: z.string().uuid(),
   quantity: z.number().int().min(1).max(10),
+  hasBinoculars: z.boolean(),
 })
 
 // NOTE: dynamic import so module resolution is deferred until the handler runs —
@@ -42,7 +43,8 @@ class CheckoutError extends Error {
 async function createPendingOrder(
   userId: string,
   walkId: string,
-  quantity: number
+  quantity: number,
+  hasBinoculars: boolean
 ): Promise<{ order: CreatedOrder; lineItems: OrderLineItem[] }> {
   const prisma = await getPrisma()
   return prisma.$transaction(async (tx) => {
@@ -75,7 +77,7 @@ async function createPendingOrder(
         totalKopecks,
         expiresAt,
         orderItems: {
-          create: [{ walkId, quantity, unitPriceKopecks: walk.priceKopecks }],
+          create: [{ walkId, quantity, unitPriceKopecks: walk.priceKopecks, hasBinoculars }],
         },
       } satisfies Prisma.OrderUncheckedCreateInput,
     })
@@ -127,12 +129,12 @@ export async function POST(req: Request): Promise<NextResponse> {
   const parsed = await validateRequest(req, checkoutBodySchema)
   if (!parsed.success) return parsed.response
 
-  const { walkId, quantity } = parsed.data
+  const { walkId, quantity, hasBinoculars } = parsed.data
 
   let order: CreatedOrder
   let lineItems: OrderLineItem[]
   try {
-    ;({ order, lineItems } = await createPendingOrder(userId, walkId, quantity))
+    ;({ order, lineItems } = await createPendingOrder(userId, walkId, quantity, hasBinoculars))
   } catch (error) {
     if (error instanceof CheckoutError) {
       return NextResponse.json({ code: error.code }, { status: error.status })

@@ -4,18 +4,18 @@ import { useState, useEffect, useTransition, useId } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/buttons/Button'
 import { Modal } from '@/components/ui/modal/Modal'
-import { updateWalkFull, publishWalk } from '@/app/admin/walks/_actions'
+import { updateWalkFull, publishWalk, cancelWalk, deleteWalk } from '@/app/admin/walks/_actions'
 import { ROUTES } from '@/utils/routes'
+import type { Guide, TicketTypeRow } from '@/app/admin/walks/_sections/types'
+import { makeKey } from '@/app/admin/walks/_sections/types'
+import { WalkSectionMain } from '@/app/admin/walks/_sections/WalkSectionMain'
+import { WalkSectionDateTime } from '@/app/admin/walks/_sections/WalkSectionDateTime'
+import { WalkSectionGuides } from '@/app/admin/walks/_sections/WalkSectionGuides'
+import { WalkSectionCover } from '@/app/admin/walks/_sections/WalkSectionCover'
+import { WalkSectionTickets } from '@/app/admin/walks/_sections/WalkSectionTickets'
+import { WalkEmailTab } from '@/app/admin/walks/_sections/WalkEmailTab'
+import { WalkTicketsTab } from '@/app/admin/walks/_sections/WalkTicketsTab'
 import styles from './walk-edit.module.css'
-
-type Guide = { id: number; name: string }
-
-type TicketTypeRow = {
-  key: string
-  name: string
-  priceRub: string
-  capacity: string
-}
 
 type WalkData = {
   id: string
@@ -29,8 +29,11 @@ type WalkData = {
   guideId: number
   guideId2: number | null
   status: string
+  purchaseEmailSubject: string | null
+  purchaseEmailBody: string | null
   emailSubject: string | null
   emailBody: string | null
+  reminderDaysBefore: number | null
   ticketTypes: { name: string; priceKopecks: number | null; capacity: number }[]
 }
 
@@ -53,10 +56,6 @@ function statusBadgeClass(status: string) {
   return styles.badgePAST
 }
 
-function makeKey() {
-  return Math.random().toString(36).slice(2)
-}
-
 function initialTickets(types: WalkData['ticketTypes']): TicketTypeRow[] {
   if (types.length === 0) return [{ key: makeKey(), name: 'Стандартный', priceRub: '', capacity: '' }]
   return types.map(t => ({
@@ -66,8 +65,6 @@ function initialTickets(types: WalkData['ticketTypes']): TicketTypeRow[] {
     capacity: String(t.capacity),
   }))
 }
-
-const MAX_TICKETS = 5
 
 export function WalkEditForm({ walk, guides }: Props) {
   const router = useRouter()
@@ -83,18 +80,22 @@ export function WalkEditForm({ walk, guides }: Props) {
   const [guideId, setGuideId]           = useState(String(walk.guideId))
   const [guideId2, setGuideId2]         = useState(walk.guideId2 ? String(walk.guideId2) : '')
   const [tickets, setTickets]           = useState<TicketTypeRow[]>(() => initialTickets(walk.ticketTypes))
+  const [purchaseEmailSubject, setPurchaseEmailSubject] = useState(walk.purchaseEmailSubject ?? '')
+  const [purchaseEmailBody, setPurchaseEmailBody]       = useState(walk.purchaseEmailBody ?? '')
   const [emailSubject, setEmailSubject] = useState(walk.emailSubject ?? '')
   const [emailBody, setEmailBody]       = useState(walk.emailBody ?? '')
-  const [formTab, setFormTab]           = useState<'walk' | 'email'>('walk')
+  const [reminderDaysBefore, setReminderDaysBefore] = useState(walk.reminderDaysBefore ?? 1)
+  const [formTab, setFormTab]           = useState<'walk' | 'email' | 'tickets'>('walk')
 
   const [isDirty, setIsDirty]   = useState(false)
   const [error, setError]       = useState<string | null>(null)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+  const [showDangerConfirm, setShowDangerConfirm] = useState<'cancel' | 'delete' | null>(null)
   const [saving, startSave]     = useTransition()
   const [publishing, startPublish] = useTransition()
+  const [danger, startDanger]   = useTransition()
 
   const titleId = useId()
-
   const requireAll = walk.status === 'ACTIVE'
 
   function markDirty() { setIsDirty(true) }
@@ -109,8 +110,8 @@ export function WalkEditForm({ walk, guides }: Props) {
     if (!guideId) errors.push('Гид')
     if (!coverUrl.trim()) errors.push('URL фото')
     if (!tickets.some(t => t.name.trim() !== '' && t.priceRub !== '' && t.capacity !== '')) errors.push('хотя бы один билет с названием, ценой и количеством')
-    if (!emailSubject.trim()) errors.push('Тема письма')
-    if (!emailBody.trim()) errors.push('Текст письма')
+    if (!purchaseEmailSubject.trim()) errors.push('Тема письма при покупке')
+    if (!purchaseEmailBody.trim()) errors.push('Текст письма при покупке')
     return errors
   }
 
@@ -149,8 +150,11 @@ export function WalkEditForm({ walk, guides }: Props) {
       coverPhotoUrl: coverUrl.trim(),
       guideId: Number(guideId),
       guideId2: guideId2 ? Number(guideId2) : undefined,
+      purchaseEmailSubject: purchaseEmailSubject.trim() || undefined,
+      purchaseEmailBody: purchaseEmailBody.trim() || undefined,
       emailSubject: emailSubject.trim() || undefined,
       emailBody: emailBody.trim() || undefined,
+      reminderDaysBefore,
       ticketTypes: tickets.map(t => ({
         name: t.name.trim() || 'Без названия',
         priceKopecks: t.priceRub !== '' ? Math.round(parseFloat(t.priceRub) * 100) : null,
@@ -159,8 +163,20 @@ export function WalkEditForm({ walk, guides }: Props) {
     }
   }
 
+  function getEmailPairErrors(): string[] {
+    const errors: string[] = []
+    if (purchaseEmailSubject.trim() && !purchaseEmailBody.trim()) errors.push('Заполните текст письма при покупке')
+    if (!purchaseEmailSubject.trim() && purchaseEmailBody.trim()) errors.push('Заполните тему письма при покупке')
+    if (emailSubject.trim() && !emailBody.trim()) errors.push('Заполните текст письма-напоминания')
+    if (!emailSubject.trim() && emailBody.trim()) errors.push('Заполните тему письма-напоминания')
+    return errors
+  }
+
   function handleSave() {
     setError(null)
+    if (startsAt && endsAt && endsAt <= startsAt) { setError('Дата окончания не может быть раньше даты начала'); setFormTab('walk'); return }
+    const emailErrors = getEmailPairErrors()
+    if (emailErrors.length > 0) { setError(emailErrors[0]); setFormTab('email'); return }
     if (walk.status === 'ACTIVE') {
       const errors = getPublishErrors()
       if (errors.length > 0) {
@@ -168,10 +184,7 @@ export function WalkEditForm({ walk, guides }: Props) {
         return
       }
     } else {
-      if (!title.trim()) {
-        setError('Название обязательно')
-        return
-      }
+      if (!title.trim()) { setError('Название обязательно'); return }
     }
     startSave(async () => {
       try {
@@ -186,10 +199,10 @@ export function WalkEditForm({ walk, guides }: Props) {
 
   function handlePublish() {
     setError(null)
-    if (!title.trim()) {
-      setError('Название обязательно')
-      return
-    }
+    if (!title.trim()) { setError('Название обязательно'); return }
+    if (startsAt && endsAt && endsAt <= startsAt) { setError('Дата окончания не может быть раньше даты начала'); setFormTab('walk'); return }
+    const emailErrors = getEmailPairErrors()
+    if (emailErrors.length > 0) { setError(emailErrors[0]); setFormTab('email'); return }
     const errors = getPublishErrors()
     if (errors.length > 0) {
       setError(`Нельзя опубликовать: не заполнены — ${errors.join(', ')}`)
@@ -205,24 +218,19 @@ export function WalkEditForm({ walk, guides }: Props) {
     })
   }
 
-  // ── Ticket helpers ──────────────────────────────────────────
-  function updateTicket(key: string, patch: Partial<TicketTypeRow>) {
-    setTickets(prev => prev.map(t => t.key === key ? { ...t, ...patch } : t))
-    markDirty()
+  function confirmDanger() {
+    const action = showDangerConfirm
+    setShowDangerConfirm(null)
+    startDanger(async () => {
+      try {
+        if (action === 'cancel') await cancelWalk(walk.id)
+        else await deleteWalk(walk.id)
+        router.push(ROUTES.admin.walks)
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Ошибка')
+      }
+    })
   }
-  function addTicket() {
-    if (tickets.length >= MAX_TICKETS) return
-    setTickets(prev => [...prev, { key: makeKey(), name: '', priceRub: '', capacity: '' }])
-    markDirty()
-  }
-  function removeTicket(key: string) {
-    if (tickets.length <= 1) return
-    setTickets(prev => prev.filter(t => t.key !== key))
-    markDirty()
-  }
-
-  // ── Guide helpers ───────────────────────────────────────────
-  const guide2Options = guides.filter(g => g.id !== Number(guideId))
 
   return (
     <div className={styles.page}>
@@ -236,16 +244,9 @@ export function WalkEditForm({ walk, guides }: Props) {
           <span className={[styles.badge, statusBadgeClass(walk.status)].join(' ')}>
             {STATUS_LABELS[walk.status] ?? walk.status}
           </span>
-          {isDirty && (
-            <span className={styles.dirtyHint}>Несохранённые изменения</span>
-          )}
+          {isDirty && <span className={styles.dirtyHint}>Несохранённые изменения</span>}
           {isEditable && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleSave}
-              disabled={saving || !isDirty}
-            >
+            <Button size="sm" variant="outline" onClick={handleSave} disabled={saving || !isDirty}>
               {saving ? 'Сохранение…' : 'Сохранить'}
             </Button>
           )}
@@ -289,276 +290,93 @@ export function WalkEditForm({ walk, guides }: Props) {
         >
           Email
         </button>
+        {walk.status !== 'DRAFT' && (
+          <button
+            type="button"
+            className={[styles.formTab, formTab === 'tickets' ? styles.formTabActive : ''].filter(Boolean).join(' ')}
+            onClick={() => setFormTab('tickets')}
+          >
+            Билеты
+          </button>
+        )}
       </nav>
 
-      {formTab === 'walk' && <div className={styles.sections}>
+      {formTab === 'walk' && (
+        <div className={styles.sections}>
+          <WalkSectionMain
+            titleId={titleId}
+            title={title} subtitle={subtitle} description={description}
+            onTitle={v => { setTitle(v); markDirty() }}
+            onSubtitle={v => { setSubtitle(v); markDirty() }}
+            onDescription={v => { setDescription(v); markDirty() }}
+            disabled={!isEditable}
+            requireAll={requireAll}
+          />
+          <WalkSectionDateTime
+            startsAt={startsAt} endsAt={endsAt} location={location}
+            onStartsAt={v => { setStartsAt(v); markDirty() }}
+            onEndsAt={v => { setEndsAt(v); markDirty() }}
+            onLocation={v => { setLocation(v); markDirty() }}
+            disabled={!isEditable}
+            requireAll={requireAll}
+          />
+          <WalkSectionGuides
+            guides={guides} guideId={guideId} guideId2={guideId2}
+            onGuideId={v => { setGuideId(v); markDirty() }}
+            onGuideId2={v => { setGuideId2(v); markDirty() }}
+            disabled={!isEditable}
+            requireAll={requireAll}
+          />
+          <WalkSectionCover
+            coverUrl={coverUrl}
+            onCoverUrl={v => { setCoverUrl(v); markDirty() }}
+            disabled={!isEditable}
+            requireAll={requireAll}
+          />
+          <WalkSectionTickets
+            tickets={tickets}
+            onChange={t => { setTickets(t); markDirty() }}
+            disabled={!isEditable}
+            requireAll={requireAll}
+          />
+        </div>
+      )}
 
-        {/* ── Основное ───────────────────────────────── */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Основное</h2>
+      {formTab === 'tickets' && walk.status !== 'DRAFT' && (
+        <WalkTicketsTab walkId={walk.id} />
+      )}
 
-          <div className={`${styles.fieldRow} ${styles.fieldRow2}`}>
-            <div className={`${styles.field} ${styles.fieldFullWidth}`}>
-              <label className={`${styles.label} ${styles.required}`} htmlFor={titleId}>
-                Название
-              </label>
-              <input
-                id={titleId}
-                className={styles.input}
-                value={title}
-                onChange={e => { setTitle(e.target.value); markDirty() }}
-                disabled={!isEditable}
-              />
-            </div>
+      {formTab === 'email' && (
+        <WalkEmailTab
+          purchaseEmailSubject={purchaseEmailSubject}
+          purchaseEmailBody={purchaseEmailBody}
+          emailSubject={emailSubject}
+          emailBody={emailBody}
+          reminderDaysBefore={reminderDaysBefore}
+          onPurchaseEmailSubject={v => { setPurchaseEmailSubject(v); markDirty() }}
+          onPurchaseEmailBody={v => { setPurchaseEmailBody(v); markDirty() }}
+          onEmailSubject={v => { setEmailSubject(v); markDirty() }}
+          onEmailBody={v => { setEmailBody(v); markDirty() }}
+          onReminderDaysBefore={v => { setReminderDaysBefore(v); markDirty() }}
+          disabled={!isEditable}
+          requireAll={requireAll}
+        />
+      )}
 
-            <div className={`${styles.field} ${styles.fieldFullWidth}`}>
-              <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Подзаголовок</label>
-              <input
-                className={styles.input}
-                value={subtitle}
-                onChange={e => { setSubtitle(e.target.value); markDirty() }}
-                disabled={!isEditable}
-                placeholder="Краткое описание под заголовком"
-              />
-            </div>
-
-            <div className={`${styles.field} ${styles.fieldFullWidth}`}>
-              <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Описание</label>
-              <textarea
-                className={styles.textarea}
-                value={description}
-                onChange={e => { setDescription(e.target.value); markDirty() }}
-                disabled={!isEditable}
-                rows={6}
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* ── Дата и место ───────────────────────────── */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Дата и место</h2>
-          <div className={`${styles.fieldRow} ${styles.fieldRow2}`}>
-            <div className={styles.field}>
-              <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Начало</label>
-              <input
-                className={styles.input}
-                type="datetime-local"
-                value={startsAt}
-                onChange={e => { setStartsAt(e.target.value); markDirty() }}
-                disabled={!isEditable}
-              />
-            </div>
-            <div className={styles.field}>
-              <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Окончание</label>
-              <input
-                className={styles.input}
-                type="datetime-local"
-                value={endsAt}
-                min={startsAt || undefined}
-                onChange={e => { setEndsAt(e.target.value); markDirty() }}
-                disabled={!isEditable}
-              />
-            </div>
-            <div className={`${styles.field} ${styles.fieldFullWidth}`}>
-              <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Локация</label>
-              <input
-                className={styles.input}
-                value={location}
-                onChange={e => { setLocation(e.target.value); markDirty() }}
-                disabled={!isEditable}
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* ── Гиды ───────────────────────────────────── */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Гиды</h2>
-          <div className={styles.guidesRow}>
-            <div className={styles.guideField}>
-              <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Гид</label>
-              <select
-                className={styles.select}
-                value={guideId}
-                onChange={e => {
-                  setGuideId(e.target.value)
-                  if (e.target.value === guideId2) setGuideId2('')
-                  markDirty()
-                }}
-                disabled={!isEditable}
-                required
-              >
-                {guides.map(g => (
-                  <option key={g.id} value={g.id}>{g.name}</option>
-                ))}
-              </select>
-            </div>
-
-            {guideId2 ? (
-              <>
-                <div className={styles.guideField}>
-                  <label className={styles.label}>Второй гид</label>
-                  <select
-                    className={styles.select}
-                    value={guideId2}
-                    onChange={e => { setGuideId2(e.target.value); markDirty() }}
-                    disabled={!isEditable}
-                  >
-                    {guide2Options.map(g => (
-                      <option key={g.id} value={g.id}>{g.name}</option>
-                    ))}
-                  </select>
-                </div>
-                {isEditable && (
-                  <button
-                    type="button"
-                    className={styles.removeGuideBtn}
-                    onClick={() => { setGuideId2(''); markDirty() }}
-                    aria-label="Убрать второго гида"
-                  >
-                    ×
-                  </button>
-                )}
-              </>
-            ) : (
-              isEditable && guide2Options.length > 0 && (
-                <button
-                  type="button"
-                  className={styles.addGuideBtn}
-                  onClick={() => { setGuideId2(String(guide2Options[0].id)); markDirty() }}
-                >
-                  + Второй гид
-                </button>
-              )
-            )}
-          </div>
-        </section>
-
-        {/* ── Обложка ────────────────────────────────── */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Обложка</h2>
-          <div className={styles.photoPlaceholder}>
-            {coverUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={coverUrl} alt="Обложка" className={styles.photoThumb} />
-            )}
-            <div className={`${styles.field} ${styles.photoUrlField}`}>
-              <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>URL фото</label>
-              <input
-                className={styles.input}
-                type="url"
-                value={coverUrl}
-                onChange={e => { setCoverUrl(e.target.value); markDirty() }}
-                disabled={!isEditable}
-                placeholder="https://..."
-              />
-              <span className={styles.photoNote}>Выбор из медиатеки появится позже</span>
-            </div>
-          </div>
-        </section>
-
-        {/* ── Билеты ─────────────────────────────────── */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>
-            Билеты
-            {requireAll && !tickets.some(t => t.name.trim() !== '' && t.priceRub !== '' && t.capacity !== '') && (
-              <span className={styles.sectionHint}> — хотя бы один с названием, ценой и количеством *</span>
-            )}
-          </h2>
-
-          <div className={styles.ticketList}>
-            <div className={styles.ticketColLabels}>
-              <span className={styles.ticketColLabel}>Тип</span>
-              <span className={styles.ticketColLabel}>Цена (₽)</span>
-              <span className={styles.ticketColLabel}>Количество</span>
-              <span />
-            </div>
-
-            {tickets.map((t) => (
-              <div key={t.key} className={styles.ticketRow}>
-                <input
-                  className={`${styles.input} ${styles.ticketName}`}
-                  value={t.name}
-                  onChange={e => updateTicket(t.key, { name: e.target.value })}
-                  disabled={!isEditable}
-                  placeholder="Название типа"
-                />
-                <input
-                  className={styles.input}
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={t.priceRub}
-                  onChange={e => updateTicket(t.key, { priceRub: e.target.value })}
-                  disabled={!isEditable}
-                  placeholder="Не указана"
-                />
-                <input
-                  className={styles.input}
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={t.capacity}
-                  onChange={e => updateTicket(t.key, { capacity: e.target.value })}
-                  disabled={!isEditable}
-                  placeholder="0"
-                />
-                <button
-                  type="button"
-                  className={styles.removeTicketBtn}
-                  onClick={() => removeTicket(t.key)}
-                  disabled={!isEditable || tickets.length <= 1}
-                  aria-label="Удалить тип билета"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-
-          {isEditable && (
-            <button
-              type="button"
-              className={styles.addTicketBtn}
-              onClick={addTicket}
-              disabled={tickets.length >= MAX_TICKETS}
-            >
-              + Добавить тип{tickets.length >= MAX_TICKETS ? ' (максимум 5)' : ''}
+      {(walk.status === 'ACTIVE' || walk.status === 'DRAFT') && (
+        <div className={styles.dangerZone}>
+          {walk.status === 'ACTIVE' && (
+            <button type="button" className={styles.dangerBtn} onClick={() => setShowDangerConfirm('cancel')} disabled={danger}>
+              Отменить прогулку
             </button>
           )}
-        </section>
-
-      </div>}
-
-      {formTab === 'email' && <div className={styles.sections}>
-        <section className={styles.section}>
-          <p className={styles.emailNote}>
-            Эти поля используются при отправке уведомлений участникам. Если не заполнены — используется шаблон по умолчанию.
-          </p>
-          <div className={styles.field}>
-            <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Тема письма</label>
-            <input
-              className={styles.input}
-              value={emailSubject}
-              onChange={e => { setEmailSubject(e.target.value); markDirty() }}
-              disabled={!isEditable}
-              placeholder="Например: Напоминание о прогулке «Название»"
-            />
-          </div>
-          <div className={styles.field}>
-            <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Текст письма</label>
-            <textarea
-              className={styles.textarea}
-              value={emailBody}
-              onChange={e => { setEmailBody(e.target.value); markDirty() }}
-              disabled={!isEditable}
-              rows={12}
-              placeholder="Текст письма участникам..."
-            />
-          </div>
-        </section>
-      </div>}
+          {walk.status === 'DRAFT' && (
+            <button type="button" className={styles.dangerBtn} onClick={() => setShowDangerConfirm('delete')} disabled={danger}>
+              Удалить черновик
+            </button>
+          )}
+        </div>
+      )}
 
       <Modal
         open={showLeaveConfirm}
@@ -566,17 +384,33 @@ export function WalkEditForm({ walk, guides }: Props) {
         title="Несохранённые изменения"
         footer={
           <div className={styles.leaveModalFooter}>
-            <Button fullWidth variant="secondary" onClick={() => setShowLeaveConfirm(false)}>
-              Отмена
-            </Button>
-            <Button fullWidth variant="destructive" onClick={confirmLeave}>
-              Уйти без сохранения
-            </Button>
+            <Button fullWidth variant="secondary" onClick={() => setShowLeaveConfirm(false)}>Отмена</Button>
+            <Button fullWidth variant="destructive" onClick={confirmLeave}>Уйти без сохранения</Button>
           </div>
         }
       >
         <p className={styles.leaveModalText}>
           Вы внесли изменения, которые ещё не сохранены. Если уйти сейчас — они потеряются.
+        </p>
+      </Modal>
+
+      <Modal
+        open={showDangerConfirm !== null}
+        onClose={() => setShowDangerConfirm(null)}
+        title={showDangerConfirm === 'cancel' ? 'Отменить прогулку?' : 'Удалить черновик?'}
+        footer={
+          <div className={styles.leaveModalFooter}>
+            <Button fullWidth variant="secondary" onClick={() => setShowDangerConfirm(null)}>Назад</Button>
+            <Button fullWidth variant="destructive" onClick={confirmDanger} disabled={danger}>
+              {showDangerConfirm === 'cancel' ? 'Отменить прогулку' : 'Удалить'}
+            </Button>
+          </div>
+        }
+      >
+        <p className={styles.leaveModalText}>
+          {showDangerConfirm === 'cancel'
+            ? 'Прогулка перейдёт в статус «Отменена». Участники не будут уведомлены автоматически.'
+            : 'Черновик будет удалён без возможности восстановления.'}
         </p>
       </Modal>
     </div>
