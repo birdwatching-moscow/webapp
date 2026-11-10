@@ -1,27 +1,25 @@
 import Link from 'next/link'
+import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { ROUTES } from '@/utils/routes'
 import { Button } from '@/components/ui/buttons/Button'
+import { WalksFilters } from './WalksFilters'
 import styles from './walks.module.css'
 
 const PAGE_SIZE = 20
 
-type Tab = 'active' | 'draft' | 'past' | 'cancelled' | 'all'
+type Tab = 'active' | 'draft' | 'all'
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'active',    label: 'Активные' },
-  { id: 'draft',     label: 'Черновики' },
-  { id: 'past',      label: 'Прошедшие' },
-  { id: 'cancelled', label: 'Отмененные' },
-  { id: 'all',       label: 'Все' },
+  { id: 'active', label: 'Активные' },
+  { id: 'draft',  label: 'Черновики' },
+  { id: 'all',    label: 'Все' },
 ]
 
 const EMPTY_LABEL: Record<Tab, string> = {
-  active:    'Нет предстоящих прогулок',
-  draft:     'Нет черновиков',
-  past:      'Нет прошедших прогулок',
-  cancelled: 'Нет отмененных прогулок',
-  all:       'Нет прогулок',
+  active: 'Нет предстоящих прогулок',
+  draft:  'Нет черновиков',
+  all:    'Нет прогулок',
 }
 
 type StatusKey = 'ACTIVE' | 'DRAFT' | 'CANCELLED' | 'PAST'
@@ -32,6 +30,7 @@ const STATUS_INFO: Record<StatusKey, { label: string; cls: string }> = {
   CANCELLED: { label: 'Отменена',  cls: 'badgeCANCELLED' },
   PAST:      { label: 'Прошла',    cls: 'badgePAST' },
 }
+
 
 function getStatusInfo(status: string, startsAt: Date, now: Date) {
   if (status === 'ACTIVE' && startsAt < now) return STATUS_INFO.PAST
@@ -44,6 +43,20 @@ function tabHref(tab: Tab, page?: number) {
   if (page && page > 1) params.set('page', String(page))
   const qs = params.toString()
   return qs ? `${ROUTES.admin.walks}?${qs}` : ROUTES.admin.walks
+}
+
+type AllFilters = { q: string; from: string; to: string; statuses: string[]; guides: string[] }
+
+function allTabHref(filters: AllFilters, page?: number) {
+  const params = new URLSearchParams()
+  params.set('tab', 'all')
+  if (filters.q) params.set('q', filters.q)
+  if (filters.from) params.set('from', filters.from)
+  if (filters.to) params.set('to', filters.to)
+  filters.statuses.forEach(s => params.append('status', s))
+  filters.guides.forEach(g => params.append('guide', g))
+  if (page && page > 1) params.set('page', String(page))
+  return `${ROUTES.admin.walks}?${params.toString()}`
 }
 
 function getPageSlots(current: number, total: number): (number | null)[] {
@@ -65,46 +78,96 @@ function getPageSlots(current: number, total: number): (number | null)[] {
 export default async function WalksPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; page?: string }>
+  searchParams: Promise<{
+    tab?: string
+    page?: string
+    q?: string
+    from?: string
+    to?: string
+    status?: string | string[]
+    guide?: string | string[]
+  }>
 }) {
-  const { tab, page } = await searchParams
+  const { tab, page, q: qParam, from: fromParam, to: toParam, status: statusParam, guide: guideParam } = await searchParams
   const activeTab: Tab = (TABS.find(t => t.id === tab)?.id) ?? 'active'
   const pageNum = Math.max(1, parseInt(page ?? '1', 10))
   const skip = (pageNum - 1) * PAGE_SIZE
   const now = new Date()
 
-  const whereClause =
-    activeTab === 'active'    ? { status: 'ACTIVE' as const,              startsAt: { gte: now } } :
-    activeTab === 'draft'     ? { status: 'DRAFT' as const } :
-    activeTab === 'past'      ? { status: 'ACTIVE' as const,              startsAt: { lt: now } } :
-    activeTab === 'cancelled' ? { status: 'CANCELLED' as const } :
-                                { status: { not: 'DELETED' as const } }
+  // Filter state — only used on 'all' tab
+  const q = activeTab === 'all' ? (qParam ?? '').trim() : ''
+  const fromStr = activeTab === 'all' ? (fromParam ?? '') : ''
+  const toStr = activeTab === 'all' ? (toParam ?? '') : ''
+  const selectedStatuses: string[] = activeTab === 'all'
+    ? (Array.isArray(statusParam) ? statusParam : statusParam ? [statusParam] : [])
+    : []
+  const selectedGuides: string[] = activeTab === 'all'
+    ? (Array.isArray(guideParam) ? guideParam : guideParam ? [guideParam] : [])
+    : []
+  const filters: AllFilters = { q, from: fromStr, to: toStr, statuses: selectedStatuses, guides: selectedGuides }
+  const hasFilters = q !== '' || fromStr !== '' || toStr !== '' || selectedStatuses.length > 0 || selectedGuides.length > 0
 
-  const orderByClause =
-    activeTab === 'active' || activeTab === 'draft'
-      ? { startsAt: 'asc' as const }
-      : { startsAt: 'desc' as const }
+  // Build where clause
+  let whereClause: Prisma.WalkWhereInput
+  if (activeTab === 'all') {
+    const and: Prisma.WalkWhereInput[] = []
 
-  const [walks, total, draftCount] = await Promise.all([
+    if (q) and.push({ title: { contains: q, mode: 'insensitive' } })
+    if (fromStr) and.push({ startsAt: { gte: new Date(fromStr) } })
+    if (toStr) and.push({ startsAt: { lte: new Date(toStr + 'T23:59:59') } })
+
+    if (selectedStatuses.length > 0) {
+      const statusOr: Prisma.WalkWhereInput[] = selectedStatuses.flatMap(s => {
+        if (s === 'active')    return [{ status: 'ACTIVE' as const, startsAt: { gte: now } }]
+        if (s === 'past')      return [{ status: 'ACTIVE' as const, startsAt: { lt: now } }]
+        if (s === 'draft')     return [{ status: 'DRAFT' as const }]
+        if (s === 'cancelled') return [{ status: 'CANCELLED' as const }]
+        return []
+      })
+      and.push({ OR: statusOr })
+    } else {
+      and.push({ status: { not: 'DELETED' as const } })
+    }
+
+    if (selectedGuides.length > 0) {
+      and.push({ guideId: { in: selectedGuides.map(Number) } })
+    }
+
+    whereClause = and.length === 1 ? and[0] : { AND: and }
+  } else {
+    whereClause =
+      activeTab === 'active' ? { status: 'ACTIVE', startsAt: { gte: now } } :
+      activeTab === 'draft'  ? { status: 'DRAFT' } :
+      { status: { not: 'DELETED' as const } }
+  }
+
+  const orderByClause: { startsAt: 'asc' | 'desc' } =
+    activeTab === 'all' ? { startsAt: 'desc' } : { startsAt: 'asc' }
+
+  const [walks, total, draftCount, activeCount, allGuides] = await Promise.all([
     prisma.walk.findMany({
       where: whereClause,
       include: {
         _count: { select: { tickets: true } },
+        guide: { select: { name: true } },
       },
       orderBy: orderByClause,
       skip,
       take: PAGE_SIZE,
     }),
     prisma.walk.count({ where: whereClause }),
-    activeTab !== 'draft'
-      ? prisma.walk.count({ where: { status: 'DRAFT' } })
-      : Promise.resolve(0),
+    prisma.walk.count({ where: { status: 'DRAFT' } }),
+    prisma.walk.count({ where: { status: 'ACTIVE', startsAt: { gte: now } } }),
+    prisma.teamMember.findMany({ select: { id: true, name: true }, orderBy: { sortOrder: 'asc' } }),
   ])
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
   const from = total === 0 ? 0 : skip + 1
   const to = skip + walks.length
   const showStatus = activeTab === 'all'
+
+  const pageHref = (p: number) =>
+    activeTab === 'all' ? allTabHref(filters, p) : tabHref(activeTab, p)
 
   return (
     <div className={styles.page}>
@@ -118,7 +181,10 @@ export default async function WalksPage({
       <nav className={styles.tabs} aria-label="Фильтр прогулок">
         {TABS.map(t => {
           const isActive = activeTab === t.id
-          const showDraftBadge = t.id === 'draft' && draftCount > 0 && !isActive
+          const badgeCount =
+            t.id === 'draft'  ? draftCount :
+            t.id === 'active' ? activeCount :
+            0
           return (
             <Link
               key={t.id}
@@ -126,13 +192,20 @@ export default async function WalksPage({
               className={[styles.tab, isActive ? styles.tabActive : ''].filter(Boolean).join(' ')}
             >
               {t.label}
-              {showDraftBadge && (
-                <span className={styles.tabCount}>{draftCount}</span>
+              {badgeCount > 0 && (
+                <span className={styles.tabCount}>{badgeCount}</span>
               )}
             </Link>
           )
         })}
       </nav>
+
+      {activeTab === 'all' && (
+        <WalksFilters
+          guides={allGuides}
+          initial={filters}
+        />
+      )}
 
       {walks.length === 0 ? (
         <p className={styles.empty}>{EMPTY_LABEL[activeTab]}</p>
@@ -144,7 +217,7 @@ export default async function WalksPage({
                 <tr>
                   <th>Название</th>
                   <th>Дата и время</th>
-                  <th>Место</th>
+                  <th>Гид</th>
                   <th>Билеты</th>
                   {showStatus && <th>Статус</th>}
                 </tr>
@@ -168,7 +241,7 @@ export default async function WalksPage({
                           </span>
                         </div>
                       </td>
-                      <td className={styles.muted}>{w.location}</td>
+                      <td className={styles.muted}>{w.guide.name}</td>
                       <td className={styles.tickets}>
                         {w._count.tickets} / {w.capacity}
                       </td>
@@ -193,7 +266,7 @@ export default async function WalksPage({
               </span>
               <div className={styles.paginationPages}>
                 <Link
-                  href={tabHref(activeTab, pageNum - 1)}
+                  href={pageHref(pageNum - 1)}
                   className={[styles.pageBtn, pageNum <= 1 ? styles.pageBtnDisabled : ''].filter(Boolean).join(' ')}
                   aria-label="Предыдущая страница"
                 >
@@ -206,7 +279,7 @@ export default async function WalksPage({
                   ) : (
                     <Link
                       key={slot}
-                      href={tabHref(activeTab, slot)}
+                      href={pageHref(slot)}
                       className={[styles.pageBtn, slot === pageNum ? styles.pageBtnActive : ''].filter(Boolean).join(' ')}
                       aria-label={`Страница ${slot}`}
                       aria-current={slot === pageNum ? 'page' : undefined}
@@ -217,7 +290,7 @@ export default async function WalksPage({
                 )}
 
                 <Link
-                  href={tabHref(activeTab, pageNum + 1)}
+                  href={pageHref(pageNum + 1)}
                   className={[styles.pageBtn, pageNum >= totalPages ? styles.pageBtnDisabled : ''].filter(Boolean).join(' ')}
                   aria-label="Следующая страница"
                 >

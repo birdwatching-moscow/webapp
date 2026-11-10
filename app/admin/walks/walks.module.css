@@ -60,6 +60,177 @@
   font-weight: 600;
 }
 
+/* Filters */
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: color-mix(in srgb, var(--color-border) 30%, transparent);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+}
+
+.filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: flex-start;
+}
+
+.filterField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 160px;
+}
+
+.filterLabel {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.filterInput {
+  height: var(--size-control-sm);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-foreground);
+  background: var(--color-background);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.filterInput:focus {
+  border-color: var(--color-primary);
+}
+
+.filterDateRange {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.filterDateSep {
+  color: var(--color-muted-foreground);
+  font-size: var(--font-size-sm);
+  flex-shrink: 0;
+}
+
+.filterActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.filterReset {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  color: var(--color-muted-foreground);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s;
+}
+
+.filterReset:hover {
+  color: var(--color-foreground);
+}
+
+/* Guide multi-select */
+
+.guideSelect {
+  position: relative;
+}
+
+.guideSelectTrigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+}
+
+.guideSelectCaret {
+  font-size: 10px;
+  color: var(--color-muted-foreground);
+  flex-shrink: 0;
+}
+
+.guideSelectDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 100%;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  z-index: 20;
+  padding: var(--space-1);
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.guideSelectOption {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-foreground);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background 0.1s;
+  user-select: none;
+}
+
+.guideSelectOption:hover {
+  background: color-mix(in srgb, var(--color-border) 50%, transparent);
+}
+
+.guideSelectToggleAll {
+  display: block;
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.guideSelectToggleAll:hover {
+  background: color-mix(in srgb, var(--color-border) 50%, transparent);
+}
+
+.guideSelectDivider {
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--space-1) 0;
+}
+
+.guideSelectOption input[type='checkbox'] {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 /* Table */
 
 .tableWrapper {
