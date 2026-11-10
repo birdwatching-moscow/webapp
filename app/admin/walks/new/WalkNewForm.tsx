@@ -75,6 +75,10 @@ export function WalkNewForm({ guides }: Props) {
     if (!title.trim()) { setError('Название обязательно'); return }
     if (!startsAt) { setError('Укажите дату начала'); return }
     if (!guideId) { setError('Выберите гида'); return }
+    if (purchaseEmailSubject.trim() && !purchaseEmailBody.trim()) { setError('Заполните текст письма при покупке'); setFormTab('email'); return }
+    if (!purchaseEmailSubject.trim() && purchaseEmailBody.trim()) { setError('Заполните тему письма при покупке'); setFormTab('email'); return }
+    if (emailSubject.trim() && !emailBody.trim()) { setError('Заполните текст письма-напоминания'); setFormTab('email'); return }
+    if (!emailSubject.trim() && emailBody.trim()) { setError('Заполните тему письма-напоминания'); setFormTab('email'); return }
     startCreate(async () => {
       try {
         const id = await createWalkFull(buildPayload())

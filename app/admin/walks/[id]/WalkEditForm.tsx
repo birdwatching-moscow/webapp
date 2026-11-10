@@ -162,8 +162,19 @@ export function WalkEditForm({ walk, guides }: Props) {
     }
   }
 
+  function getEmailPairErrors(): string[] {
+    const errors: string[] = []
+    if (purchaseEmailSubject.trim() && !purchaseEmailBody.trim()) errors.push('Заполните текст письма при покупке')
+    if (!purchaseEmailSubject.trim() && purchaseEmailBody.trim()) errors.push('Заполните тему письма при покупке')
+    if (emailSubject.trim() && !emailBody.trim()) errors.push('Заполните текст письма-напоминания')
+    if (!emailSubject.trim() && emailBody.trim()) errors.push('Заполните тему письма-напоминания')
+    return errors
+  }
+
   function handleSave() {
     setError(null)
+    const emailErrors = getEmailPairErrors()
+    if (emailErrors.length > 0) { setError(emailErrors[0]); setFormTab('email'); return }
     if (walk.status === 'ACTIVE') {
       const errors = getPublishErrors()
       if (errors.length > 0) {
@@ -187,6 +198,8 @@ export function WalkEditForm({ walk, guides }: Props) {
   function handlePublish() {
     setError(null)
     if (!title.trim()) { setError('Название обязательно'); return }
+    const emailErrors = getEmailPairErrors()
+    if (emailErrors.length > 0) { setError(emailErrors[0]); setFormTab('email'); return }
     const errors = getPublishErrors()
     if (errors.length > 0) {
       setError(`Нельзя опубликовать: не заполнены — ${errors.join(', ')}`)
