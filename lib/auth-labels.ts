@@ -1,3 +1,5 @@
+import { PASSWORD_MIN_LENGTH } from '@/lib/constants'
+
 export const AUTH_LABELS = {
   common: {
     emailField:    'Почта',
@@ -53,6 +55,8 @@ export const AUTH_LABELS = {
     submit:        'Сохранить и войти',
     submitting:    'Сохраняем…',
     mismatch:      'Пароли не совпадают',
+    tooShort:      `Пароль должен быть не менее ${PASSWORD_MIN_LENGTH} символов`,
+    latinOnly:     'Используйте только латинские буквы, цифры и спецсимволы',
   },
 
   resetRequest: {

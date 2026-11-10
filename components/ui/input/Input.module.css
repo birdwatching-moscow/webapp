@@ -4,6 +4,29 @@
   gap: var(--space-2);
 }
 
+.inputRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.trailing {
+  position: absolute;
+  right: var(--space-3);
+  display: flex;
+  align-items: center;
+  color: var(--color-muted-foreground);
+  pointer-events: none;
+}
+
+.trailing > * {
+  pointer-events: auto;
+}
+
+.withTrailing {
+  padding-right: calc(var(--space-3) * 2 + 20px);
+}
+
 .label {
   font-family: 'Manrope', sans-serif;
   font-weight: 500;

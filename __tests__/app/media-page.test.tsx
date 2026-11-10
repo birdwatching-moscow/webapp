@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import MediaPage, { metadata } from '@/app/media/page'
+import MediaPage, { metadata } from '@/app/(site)/media/page'
 
 describe('Media page', () => {
   it('renders the «СМИ и материалы о бердвотчинге» heading', () => {

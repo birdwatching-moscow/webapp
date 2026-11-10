@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 import { Providers } from "@/components/Providers";
-import { CookieConsent } from "@/components/CookieConsent/CookieConsent";
 import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
@@ -28,10 +25,7 @@ export default async function RootLayout({
     <html lang="ru" data-scroll-behavior="smooth">
       <body>
         <Providers session={session}>
-          <Header />
           {children}
-          <Footer />
-          <CookieConsent />
         </Providers>
       </body>
     </html>

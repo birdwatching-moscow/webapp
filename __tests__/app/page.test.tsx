@@ -13,7 +13,7 @@ vi.mock('@/lib/footer-birds', () => ({
   getRandomBirdSrc: vi.fn(() => ({ src: '/footer-birds/kingfisher.jpg', name: 'Kingfisher' })),
 }))
 
-import Home from '@/app/page'
+import Home from '@/app/(site)/page'
 
 describe('Home page', () => {
   it('renders without errors', async () => {

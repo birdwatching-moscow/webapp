@@ -47,6 +47,25 @@
   font-size: var(--font-size-lg);
 }
 
+.fieldInput :global(label) {
+  font-size: var(--font-size-md);
+}
+
+.eyeButton {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--color-muted-foreground);
+  transition: color 0.15s;
+}
+
+.eyeButton:hover {
+  color: var(--color-foreground);
+}
+
 .actions {
   display: flex;
   flex-direction: column;
