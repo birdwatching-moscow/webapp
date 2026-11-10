@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import RequestResetPage from '@/app/(auth)/reset-password/page'
+import RequestResetPage from '@/app/(site)/(auth)/reset-password/page'
 import { AUTH_ERRORS } from '@/lib/auth-errors'
 import { AUTH_LABELS } from '@/lib/auth-labels'
 import { HTTP_METHOD, JSON_HEADERS, HTTP_STATUS_INTERNAL_SERVER_ERROR } from '@/lib/constants'

@@ -47,6 +47,19 @@
  color: var(--color-primary-hover);
 }
 
+/* ─── Admin link ──────────────────────────────────────────────────────────── */
+
+.adminLink {
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  color: var(--color-muted-foreground);
+  transition: color 0.15s;
+}
+
+.adminLink:hover {
+  color: var(--color-foreground);
+}
+
 /* ─── CTA (link or button) ────────────────────────────────────────────────── */
 
 .cta {

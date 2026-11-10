@@ -6,6 +6,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { usePathname, useRouter } from 'next/navigation'
 import { Logo } from '@/components/ui/logo/Logo'
 import { ROUTES } from '@/utils/routes'
+import { isAdmin } from '@/lib/auth/permissions'
 import styles from './Header.module.css'
 
 const NAV_LINKS = [
@@ -17,7 +18,8 @@ const NAV_LINKS = [
 ]
 
 export const Header = () => {
-  const { status } = useSession()
+  const { data: session, status } = useSession()
+  const showAdmin = session?.user?.role != null && isAdmin(session.user.role)
   const pathname = usePathname()
   const router = useRouter()
   // Menu is open only on the page it was opened on, so navigating closes it
@@ -78,6 +80,9 @@ export const Header = () => {
             <Link key={href} href={href} className={styles.navLink} onClick={handleNavClick(href)}>{label}</Link>
           ))}
         </div>
+        {showAdmin && (
+          <Link href={ROUTES.admin.walks} className={styles.adminLink}>Админка</Link>
+        )}
         {renderCta()}
       </nav>
 
@@ -110,6 +115,9 @@ export const Header = () => {
             {NAV_LINKS.map(({ label, href }) => (
               <Link key={href} href={href} className={styles.navLink} onClick={handleNavClick(href, close)}>{label}</Link>
             ))}
+            {showAdmin && (
+              <Link href={ROUTES.admin.walks} className={styles.navLink} onClick={close}>Админка</Link>
+            )}
             {renderCta(close)}
           </nav>
         </div>

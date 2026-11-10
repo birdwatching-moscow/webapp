@@ -26,6 +26,8 @@ import { FormError } from '@/components/ui/form-error/FormError'
 import { OtpStep } from '@/components/auth/OtpStep'
 import { AUTH_LABELS } from '@/lib/auth-labels'
 import { mapOtpVerifyError } from '@/lib/auth/mapOtpVerifyError'
+import { EyeIcon } from '@/components/icons/EyeIcon'
+import { EyeOffIcon } from '@/components/icons/EyeOffIcon'
 import styles from '../auth-page.module.css'
 
 const LA = AUTH_LABELS.adminPassword
@@ -51,8 +53,13 @@ function LoginCodeForm() {
   const [nameInput, setNameInput] = useState('')
   const [nameError, setNameError] = useState('')
   const [name, setName] = useState('')
+  const [newPasswordInput, setNewPasswordInput] = useState('')
+  const [confirmPasswordInput, setConfirmPasswordInput] = useState('')
+  const [newPasswordError, setNewPasswordError] = useState('')
+  const [confirmPasswordError, setConfirmPasswordError] = useState('')
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const passwordInputRef = useRef<HTMLInputElement>(null)
-  const newPasswordInputRef = useRef<HTMLInputElement>(null)
   const otp = useOtpInput(submitCode)
 
   const isRegistered = searchParams.get(REGISTERED_PARAM) === '1'
@@ -66,7 +73,7 @@ function LoginCodeForm() {
   }, [step])
 
   useEffect(() => {
-    if (step === 'set-password') newPasswordInputRef.current?.focus()
+    if (step === 'set-password') document.getElementById('newPassword')?.focus()
   }, [step])
 
   async function handleEmailSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
@@ -109,7 +116,11 @@ function LoginCodeForm() {
       let resData: { csrfToken?: string; error?: string } = {}
       try { resData = await res.json() } catch { /* no body */ }
       if (!res.ok) {
-        setError(resData.error === 'code_rate_limited' ? AUTH_ERRORS.codeTooFrequent : AUTH_ERRORS.generic)
+        if (resData.error === 'code_rate_limited') {
+          setEmailError(AUTH_ERRORS.tooManyAttempts)
+        } else {
+          setError(AUTH_ERRORS.generic)
+        }
         return
       }
       setCsrfToken(resData.csrfToken ?? '')
@@ -135,7 +146,12 @@ function LoginCodeForm() {
       })
       if (!res.ok) {
         const data = await res.json().catch(() => null) as { error?: string } | null
-        setError(data?.error === 'code_rate_limited' ? AUTH_ERRORS.codeTooFrequent : AUTH_ERRORS.generic)
+        if (data?.error === 'code_rate_limited') {
+          setEmailError(AUTH_ERRORS.tooManyAttempts)
+          setStep('email')
+        } else {
+          setError(AUTH_ERRORS.generic)
+        }
         return
       }
       const data = await res.json() as { csrfToken?: string }
@@ -247,12 +263,26 @@ function LoginCodeForm() {
 
   async function handleSetPasswordSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
-    const form = new FormData(e.currentTarget)
-    const password = String(form.get('newPassword') ?? '')
-    const confirm = String(form.get('confirmPassword') ?? '')
+    const password = newPasswordInput
+    const confirm = confirmPasswordInput
+
+    if (/[^\x21-\x7E]/.test(password)) {
+      setNewPasswordError(ASP.latinOnly)
+      return
+    }
+
+    if (/[^\x21-\x7E]/.test(confirm)) {
+      setConfirmPasswordError(ASP.latinOnly)
+      return
+    }
+
+    if (password.length < PASSWORD_MIN_LENGTH) {
+      setNewPasswordError(ASP.tooShort)
+      return
+    }
 
     if (password !== confirm) {
-      setError(ASP.mismatch)
+      setConfirmPasswordError(ASP.mismatch)
       return
     }
 
@@ -415,32 +445,53 @@ function LoginCodeForm() {
 
           <FormError message={error} />
 
-          <form onSubmit={handleSetPasswordSubmit} className={styles.form}>
-            <div>
-              <label htmlFor="newPassword">{ASP.passwordField}</label>
-              <input
-                ref={newPasswordInputRef}
-                id="newPassword"
-                name="newPassword"
-                type="password"
-                required
-                minLength={PASSWORD_MIN_LENGTH}
-                autoComplete="new-password"
-              />
-            </div>
-            <div>
-              <label htmlFor="confirmPassword">{ASP.confirmField}</label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-                minLength={PASSWORD_MIN_LENGTH}
-                autoComplete="new-password"
-              />
-            </div>
+          <form onSubmit={handleSetPasswordSubmit} className={styles.form} noValidate>
+            <Input
+              id="newPassword"
+              name="newPassword"
+              type={showNewPassword ? 'text' : 'password'}
+              label={ASP.passwordField}
+              value={newPasswordInput}
+              onChange={e => {
+                const val = e.target.value
+                setNewPasswordInput(val)
+                setNewPasswordError(/[^\x21-\x7E]/.test(val) ? ASP.latinOnly : '')
+              }}
+              autoComplete="new-password"
+              disabled={loading}
+              error={newPasswordError || undefined}
+              invalid={Boolean(confirmPasswordError)}
+              className={styles.fieldInput}
+              trailing={
+                <button type="button" className={styles.eyeButton} onClick={() => setShowNewPassword(v => !v)} aria-label={showNewPassword ? 'Скрыть пароль' : 'Показать пароль'}>
+                  {showNewPassword ? <EyeOffIcon /> : <EyeIcon />}
+                </button>
+              }
+            />
+            <Input
+              id="confirmPassword"
+              name="confirmPassword"
+              type={showConfirmPassword ? 'text' : 'password'}
+              label={ASP.confirmField}
+              value={confirmPasswordInput}
+              onChange={e => {
+                const val = e.target.value
+                setConfirmPasswordInput(val)
+                setConfirmPasswordError(/[^\x21-\x7E]/.test(val) ? ASP.latinOnly : '')
+              }}
+              error={confirmPasswordError || undefined}
+              invalid={Boolean(newPasswordError)}
+              autoComplete="new-password"
+              disabled={loading}
+              className={styles.fieldInput}
+              trailing={
+                <button type="button" className={styles.eyeButton} onClick={() => setShowConfirmPassword(v => !v)} aria-label={showConfirmPassword ? 'Скрыть пароль' : 'Показать пароль'}>
+                  {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
+                </button>
+              }
+            />
             <div className={styles.actions}>
-              <Button type="submit" fullWidth loading={loading} disabled={loading}>
+              <Button type="submit" size="lg" fullWidth loading={loading} disabled={loading}>
                 {loading ? ASP.submitting : ASP.submit}
               </Button>
             </div>

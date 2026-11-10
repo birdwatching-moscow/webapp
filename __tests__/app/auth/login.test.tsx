@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import LoginPage from '@/app/(auth)/login/page'
+import LoginPage from '@/app/(site)/(auth)/login/page'
 import { AUTH_ERRORS } from '@/lib/auth-errors'
 import { AUTH_ERROR_ACCOUNT_BLOCKED, AUTH_ERROR_PASSWORD_RESET_REQUIRED } from '@/lib/auth/errors'
 import { ADMIN_2FA_PROVIDER_ID, LOGIN_CODE_PROVIDER_ID, LOGIN_CODE_LENGTH } from '@/lib/constants'

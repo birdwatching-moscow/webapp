@@ -1,0 +1,259 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* Header */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: var(--font-size-2xl);
+  line-height: 28px;
+}
+
+/* Tabs */
+
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--color-border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-muted-foreground);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+  text-decoration: none;
+}
+
+.tab:hover:not(.tabActive) {
+  color: var(--color-foreground);
+  border-bottom-color: var(--color-border);
+}
+
+.tabActive {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* Table */
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.table th {
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr:hover td {
+  background: color-mix(in srgb, var(--color-primary) 4%, transparent);
+}
+
+.nameLink {
+  font-weight: 600;
+  color: var(--color-foreground);
+  transition: color 0.15s;
+  text-decoration: none;
+}
+
+.nameLink:hover {
+  color: var(--color-primary);
+}
+
+.muted {
+  color: var(--color-muted-foreground);
+}
+
+.dateCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.dateTime {
+  font-size: var(--font-size-xs);
+  color: var(--color-muted-foreground);
+}
+
+.tickets {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Status badges */
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.badgeACTIVE {
+  background: #e8f5ec;
+  color: #1f7a3b;
+}
+
+.badgeDRAFT {
+  background: #fdf3e3;
+  color: #7a4f1f;
+}
+
+.badgeCANCELLED {
+  background: #fceae9;
+  color: var(--color-error);
+}
+
+.badgePAST {
+  background: color-mix(in srgb, var(--color-border) 50%, transparent);
+  color: var(--color-muted-foreground);
+}
+
+/* Empty state */
+
+.empty {
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+  color: var(--color-muted-foreground);
+  font-size: var(--font-size-sm);
+}
+
+/* Pagination */
+
+.paginationBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.paginationInfo {
+  font-size: var(--font-size-sm);
+  color: var(--color-muted-foreground);
+}
+
+.paginationPages {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.pageBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--size-control-sm);
+  height: var(--size-control-sm);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-foreground);
+  text-decoration: none;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.pageBtn:hover:not(.pageBtnActive) {
+  background: var(--color-border);
+}
+
+.pageBtnActive {
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  pointer-events: none;
+}
+
+.pageBtnDisabled {
+  opacity: var(--opacity-disabled);
+  pointer-events: none;
+  cursor: default;
+}
+
+.pageEllipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-control-sm);
+  height: var(--size-control-sm);
+  color: var(--color-muted-foreground);
+  font-size: var(--font-size-sm);
+  user-select: none;
+}
+
+/* Count chip next to tab label */
+
+.tabCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 var(--space-1);
+  margin-left: var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  background: var(--color-border);
+  color: var(--color-foreground);
+}
+
+.tabActive .tabCount {
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  color: var(--color-primary);
+}

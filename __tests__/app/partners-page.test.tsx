@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import PartnersPage, { metadata } from '@/app/partners/page'
+import PartnersPage, { metadata } from '@/app/(site)/partners/page'
 
 describe('Partners page', () => {
   it('renders the «Друзья и партнёры проекта» heading', () => {
