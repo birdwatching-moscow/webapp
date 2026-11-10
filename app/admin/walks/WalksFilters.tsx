@@ -10,7 +10,7 @@ import styles from './walks.module.css'
 const STATUS_OPTIONS = [
   { value: 'active',    label: 'Активна' },
   { value: 'draft',     label: 'Черновик' },
-  { value: 'past',      label: 'Прошла' },
+  { value: 'past',      label: 'Завершена' },
   { value: 'cancelled', label: 'Отменена' },
 ]
 

@@ -33,6 +33,8 @@ export type WalkTableRow = {
   startsAt: Date
   endsAt: Date | null
   priceKopecks: number
+  minPriceKopecks: number
+  ticketTypeCount: number
   capacity: number
   ticketsSold: number
 }
@@ -49,6 +51,7 @@ export async function getActiveWalks(options?: { limit?: number }): Promise<Walk
       priceKopecks: true,
       capacity: true,
       _count: { select: { tickets: true } },
+      ticketTypes: { select: { priceKopecks: true } },
     },
     orderBy: { startsAt: 'asc' },
     take: options?.limit,
@@ -61,6 +64,10 @@ export async function getActiveWalks(options?: { limit?: number }): Promise<Walk
     startsAt: r.startsAt,
     endsAt: r.endsAt,
     priceKopecks: r.priceKopecks,
+    minPriceKopecks: r.ticketTypes.length > 0
+      ? Math.min(...r.ticketTypes.map((t) => t.priceKopecks ?? 0))
+      : r.priceKopecks,
+    ticketTypeCount: r.ticketTypes.length,
     capacity: r.capacity,
     ticketsSold: r._count.tickets,
   }))

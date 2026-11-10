@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
 import { formatWalkDateShort } from '@/utils/formatWalkDate'
+import { formatDurationRange } from '@/utils/formatDurationRange'
 import { WalkCheckoutForm } from './WalkCheckoutForm'
 import styles from './walk.module.css'
 
@@ -39,6 +40,7 @@ export default async function WalkPage({ params }: Props) {
   const spotsLeft = walk.capacity - walk._count.tickets
   const isSoldOut = spotsLeft <= 0
   const dateLabel = formatWalkDateShort(walk.startsAt, walk.endsAt)
+  const durationLabel = walk.endsAt ? formatDurationRange(walk.startsAt, walk.endsAt) : null
 
   return (
     <main className={styles.page}>
@@ -49,6 +51,7 @@ export default async function WalkPage({ params }: Props) {
 
       <dl className="text-body">
         <div><dt style={{ display: 'inline', fontWeight: 600 }}>Дата:&nbsp;</dt><dd style={{ display: 'inline' }}>{dateLabel}</dd></div>
+        {durationLabel && <div><dt style={{ display: 'inline', fontWeight: 600 }}>Длительность:&nbsp;</dt><dd style={{ display: 'inline' }}>{durationLabel}</dd></div>}
         <div><dt style={{ display: 'inline', fontWeight: 600 }}>Место:&nbsp;</dt><dd style={{ display: 'inline' }}>{walk.location}</dd></div>
       </dl>
 

@@ -173,7 +173,6 @@ const FULL_PAYLOAD = {
   location: 'Парк',
   coverPhotoUrl: 'https://example.com/cover.jpg',
   guideId: 1,
-  guideId2: undefined as number | undefined,
   emailSubject: 'Напоминание о прогулке',
   emailBody: 'Ждём вас!',
   ticketTypes: [
@@ -237,23 +236,6 @@ describe('updateWalkFull — guide relation', () => {
     expect(call.data).not.toHaveProperty('guideId')
   })
 
-  it('disconnects guide2 when guideId2 is not provided', async () => {
-    await updateWalkFull('walk-1', { ...FULL_PAYLOAD, guideId2: undefined })
-    expect(walkMock.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ guide2: { disconnect: true } }),
-      })
-    )
-  })
-
-  it('connects guide2 when guideId2 is provided', async () => {
-    await updateWalkFull('walk-1', { ...FULL_PAYLOAD, guideId2: 5 })
-    expect(walkMock.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ guide2: { connect: { id: 5 } } }),
-      })
-    )
-  })
 })
 
 describe('updateWalkFull — ticket types', () => {

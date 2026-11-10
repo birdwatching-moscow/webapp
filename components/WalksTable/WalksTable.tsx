@@ -12,7 +12,9 @@ export interface WalksTableProps {
   showMoreButton?: boolean
 }
 
-export const WalksTable = ({ walks, showMoreButton = false }: WalksTableProps) => (
+export const WalksTable = ({ walks, showMoreButton = false }: WalksTableProps) => {
+  if (walks.length === 0) return null
+  return (
   <section data-testid="walks-table" className={styles.section}>
     <NearestSection
       moreHref={ROUTES.walks}
@@ -30,7 +32,9 @@ export const WalksTable = ({ walks, showMoreButton = false }: WalksTableProps) =
         {walks.map((walk) => {
           const available = walk.capacity - walk.ticketsSold
           const dateLabel = formatWalkDate(walk.startsAt, walk.endsAt)
-          const priceLabel = `от ${formatKopecksShort(walk.priceKopecks)}`
+          const priceLabel = walk.ticketTypeCount > 1
+            ? `от ${formatKopecksShort(walk.minPriceKopecks)}`
+            : formatKopecksShort(walk.priceKopecks)
           const ticketsLabel = formatTicketsLabel(available)
 
           return (
@@ -53,4 +57,5 @@ export const WalksTable = ({ walks, showMoreButton = false }: WalksTableProps) =
       </div>
     </NearestSection>
   </section>
-)
+  )
+}

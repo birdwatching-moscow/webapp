@@ -41,7 +41,9 @@ export const WalksExpandable = ({ walks }: WalksExpandableProps) => {
             {walks.map((walk, index) => {
               const available = Math.max(0, walk.capacity - walk.ticketsSold)
               const dateLabel = formatWalkDate(walk.startsAt, walk.endsAt)
-              const priceLabel = `от ${formatKopecksShort(walk.priceKopecks)}`
+              const priceLabel = walk.ticketTypeCount > 1
+                ? `от ${formatKopecksShort(walk.minPriceKopecks)}`
+                : formatKopecksShort(walk.priceKopecks)
               const ticketsLabel = formatTicketsLabel(available)
               const isExtra = index >= 3
 

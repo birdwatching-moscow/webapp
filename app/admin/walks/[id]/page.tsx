@@ -10,7 +10,6 @@ export default async function EditWalkPage({ params }: { params: Promise<{ id: s
       where: { id, status: { not: 'DELETED' } },
       include: {
         guide:       { select: { id: true, name: true } },
-        guide2:      { select: { id: true, name: true } },
         ticketTypes: { orderBy: { sortOrder: 'asc' } },
       },
     }),

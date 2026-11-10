@@ -25,7 +25,6 @@ export async function GET(req: NextRequest) {
     orderBy: { startsAt: 'desc' },
     include: {
       guide:       { select: { name: true } },
-      guide2:      { select: { name: true } },
       ticketTypes: { orderBy: { sortOrder: 'asc' } },
     },
     take: 10_000,
@@ -45,7 +44,6 @@ export async function GET(req: NextRequest) {
     { header: 'Окончание',      key: 'endsAt',        width: 20 },
     { header: 'Локация',        key: 'location',      width: 40 },
     { header: 'Гид',            key: 'guide',         width: 20 },
-    { header: 'Второй гид',     key: 'guide2',        width: 20 },
     { header: 'Цена (коп.)',    key: 'priceKopecks',  width: 14 },
     { header: 'Мест всего',     key: 'capacity',      width: 12 },
     { header: 'Обложка URL',    key: 'coverPhotoUrl', width: 50 },
@@ -71,7 +69,6 @@ export async function GET(req: NextRequest) {
       endsAt:       w.endsAt ?? '',
       location:     w.location,
       guide:        w.guide.name,
-      guide2:       w.guide2?.name ?? '',
       priceKopecks: w.priceKopecks,
       capacity:     w.capacity,
       coverPhotoUrl: w.coverPhotoUrl,

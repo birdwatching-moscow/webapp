@@ -19,6 +19,8 @@ const walks: WalkTableRow[] = [
     startsAt: aug9_8am,
     endsAt: null,
     priceKopecks: 95000,
+    minPriceKopecks: 95000,
+    ticketTypeCount: 1,
     capacity: 12,
     ticketsSold: 11,
   },
@@ -29,6 +31,8 @@ const walks: WalkTableRow[] = [
     startsAt: new Date('2026-08-15T05:00:00.000Z'),
     endsAt: null,
     priceKopecks: 95000,
+    minPriceKopecks: 95000,
+    ticketTypeCount: 1,
     capacity: 10,
     ticketsSold: 10,
   },
@@ -67,9 +71,9 @@ describe('WalksTable — walk rows', () => {
     expect(link2).toHaveAttribute('href', '/walks/ptitsy-losiny-ostrov')
   })
 
-  it('renders price label "от 950 ₽" for each walk', () => {
+  it('renders plain price for single ticket type', () => {
     render(<WalksTable walks={walks} />)
-    const prices = screen.getAllByText(/от 950/)
+    const prices = screen.getAllByText('950 ₽')
     expect(prices.length).toBe(2)
   })
 

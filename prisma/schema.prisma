@@ -17,6 +17,7 @@ enum Role {
 enum EventStatus {
   DRAFT
   ACTIVE
+  PAST
   CANCELLED
   DELETED
 }
@@ -81,7 +82,6 @@ model Walk {
   priceKopecks  Int
   capacity      Int
   guideId       Int
-  guideId2      Int?
   status        EventStatus @default(DRAFT)
   coverPhotoUrl String      @db.VarChar(2048)
   galleryUrl    String?     @db.VarChar(2048)
@@ -95,7 +95,6 @@ model Walk {
   createdAt     DateTime    @default(now())
 
   guide       TeamMember  @relation("WalkPrimaryGuide",   fields: [guideId],  references: [id])
-  guide2      TeamMember? @relation("WalkSecondaryGuide", fields: [guideId2], references: [id])
   publisher   User?       @relation("WalkPublisher", fields: [publishedBy], references: [id])
   tickets     Ticket[]
   orderItems  OrderItem[]
@@ -162,7 +161,6 @@ model TeamMember {
   sortOrder    Int
 
   walks       Walk[]  @relation("WalkPrimaryGuide")
-  walks2      Walk[]  @relation("WalkSecondaryGuide")
   expeditions Expedition[]
 }
 
