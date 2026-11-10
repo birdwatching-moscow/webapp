@@ -162,6 +162,27 @@
   align-self: stretch;
 }
 
+/* ─── Field wrapper (input + counter) ───────────────────────────────────────── */
+
+.fieldWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.charCount {
+  font-family: 'Manrope', sans-serif;
+  font-size: var(--font-size-xs);
+  color: var(--color-muted-foreground);
+  text-align: right;
+  max-width: 406px;
+}
+
+.charCountError {
+  color: var(--color-error);
+  font-weight: 600;
+}
+
 /* ─── Error ─────────────────────────────────────────────────────────────────── */
 
 .error {
