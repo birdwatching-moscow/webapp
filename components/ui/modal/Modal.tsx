@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { CloseIcon } from '@/components/icons/CloseIcon';
 import styles from './Modal.module.css';
 
 type ModalProps = {
   open: boolean;
   onClose: () => void;
-  title: string;
+  title?: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
 };
@@ -21,7 +22,6 @@ export const Modal = ({ open, onClose, title, children, footer }: ModalProps) =>
     return () => document.removeEventListener('keydown', handleKey);
   }, [open, onClose]);
 
-  // Focus trap
   useEffect(() => {
     if (!open) return;
     const el = dialogRef.current;
@@ -46,18 +46,19 @@ export const Modal = ({ open, onClose, title, children, footer }: ModalProps) =>
   if (!open) return null;
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
+    <div className={styles.overlay}>
       <div
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="modal-title"
+        aria-labelledby={title ? 'modal-title' : undefined}
         className={styles.dialog}
-        onClick={e => e.stopPropagation()}
       >
         <div className={styles.header}>
-          <h2 id="modal-title" className={styles.title}>{title}</h2>
-          <button className={styles.close} onClick={onClose} aria-label="Закрыть">✕</button>
+          {title && <h2 id="modal-title" className={styles.title}>{title}</h2>}
+          <button className={styles.closeBtn} onClick={onClose} aria-label="Закрыть">
+            <CloseIcon />
+          </button>
         </div>
         <div className={styles.body}>{children}</div>
         {footer && <div className={styles.footer}>{footer}</div>}

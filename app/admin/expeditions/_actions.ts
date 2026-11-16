@@ -104,12 +104,17 @@ export async function publishExpedition(id: string): Promise<void> {
   const expedition = await prisma.expedition.findFirst({ where: { id } })
   if (!expedition) throw new Error('Экспедиция не найдена')
   if (expedition.status === 'ACTIVE') throw new Error('Экспедиция уже опубликована')
+  let publishedBy = expedition.publishedBy
+  if (!publishedBy) {
+    const userExists = await prisma.user.count({ where: { id: session.user.id } }) > 0
+    if (userExists) publishedBy = session.user.id
+  }
   await prisma.expedition.update({
     where: { id },
     data: {
       status: 'ACTIVE',
       publishedAt: expedition.publishedAt ?? new Date(),
-      publishedBy: expedition.publishedBy ?? session.user.id,
+      publishedBy,
     },
   })
 }

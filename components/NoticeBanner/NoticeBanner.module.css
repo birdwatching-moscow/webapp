@@ -1,0 +1,76 @@
+/* ─── Mobile ──────────────────────────────────────────────────────────────── */
+
+.banner {
+  display: flex;
+  flex-direction: column;
+  max-width: var(--size-text-max); /* 720px */
+  width: 100%;
+  padding: var(--space-4);         /* 16px */
+  align-items: flex-start;
+  gap: var(--space-4);             /* 16px */
+  align-self: stretch;
+  margin-inline: auto;
+  border: var(--stroke-default) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-background);
+}
+
+.text {
+  margin: 0;
+  color: var(--color-muted-foreground);
+  font-size: var(--font-size-lg);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.actionsStacked {
+  flex-direction: column;
+}
+
+.actionsStacked .btn {
+  flex: none;
+}
+
+.btn {
+  --_secondary-color:          var(--color-foreground);
+  --_secondary-border-color:   var(--color-primary);
+  --_secondary-bg:             var(--color-background);
+  --_secondary-padding-inline: var(--space-4);
+  flex: 1;
+}
+
+/* ─── Desktop (min-width: 1248px) ─────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .banner {
+    flex-direction: row;
+    align-items: center;
+    width: var(--size-text-max); /* 720px */
+    max-width: none;
+    padding: var(--space-6);     /* 32px */
+    gap: var(--space-6);         /* 32px */
+  }
+
+  .text {
+    flex: 1;
+  }
+
+  .actions {
+    width: auto;
+    flex-shrink: 0;
+  }
+
+  .actionsStacked {
+    flex-direction: column;
+    width: 161px;
+  }
+
+  .btn {
+    flex: none;
+    width: 161px;
+  }
+}

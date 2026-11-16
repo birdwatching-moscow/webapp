@@ -1,0 +1,137 @@
+/* ─── Hero — Mobile (single-column, image first) ────────────────────────────── */
+
+.hero {
+  width: 100%;
+  padding-inline: var(--page-gutter);
+  padding-top: var(--space-8);
+  padding-bottom: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.imageWrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.mediaContainer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  max-height: 584px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+@supports (aspect-ratio: 9 / 16) {
+  .mediaContainer {
+    max-width: calc(584px * 9 / 16);
+  }
+}
+
+.image {
+  object-fit: cover;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.heading {
+  margin: 0;
+}
+
+.paragraphs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.paragraph {
+  margin: 0;
+  color: var(--color-muted-foreground);
+}
+
+/* ─── Hero — Desktop (two-column, text left / image right) ─────────────────── */
+
+@media (min-width: 1248px) {
+  .hero {
+    flex-direction: row;
+    align-items: center;
+    gap: 48px;
+    padding-top: 96px;
+    padding-bottom: 96px;
+  }
+
+  .text {
+    order: 1;
+    flex: 0 0 50%;
+  }
+
+  .imageWrapper {
+    order: 2;
+    flex: 0 0 50%;
+  }
+
+  .mediaContainer {
+    width: 329px;
+    height: 584px;
+    aspect-ratio: unset;
+    max-height: unset;
+    max-width: unset;
+    margin: 0 auto;
+  }
+}
+
+/* ─── Listings section ───────────────────────────────────────────────────────── */
+
+.listings {
+  width: 100%;
+  padding-inline: var(--page-gutter);
+  padding-top: var(--space-8);
+  padding-bottom: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.listingsHeading {
+  margin: 0;
+}
+
+.empty {
+  margin: 0;
+  color: var(--color-muted-foreground);
+}
+
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+.gridItem {
+  display: contents;
+}
+
+/* ─── Listings — Desktop ─────────────────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .listings {
+    padding-top: var(--space-10);
+    padding-bottom: var(--space-10);
+    gap: var(--space-7);
+  }
+
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-5);
+  }
+}

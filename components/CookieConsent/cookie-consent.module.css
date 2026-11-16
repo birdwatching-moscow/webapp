@@ -1,0 +1,28 @@
+.overlay {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-index-header);
+  padding: var(--space-4) var(--page-gutter);
+  pointer-events: none;
+}
+
+.overlay > * {
+  pointer-events: auto;
+}
+
+.link {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+@media (min-width: 1248px) {
+  .overlay {
+    padding: var(--space-6) var(--page-gutter);
+  }
+}

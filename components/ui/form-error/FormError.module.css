@@ -1,0 +1,4 @@
+.error {
+  composes: text-label from global;
+  color: var(--color-error);
+}

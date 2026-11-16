@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { prismaMock, sendMailMock, bcryptHashMock, checkRateLimitMock, generateLoginCsrfTokenMock } = vi.hoisted(() => ({
+const { prismaMock, sendMailMock, bcryptHashMock, checkRateLimitMock, checkEmailCodeRateLimitMock, generateLoginCsrfTokenMock } = vi.hoisted(() => ({
   prismaMock: {
     user: { findFirst: vi.fn() },
     loginCode: { deleteMany: vi.fn(), create: vi.fn() },
@@ -8,13 +8,14 @@ const { prismaMock, sendMailMock, bcryptHashMock, checkRateLimitMock, generateLo
   sendMailMock: vi.fn(),
   bcryptHashMock: vi.fn(),
   checkRateLimitMock: vi.fn(),
+  checkEmailCodeRateLimitMock: vi.fn(),
   generateLoginCsrfTokenMock: vi.fn(),
 }))
 
 vi.mock('@/lib/prisma', () => ({ prisma: prismaMock }))
 vi.mock('@/lib/mail', () => ({ sendMail: sendMailMock }))
 vi.mock('bcryptjs', () => ({ default: { hash: bcryptHashMock, compare: vi.fn() } }))
-vi.mock('@/lib/rateLimit', () => ({ checkRateLimit: checkRateLimitMock }))
+vi.mock('@/lib/rateLimit', () => ({ checkRateLimit: checkRateLimitMock, checkEmailCodeRateLimit: checkEmailCodeRateLimitMock }))
 vi.mock('@/lib/auth/csrf', () => ({ generateLoginCsrfToken: generateLoginCsrfTokenMock }))
 vi.mock('@/lib/login-code', async (importOriginal) => {
   const real = await importOriginal<typeof import('@/lib/login-code')>()
@@ -22,7 +23,7 @@ vi.mock('@/lib/login-code', async (importOriginal) => {
 })
 
 import { POST } from '@/app/api/auth/register/route'
-import { HTTP_METHOD, JSON_HEADERS, HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_CONFLICT } from '@/lib/constants'
+import { HTTP_METHOD, JSON_HEADERS, HTTP_STATUS_BAD_REQUEST } from '@/lib/constants'
 
 function makeReq(body: object) {
   return new Request('http://localhost/api/auth/register', {
@@ -39,6 +40,7 @@ beforeEach(() => {
   prismaMock.loginCode.create.mockResolvedValue({ id: 'code-1' })
   sendMailMock.mockResolvedValue(undefined)
   checkRateLimitMock.mockResolvedValue({ allowed: true })
+  checkEmailCodeRateLimitMock.mockReturnValue({ allowed: true, retryAfterSeconds: 0 })
   generateLoginCsrfTokenMock.mockReturnValue('csrf-token-123')
 })
 
@@ -103,12 +105,14 @@ describe('POST /api/auth/register — validation', () => {
 })
 
 describe('POST /api/auth/register — duplicate email', () => {
-  it('returns 409 when the email is already registered', async () => {
+  it('returns 200 and sends already-registered email (does not expose enumeration)', async () => {
     prismaMock.user.findFirst.mockResolvedValue({ id: 'existing-1', email: 'new@test.com' })
     const res = await POST(makeReq({ email: 'new@test.com', name: 'Иван' }))
-    expect(res.status).toBe(HTTP_STATUS_CONFLICT)
+    expect(res.status).toBe(200)
     expect(prismaMock.loginCode.create).not.toHaveBeenCalled()
-    expect(sendMailMock).not.toHaveBeenCalled()
+    expect(sendMailMock).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'already-registered', to: 'new@test.com' })
+    )
   })
 })
 

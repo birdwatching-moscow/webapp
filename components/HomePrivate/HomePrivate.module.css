@@ -1,0 +1,52 @@
+/* ─── Mobile ──────────────────────────────────────────────────────────────── */
+
+.section {
+  width: 100%;
+  padding-top: var(--space-8);
+  padding-inline: var(--page-gutter);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Horizontal carousel that bleeds to the screen edges */
+.cards {
+  --card-width-mobile: 320px;
+
+  display: flex;
+  gap: var(--space-4);
+  margin-inline: calc(-1 * var(--page-gutter));
+  padding-inline: var(--page-gutter);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--page-gutter);
+  scrollbar-width: none;
+}
+
+.cards > * {
+  flex: 0 0 var(--card-width-mobile);
+  scroll-snap-align: start;
+}
+
+/* ─── Desktop (min-width: 1248px) ─────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .section {
+    padding-top: var(--space-10);
+  }
+
+  .cards {
+    margin-inline: 0;
+    padding-inline: 0;
+    overflow-x: visible;
+  }
+
+  .cards > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .moreButton {
+    max-width: 406px;
+  }
+}

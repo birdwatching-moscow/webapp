@@ -3,14 +3,15 @@
 import Link from 'next/link';
 import styles from './Button.module.css';
 
-type ButtonVariant = 'default' | 'secondary' | 'ghost';
-type ButtonSize    = 'default' | 'sm';
+type ButtonVariant = 'default' | 'secondary' | 'outline' | 'ghost' | 'destructive';
+type ButtonSize    = 'default' | 'sm' | 'lg';
 
 type BaseProps = {
   variant?:   ButtonVariant;
   size?:      ButtonSize;
   loading?:   boolean;
   disabled?:  boolean;
+  fullWidth?: boolean;
   className?: string;
   children:   React.ReactNode;
 };
@@ -25,12 +26,15 @@ export const Button = ({
   size = 'default',
   loading = false,
   disabled,
+  fullWidth = false,
   className,
   children,
   ...rest
 }: ButtonProps) => {
   const isDisabled = disabled || loading;
-  const cls = [styles.button, styles[variant], styles[size], className].filter(Boolean).join(' ');
+  const cls = [styles.button, styles[variant], styles[size], fullWidth && styles.fullWidth, className]
+    .filter(Boolean)
+    .join(' ');
 
   if (rest.as === 'a') {
     const { as: _as, href, ...linkRest } = rest as AsLink;

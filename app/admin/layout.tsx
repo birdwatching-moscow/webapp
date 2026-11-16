@@ -1,13 +1,9 @@
 import Link from 'next/link'
 import { auth } from '@/lib/auth'
 import { isSuperAdmin } from '@/lib/auth/permissions'
-
-const NAV_ITEMS = [
-  { label: 'Прогулки', href: '/admin/walks' },
-  { label: 'Экспедиции', href: '/admin/expeditions' },
-  { label: 'Команда', href: '/admin/team' },
-  { label: 'Заявки', href: '/admin/requests' },
-]
+import { AdminNav } from '@/components/admin/AdminNav'
+import { ROUTES } from '@/utils/routes'
+import styles from './layout.module.css'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
@@ -15,14 +11,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const showUsers = role != null && isSuperAdmin(role)
 
   return (
-    <div>
-      <nav>
-        {NAV_ITEMS.map((item) => (
-          <Link key={item.href} href={item.href}>{item.label}</Link>
-        ))}
-        {showUsers && <Link href="/admin/users">Пользователи</Link>}
-      </nav>
-      <main>{children}</main>
+    <div className={styles.shell}>
+      <aside className={styles.sidebar}>
+        <span className={styles.brand}>Админка</span>
+        <AdminNav showUsers={showUsers} />
+        <Link href={ROUTES.home} className={styles.backLink}>← На сайт</Link>
+      </aside>
+      <main className={styles.content}>{children}</main>
     </div>
   )
 }

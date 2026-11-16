@@ -83,6 +83,22 @@ Widget docs: https://yookassa.ru/developers/payment-acceptance/integration-scena
 
 ---
 
+## Production environment (.env.production)
+
+Required variables that differ from the defaults:
+
+```
+APP_URL="https://birdwatching.moscow"
+AUTH_URL="https://birdwatching.moscow"
+```
+
+`APP_URL` controls:
+- robots.txt: only allows indexing when set to `https://birdwatching.moscow`
+- sitemap.xml base URL
+- ЮKassa return_url in payments
+
+---
+
 ## Local development
 
 Only one service needs to be running:

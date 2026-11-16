@@ -1,0 +1,89 @@
+/* ─── Mobile (single column) ────────────────────────────────────────────────── */
+
+.page {
+  width: 100%;
+  padding-inline: var(--page-gutter);
+  padding-top: var(--space-8);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Mobile: friendly company tagline header */
+.mobileHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Desktop: full legal document title — hidden on mobile */
+.desktopHeader {
+  display: none;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.heading {
+  margin: 0;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--color-muted-foreground);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  font-size: var(--font-size-xl);
+}
+
+.sectionTitle {
+  margin: 0;
+}
+
+.paragraph {
+  margin: 0;
+  color: var(--color-foreground);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-left: var(--space-4a);
+  margin: 0;
+}
+
+.listItem {
+  color: var(--color-foreground);
+}
+
+.version {
+  margin: 0;
+  color: var(--color-muted-foreground);
+}
+
+/* ─── Desktop ────────────────────────────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .page {
+    padding-top: var(--space-10);
+  }
+
+  .content {
+    gap: var(--space-7);
+  }
+
+  .mobileHeader {
+    display: none;
+  }
+
+  .desktopHeader {
+    display: flex;
+  }
+}

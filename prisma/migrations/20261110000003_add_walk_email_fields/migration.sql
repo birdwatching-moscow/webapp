@@ -1,0 +1,2 @@
+ALTER TABLE "Walk" ADD COLUMN "emailSubject" VARCHAR(255);
+ALTER TABLE "Walk" ADD COLUMN "emailBody" TEXT;

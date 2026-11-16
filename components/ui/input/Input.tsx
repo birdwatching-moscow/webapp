@@ -8,9 +8,11 @@ export type InputProps = {
   placeholder?: string;
   label?:       string;
   error?:       string;
+  invalid?:     boolean;
   disabled?:    boolean;
   type?:        'text' | 'email' | 'tel' | 'password';
   className?:   string;
+  trailing?:    React.ReactNode;
 } & Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
   'value' | 'onChange' | 'type' | 'id' | 'name' | 'disabled' | 'placeholder' | 'className'
@@ -24,12 +26,15 @@ export const Input = ({
   placeholder,
   label,
   error,
+  invalid,
   disabled,
   type = 'text',
   className,
+  trailing,
   ...rest
 }: InputProps) => {
   const hasError = Boolean(error);
+  const isInvalid = hasError || Boolean(invalid);
   const errorId = id ? `${id}-error` : undefined;
 
   return (
@@ -39,19 +44,22 @@ export const Input = ({
           {label}
         </label>
       )}
-      <input
-        id={id}
-        name={name}
-        type={type}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        disabled={disabled}
-        aria-invalid={hasError ? 'true' : undefined}
-        aria-describedby={hasError && errorId ? errorId : undefined}
-        className={[styles.input, hasError ? styles.error : ''].filter(Boolean).join(' ')}
-        {...rest}
-      />
+      <div className={styles.inputRow}>
+        <input
+          id={id}
+          name={name}
+          type={type}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          disabled={disabled}
+          aria-invalid={isInvalid ? 'true' : undefined}
+          aria-describedby={hasError && errorId ? errorId : undefined}
+          className={[styles.input, isInvalid ? styles.error : '', trailing ? styles.withTrailing : ''].filter(Boolean).join(' ')}
+          {...rest}
+        />
+        {trailing && <span className={styles.trailing}>{trailing}</span>}
+      </div>
       {hasError && (
         <p id={errorId} role="alert" className={styles.errorMessage}>
           {error}
