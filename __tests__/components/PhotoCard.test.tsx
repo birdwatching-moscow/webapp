@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { PhotoCard } from '@/components/PhotoCard/PhotoCard'
+import { IMAGE_SIZES } from '@/utils/imageSizes'
 
 vi.mock('next/image', () => ({
   default: ({ src, alt, sizes }: { src: string; alt: string; sizes?: string }) => (
@@ -10,9 +11,9 @@ vi.mock('next/image', () => ({
 }))
 
 describe('PhotoCard — responsive sizes (required with fill)', () => {
-  it('defaults sizes to 100vw', () => {
+  it('defaults sizes to the width inside the page gutters, not 100vw', () => {
     render(<PhotoCard src="/test.jpg" alt="Test photo" />)
-    expect(screen.getByRole('img', { name: 'Test photo' })).toHaveAttribute('sizes', '100vw')
+    expect(screen.getByRole('img', { name: 'Test photo' })).toHaveAttribute('sizes', IMAGE_SIZES.pageWidth)
   })
 
   it('passes a custom sizes value through', () => {

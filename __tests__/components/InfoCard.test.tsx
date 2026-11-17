@@ -1,11 +1,12 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { InfoCard } from '@/components/InfoCard/InfoCard'
+import { IMAGE_SIZES } from '@/utils/imageSizes'
 
 vi.mock('next/image', () => ({
-  default: ({ src, alt }: { src: string; alt: string }) => (
+  default: ({ src, alt, sizes }: { src: string; alt: string; sizes?: string }) => (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt={alt} />
+    <img src={src} alt={alt} sizes={sizes} />
   ),
 }))
 
@@ -36,6 +37,11 @@ describe('InfoCard — content', () => {
   it('renders the image with alt text', () => {
     render(<InfoCard {...base} />)
     expect(screen.getByAltText('Фото')).toHaveAttribute('src', '/images/home-walks.jpg')
+  })
+
+  it('requests a card-sized image (a third of the page on desktop), not 100vw', () => {
+    render(<InfoCard {...base} />)
+    expect(screen.getByAltText('Фото')).toHaveAttribute('sizes', IMAGE_SIZES.cardThird)
   })
 
   it('renders the label when provided', () => {
