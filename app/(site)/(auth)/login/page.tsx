@@ -367,7 +367,7 @@ function LoginCodeForm() {
 
           <FormError message={error} />
 
-          <form onSubmit={handleNameSubmit} className={styles.form}>
+          <form onSubmit={handleNameSubmit} className={styles.form} noValidate>
             <Input
               id="name"
               name="name"
