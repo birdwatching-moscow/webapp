@@ -26,6 +26,7 @@ import { FormError } from '@/components/ui/form-error/FormError'
 import { OtpStep } from '@/components/auth/OtpStep'
 import { AUTH_LABELS } from '@/lib/auth-labels'
 import { mapOtpVerifyError } from '@/lib/auth/mapOtpVerifyError'
+import { validateEmail, validateName } from '@/utils/validateAuthFields'
 import { EyeIcon } from '@/components/icons/EyeIcon'
 import { EyeOffIcon } from '@/components/icons/EyeOffIcon'
 import styles from '../auth-page.module.css'
@@ -78,12 +79,9 @@ function LoginCodeForm() {
 
   async function handleEmailSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
-    if (!emailInput.trim()) {
-      setEmailError('Введите почту, чтобы продолжить')
-      return
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.trim())) {
-      setEmailError('Введите почту в формате name@example.ru')
+    const validationError = validateEmail(emailInput)
+    if (validationError) {
+      setEmailError(validationError)
       return
     }
     setEmailError('')
@@ -132,8 +130,9 @@ function LoginCodeForm() {
 
   async function handleNameSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
-    if (!nameInput.trim()) {
-      setNameError('Введите имя, чтобы продолжить')
+    const validationError = validateName(nameInput)
+    if (validationError) {
+      setNameError(validationError)
       return
     }
     setNameError('')

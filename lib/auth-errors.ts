@@ -10,4 +10,8 @@ export const AUTH_ERRORS = {
   codeTooFrequent:  'Код уже был отправлен. Запросить новый можно через 1 минуту.',
   invalidChallenge: 'Сессия истекла. Начните вход заново.',
   passwordResetRequired: 'Пароль устарел. Запросите сброс пароля.',
+
+  emailRequired:    'Введите почту, чтобы продолжить',
+  emailInvalid:     'Введите почту в формате name@example.ru',
+  nameRequired:     'Введите имя, чтобы продолжить',
 } as const;

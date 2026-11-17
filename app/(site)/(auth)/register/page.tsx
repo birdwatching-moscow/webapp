@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input/Input'
 import { OtpStep } from '@/components/auth/OtpStep'
 import { FormError } from '@/components/ui/form-error/FormError'
 import { mapOtpVerifyError } from '@/lib/auth/mapOtpVerifyError'
+import { validateEmail, validateName } from '@/utils/validateAuthFields'
 import styles from '../auth-page.module.css'
 
 const L = AUTH_LABELS.register
@@ -27,7 +28,8 @@ type RegisterStep = 'form' | 'code'
 export default function RegisterPage() {
   const router = useRouter()
   const { error, setError, loading, run } = useAuthForm()
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
+  const [nameError, setNameError] = useState('')
+  const [emailError, setEmailError] = useState('')
   const [step, setStep] = useState<RegisterStep>('form')
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
@@ -42,21 +44,30 @@ export default function RegisterPage() {
 
   async function handleFormSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
-    setFieldErrors({})
+    const nextNameError = validateName(nameInput)
+    const nextEmailError = validateEmail(emailInput)
+    setNameError(nextNameError ?? '')
+    setEmailError(nextEmailError ?? '')
+    if (nextNameError || nextEmailError) return
+
+    const trimmedName = nameInput.trim()
+    const trimmedEmail = emailInput.trim()
 
     await run(async () => {
       const res = await fetch('/api/auth/register', {
         method: HTTP_METHOD.POST,
         headers: JSON_HEADERS,
-        body: JSON.stringify({ email: emailInput, name: nameInput }),
+        body: JSON.stringify({ email: trimmedEmail, name: trimmedName }),
       })
 
       if (!res.ok) {
-        const data = await res.json().catch(() => null)
+        const data = await res.json().catch(() => null) as
+          { error?: string; issues?: Partial<Record<'name' | 'email', string[]>> } | null
         if (data?.error === 'code_rate_limited') {
-          setError(AUTH_ERRORS.codeTooFrequent)
+          setEmailError(AUTH_ERRORS.tooManyAttempts)
         } else if (data?.issues) {
-          setFieldErrors(data.issues)
+          setNameError(data.issues.name?.join(', ') ?? '')
+          setEmailError(data.issues.email?.join(', ') ?? '')
         } else {
           setError(AUTH_ERRORS.generic)
         }
@@ -65,8 +76,8 @@ export default function RegisterPage() {
 
       const data = await res.json()
       setCsrfToken(data.csrfToken ?? '')
-      setEmail(emailInput)
-      setName(nameInput)
+      setEmail(trimmedEmail)
+      setName(trimmedName)
       otp.reset()
       setStep('code')
     })
@@ -119,7 +130,7 @@ export default function RegisterPage() {
 
           <FormError message={error} />
 
-          <form onSubmit={handleFormSubmit} className={styles.form}>
+          <form onSubmit={handleFormSubmit} className={styles.form} noValidate>
             <Input
               id="name"
               name="name"
@@ -127,10 +138,10 @@ export default function RegisterPage() {
               placeholder="Имя"
               aria-label={L.nameField}
               value={nameInput}
-              onChange={e => setNameInput(e.target.value)}
+              onChange={e => { setNameInput(e.target.value); setNameError('') }}
               autoComplete="name"
               required
-              error={fieldErrors.name?.join(', ')}
+              error={nameError}
               className={styles.fieldInput}
             />
             <Input
@@ -140,10 +151,10 @@ export default function RegisterPage() {
               placeholder="Ваш email"
               aria-label={C.emailField}
               value={emailInput}
-              onChange={e => setEmailInput(e.target.value)}
+              onChange={e => { setEmailInput(e.target.value); setEmailError('') }}
               autoComplete="email"
               required
-              error={fieldErrors.email?.join(', ')}
+              error={emailError}
               className={styles.fieldInput}
             />
             <div className={styles.actions}>
