@@ -14,4 +14,5 @@ export const AUTH_ERRORS = {
   emailRequired:    'Введите почту, чтобы продолжить',
   emailInvalid:     'Введите почту в формате name@example.ru',
   nameRequired:     'Введите имя, чтобы продолжить',
+  passwordRequired: 'Введите пароль, чтобы продолжить',
 } as const;

@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState, useRef, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 import { ROUTES } from '@/utils/routes'
@@ -60,7 +60,8 @@ function LoginCodeForm() {
   const [confirmPasswordError, setConfirmPasswordError] = useState('')
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const passwordInputRef = useRef<HTMLInputElement>(null)
+  const [passwordInput, setPasswordInput] = useState('')
+  const [passwordError, setPasswordError] = useState('')
   const otp = useOtpInput(submitCode)
 
   const isRegistered = searchParams.get(REGISTERED_PARAM) === '1'
@@ -70,7 +71,7 @@ function LoginCodeForm() {
   }, [step, otp.digitRefs])
 
   useEffect(() => {
-    if (step === 'password') passwordInputRef.current?.focus()
+    if (step === 'password') document.getElementById('password')?.focus()
   }, [step])
 
   useEffect(() => {
@@ -237,8 +238,12 @@ function LoginCodeForm() {
 
   async function handlePasswordSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
-    const form = new FormData(e.currentTarget)
-    const password = String(form.get('password') ?? '')
+    const password = passwordInput
+    if (!password) {
+      setPasswordError(AUTH_ERRORS.passwordRequired)
+      return
+    }
+    setPasswordError('')
 
     await run(async () => {
       const result = await signIn(ADMIN_2FA_PROVIDER_ID, {
@@ -414,18 +419,19 @@ function LoginCodeForm() {
 
           <FormError message={error} />
 
-          <form onSubmit={handlePasswordSubmit} className={styles.form}>
-            <div>
-              <label htmlFor="password">{C.passwordField}</label>
-              <input
-                ref={passwordInputRef}
-                id="password"
-                name="password"
-                type="password"
-                required
-                autoComplete="current-password"
-              />
-            </div>
+          <form onSubmit={handlePasswordSubmit} className={styles.form} noValidate>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              label={C.passwordField}
+              value={passwordInput}
+              onChange={e => { setPasswordInput(e.target.value); setPasswordError('') }}
+              autoComplete="current-password"
+              required
+              error={passwordError}
+              className={styles.fieldInput}
+            />
             <div className={styles.actions}>
               <Button type="submit" fullWidth loading={loading} disabled={loading}>
                 {loading ? LA.submitting : LA.submit}
