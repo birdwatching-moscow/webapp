@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { PhotoCard } from '@/components/PhotoCard/PhotoCard'
+import { IMAGE_SIZES } from '@/utils/imageSizes'
 import styles from './InfoCard.module.css'
 
 interface InfoCardProps {
@@ -14,7 +15,7 @@ interface InfoCardProps {
 export const InfoCard = ({ imageSrc, imageAlt, title, description, label, href }: InfoCardProps) => {
   const content = (
     <>
-      <PhotoCard src={imageSrc} alt={imageAlt} className={styles.photo} />
+      <PhotoCard src={imageSrc} alt={imageAlt} sizes={IMAGE_SIZES.cardThird} className={styles.photo} />
       <div className={styles.text}>
         {label && <span className={`text-label ${styles.label}`}>{label}</span>}
         <h3 className={`text-h2 ${styles.title}`}>{title}</h3>

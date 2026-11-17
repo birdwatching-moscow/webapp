@@ -1,10 +1,11 @@
 import Image from 'next/image'
 import { InfoIcon } from '@/components/icons/InfoIcon'
+import { IMAGE_SIZES } from '@/utils/imageSizes'
 import styles from './PhotoCard.module.css'
 
 const LOREM_IPSUM = 'Lorem ipsum dolor'
-// Safe default: the card fills its container, which is full width on mobile.
-const DEFAULT_SIZES = '100vw'
+// Default: the card fills a section inside the page gutters.
+const DEFAULT_SIZES = IMAGE_SIZES.pageWidth
 
 interface PhotoCardProps {
   src: string

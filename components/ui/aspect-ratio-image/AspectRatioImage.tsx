@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { IMAGE_SIZES } from '@/utils/imageSizes';
 import styles from './AspectRatioImage.module.css';
 
 export type AspectRatio = '16-9' | '4-3' | '1-1' | '9-16';
@@ -8,12 +9,12 @@ export type AspectRatioImageProps = {
   src?:       string;
   alt:        string;
   className?: string;
-  /** `sizes` for next/image — pass the rendered width when it is not full width. */
+  /** `sizes` for next/image — pass the rendered width when it differs from a card. */
   sizes?:     string;
 };
 
-// Safe default: never blurry; callers with a known small width pass their own.
-const DEFAULT_SIZES = '100vw';
+// Used inside cards; callers with a known width (e.g. 80px avatar) pass their own.
+const DEFAULT_SIZES = IMAGE_SIZES.cardThird;
 
 const RATIO_MAP: Record<AspectRatio, string> = {
   '16-9': '16 / 9',
