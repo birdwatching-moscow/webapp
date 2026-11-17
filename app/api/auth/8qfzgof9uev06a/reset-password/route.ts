@@ -65,6 +65,8 @@ export async function POST(req: Request) {
         passwordHash,
         // The forced ADMIN/SUPERADMIN rotation is satisfied by this reset
         passwordResetRequired: false,
+        // Every session issued before this reset stops working (lib/auth/sessionGuard.ts)
+        sessionVersion: { increment: 1 },
         passwordResetTokens: {
           update: {
             where: { id: resetToken.id },

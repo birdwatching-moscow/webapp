@@ -6,5 +6,6 @@ export interface AuthorizedUser {
   email: string
   name: string
   role: Role
+  sessionVersion: number
 }
 

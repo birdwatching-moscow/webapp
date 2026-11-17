@@ -3,6 +3,7 @@ import Credentials from 'next-auth/providers/credentials'
 import { authorizeCredentials, authorizeLoginCode, authorizeAdminTwoFactor } from '@/lib/auth/authorize'
 import { AuthCodeError } from '@/lib/auth/errors'
 import { authLogger } from '@/lib/auth/authLogger'
+import { validateAdminToken } from '@/lib/auth/sessionGuard'
 import { SESSION_MAX_AGE_SECONDS, SESSION_UPDATE_AGE_SECONDS, LOGIN_CODE_PROVIDER_ID, ADMIN_2FA_PROVIDER_ID } from '@/lib/constants'
 import authConfig from '@/auth.config'
 import type { AuthorizedUser } from '@/types/auth'
@@ -33,6 +34,16 @@ async function withSigninErrors(
 // auth.config.ts. `NextAuth()` still type-checks the argument.
 export const authOptions = {
   ...authConfig,
+  callbacks: {
+    ...authConfig.callbacks,
+    // Node-only layer over the edge-safe callback: on sign-in the token was just
+    // built from a fresh DB read; on every later read it is re-checked so a
+    // reset or block revokes sessions (lib/auth/sessionGuard.ts).
+    async jwt(params: Parameters<typeof authConfig.callbacks.jwt>[0]) {
+      const token = authConfig.callbacks.jwt(params)
+      return params.user ? token : validateAdminToken(token)
+    },
+  },
   // Wrong codes are expected → one debug line; real failures → error with cause.
   logger: authLogger,
   // `updateAge` gives sliding renewal — middleware.ts must fire on every request.

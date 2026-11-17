@@ -51,7 +51,11 @@ export async function blockUser(targetUserId: string): Promise<void> {
     if (nonBlockedCount <= 1) throw new Error('Нельзя заблокировать последнего активного SUPERADMIN')
   }
 
-  await prisma.user.update({ where: { id: targetUserId }, data: { blockedAt: new Date() } })
+  // The bump keeps old sessions dead even after a later unblock
+  await prisma.user.update({
+    where: { id: targetUserId },
+    data: { blockedAt: new Date(), sessionVersion: { increment: 1 } },
+  })
 }
 
 export async function unblockUser(targetUserId: string): Promise<void> {
