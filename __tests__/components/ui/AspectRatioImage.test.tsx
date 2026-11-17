@@ -66,3 +66,15 @@ describe('AspectRatioImage — className', () => {
     expect(container.firstChild).toHaveClass('my-img')
   })
 })
+
+describe('AspectRatioImage — responsive sizes (required with fill)', () => {
+  it('defaults sizes to 100vw', () => {
+    render(<AspectRatioImage ratio="16-9" src="/a.jpg" alt="A bird" />)
+    expect(screen.getByRole('img', { name: 'A bird' })).toHaveAttribute('sizes', '100vw')
+  })
+
+  it('passes a custom sizes value through', () => {
+    render(<AspectRatioImage ratio="1-1" src="/a.jpg" alt="A bird" sizes="80px" />)
+    expect(screen.getByRole('img', { name: 'A bird' })).toHaveAttribute('sizes', '80px')
+  })
+})

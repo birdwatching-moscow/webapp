@@ -41,6 +41,11 @@ describe('Review — author photo', () => {
     render(<Review {...base} authorImageUrl="/avatar.jpg" />)
     expect(screen.getByAltText(base.authorName)).toBeInTheDocument()
   })
+
+  it('requests an avatar-sized image (80px), not a full-width one', () => {
+    render(<Review {...base} authorImageUrl="/avatar.jpg" />)
+    expect(screen.getByAltText(base.authorName)).toHaveAttribute('sizes', '80px')
+  })
 })
 
 describe('Review — structure', () => {
