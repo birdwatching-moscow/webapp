@@ -1,4 +1,17 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
+
+// next-auth can't be loaded in Vitest (it imports next/server), so mirror the
+// shape of Auth.js 0.41 CredentialsSignin: AuthError sets `type` from the
+// class's static `type`, and CredentialsSignin defaults `code` to "credentials".
+vi.mock('next-auth', () => {
+  class CredentialsSignin extends Error {
+    static type = 'CredentialsSignin'
+    type = 'CredentialsSignin'
+    code = 'credentials'
+  }
+  return { CredentialsSignin }
+})
+
 import { CredentialsSignin } from 'next-auth'
 import { createLogger, type LogRecord } from '@/lib/logger'
 import { createAuthLogger } from '@/lib/auth/authLogger'
