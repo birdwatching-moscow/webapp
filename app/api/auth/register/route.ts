@@ -40,10 +40,17 @@ export async function POST(req: Request) {
       where: { email, deletedAt: null },
     })
 
-    if (existing) {
+    // Every branch returns the same response, so the form never reveals
+    // whether an email is registered.
+    if (existing && existing.role !== 'USER') {
+      // Admins sign in with a password on /login — /register has no password step.
       const loginUrl = `${process.env.NEXTAUTH_URL ?? ''}/login`
       await sendMail({ to: email, kind: 'already-registered', data: { loginUrl } })
+    } else if (existing?.blockedAt) {
+      // Same as /login: a blocked account gets no code.
     } else {
+      // New email → registration code. Existing USER → a login code; the
+      // stored name is kept (verify-registration-code won't overwrite it).
       await prisma.loginCode.deleteMany({ where: { email, usedAt: null } })
 
       const code = generateLoginCode()
@@ -59,7 +66,7 @@ export async function POST(req: Request) {
         console.log(`[dev] registration code for ${email}: ${code}`)
       }
 
-      await sendMail({ to: email, kind: 'login-code', data: { code, name } })
+      await sendMail({ to: email, kind: 'login-code', data: { code, name: existing?.name ?? name } })
     }
   } catch (err) {
     console.error('POST /api/auth/register failed', err)
