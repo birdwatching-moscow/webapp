@@ -2,11 +2,12 @@
 
 import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 import { useAuthForm } from '@/hooks/useAuthForm'
 import { ROUTES, API_ROUTES } from '@/utils/routes'
 import { AUTH_ERRORS } from '@/lib/auth-errors'
 import { AUTH_LABELS } from '@/lib/auth-labels'
-import { HTTP_METHOD, JSON_HEADERS } from '@/lib/constants'
+import { ADMIN_2FA_PROVIDER_ID, HTTP_METHOD, JSON_HEADERS } from '@/lib/constants'
 import { useNewPasswordFields } from '@/hooks/useNewPasswordFields'
 import { NewPasswordFields } from '@/components/auth/NewPasswordFields'
 import { Button } from '@/components/ui/buttons/Button'
@@ -17,6 +18,12 @@ const L = AUTH_LABELS.resetConfirm
 const C = AUTH_LABELS.common
 
 const INVALID_LINK_CODE = 'invalid_link'
+const LOGIN_AFTER_RESET = `${ROUTES.login}?passwordReset=1`
+
+type ResetOkBody = {
+  email?: string
+  challengeToken?: string
+}
 
 type ResetErrorBody = {
   error?: string
@@ -30,6 +37,21 @@ async function safeJsonParse<T = unknown>(res: Response): Promise<T | null> {
     return text ? (JSON.parse(text) as T) : null
   } catch {
     return null
+  }
+}
+
+async function signInAfterReset(data: ResetOkBody | null, password: string): Promise<boolean> {
+  if (!data?.email || !data.challengeToken) return false
+  try {
+    const result = await signIn(ADMIN_2FA_PROVIDER_ID, {
+      email: data.email,
+      challengeToken: data.challengeToken,
+      password,
+      redirect: false,
+    })
+    return !result?.error
+  } catch {
+    return false
   }
 }
 
@@ -55,7 +77,14 @@ export default function ConfirmResetPage() {
       })
 
       if (res.ok) {
-        router.push('/login?passwordReset=1')
+        const signedIn = await signInAfterReset(await safeJsonParse<ResetOkBody>(res), fields.password)
+        if (signedIn) {
+          router.push(ROUTES.home)
+          router.refresh()
+        } else {
+          // The password is changed either way — just ask for a normal sign-in
+          router.push(LOGIN_AFTER_RESET)
+        }
         return
       }
 
