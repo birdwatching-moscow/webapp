@@ -164,7 +164,7 @@ Deployed on **Selectel VPS** (not Vercel/serverless). Implications:
 - No function timeout constraints — long-running server tasks are fine
 - **Ticket concurrency** — wrap purchases in Prisma transactions with row-level locks to prevent double-booking under simultaneous requests
 - **Certificate generation (stage 2)** — generate via Puppeteer using fire-and-forget (`generateCertificate(orderId).catch(...)`) so the HTTP response is not blocked; no job queue needed
-- **Auth** — database sessions via NextAuth.js v5 (Auth.js) with the Prisma adapter (`strategy: "database"`); sessions stored in PostgreSQL for instant revocation; secrets in `.env.production` (production/staging) — `prisma.config.ts` hard-codes this path; never commit it
+- **Auth** — NextAuth.js v5 (Auth.js) with **JWT sessions** (`strategy: 'jwt'` in `lib/auth.ts`, no Prisma adapter) — Auth.js forces JWT with Credentials providers, so database sessions are not possible here. Sessions live in a signed cookie (`SESSION_MAX_AGE_SECONDS`); there is no Session table to delete rows from, so revoking a session needs an explicit check against the DB; secrets in `.env.production` (production/staging) — `prisma.config.ts` hard-codes this path; never commit it
 
 ## Testing
 

@@ -71,7 +71,7 @@ Deployed on **Selectel VPS** — not serverless. Implications for implementation
 
 - **Ticket concurrency** — wrap purchases in a Prisma transaction with a row-level lock; never rely on application-level checks alone
 - **Certificate generation (stage 2)** — use fire-and-forget (`generateCertificate(orderId).catch(...)`) so the HTTP response is not blocked; no job queue needed
-- **Auth** — database sessions via NextAuth.js v5 (Auth.js) with the Prisma adapter (`strategy: "database"`); sessions stored in PostgreSQL; secrets in `.env` only. JWT is not used — sessions must be revocable instantly (admin access, role changes)
+- **Auth** — NextAuth.js v5 (Auth.js) with **JWT sessions** (`strategy: 'jwt'` in `lib/auth.ts`, no Prisma adapter) — Auth.js forces JWT with Credentials providers; secrets in `.env` only. There is no Session table: revoking a session needs an explicit check against the DB
 - Never suggest or introduce Vercel-specific APIs (`@vercel/*`, edge runtime, `next/headers` edge features) — the app runs as a standard Node.js process
 
 ## Quality Gate (run before reporting done)
