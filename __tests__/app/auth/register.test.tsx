@@ -254,3 +254,49 @@ describe('RegisterPage — OTP step', () => {
     expect(screen.getByLabelText(`Цифра 1 из ${LOGIN_CODE_LENGTH}`)).toHaveValue('')
   })
 })
+
+describe('RegisterPage — wrong code: resend', () => {
+  const RESEND_BTN = 'Отправить код заново'
+
+  function registerCalls() {
+    return (fetch as Mock).mock.calls.filter(([url]) => String(url).includes('/api/auth/register'))
+  }
+
+  it('shows the resend button only after a wrong code', async () => {
+    ;(fetch as Mock)
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ csrfToken: 'csrf' }) })
+      .mockResolvedValueOnce({ ok: false, json: async () => ({ error: 'invalid_code' }) })
+    render(<RegisterPage />)
+    await submitForm()
+    expect(screen.queryByRole('button', { name: RESEND_BTN })).toBeNull()
+    fillOtpCode('9'.repeat(LOGIN_CODE_LENGTH))
+    expect(await screen.findByRole('button', { name: RESEND_BTN })).toBeInTheDocument()
+  })
+
+  it('resend registers again with the same email and name and clears the error', async () => {
+    ;(fetch as Mock)
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ csrfToken: 'csrf' }) })
+      .mockResolvedValueOnce({ ok: false, json: async () => ({ error: 'invalid_code' }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ csrfToken: 'csrf-2' }) })
+    render(<RegisterPage />)
+    await submitForm({ name: 'Мария', email: 'maria@test.com' })
+    fillOtpCode('9'.repeat(LOGIN_CODE_LENGTH))
+    fireEvent.click(await screen.findByRole('button', { name: RESEND_BTN }))
+    await waitFor(() => expect(registerCalls()).toHaveLength(2))
+    expect(JSON.parse(registerCalls()[1][1].body as string)).toEqual({ email: 'maria@test.com', name: 'Мария' })
+    await waitFor(() => expect(screen.queryByText(AUTH_ERRORS.invalidCode)).toBeNull())
+    expect(screen.getByLabelText(`Цифра 1 из ${LOGIN_CODE_LENGTH}`)).toHaveValue('')
+  })
+
+  it('shows the "code too frequent" message when the resend is rate limited', async () => {
+    ;(fetch as Mock)
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ csrfToken: 'csrf' }) })
+      .mockResolvedValueOnce({ ok: false, json: async () => ({ error: 'invalid_code' }) })
+      .mockResolvedValueOnce({ ok: false, json: async () => ({ error: 'code_rate_limited' }) })
+    render(<RegisterPage />)
+    await submitForm()
+    fillOtpCode('9'.repeat(LOGIN_CODE_LENGTH))
+    fireEvent.click(await screen.findByRole('button', { name: RESEND_BTN }))
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(AUTH_ERRORS.codeTooFrequent))
+  })
+})

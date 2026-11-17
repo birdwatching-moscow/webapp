@@ -443,3 +443,112 @@ describe('LoginPage — errors (step 2)', () => {
     )
   })
 })
+
+// ── Wrong code: clear boxes + resend ───────────────────────────────────────
+
+const RESEND_BTN = 'Отправить код заново'
+
+function firstDigit() {
+  return screen.getByLabelText(`Цифра 1 из ${LOGIN_CODE_LENGTH}`)
+}
+
+function fetchCallsTo(path: string) {
+  return (fetch as ReturnType<typeof vi.fn>).mock.calls.filter(([url]) => String(url).includes(path))
+}
+
+type StubResponse = { ok: boolean; body: Record<string, unknown> }
+
+// Registered user whose code is rejected by verify-login-code.
+// `resend` controls what the second request-login-code call returns.
+function stubFetchWrongCodeForUser(resend: StubResponse = { ok: true, body: { csrfToken: 'csrf-2' } }) {
+  let requestCount = 0
+  vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+    if (String(url).includes('check-email')) {
+      return Promise.resolve({ ok: true, json: async () => ({ registered: true }) })
+    }
+    if (String(url).includes('verify-login-code')) {
+      return Promise.resolve({ ok: false, json: async () => ({ error: 'invalid_code' }) })
+    }
+    requestCount += 1
+    if (requestCount === 1) {
+      return Promise.resolve({ ok: true, json: async () => ({ csrfToken: 'csrf-1' }) })
+    }
+    return Promise.resolve({ ok: resend.ok, json: async () => resend.body })
+  }))
+}
+
+describe('LoginPage — wrong code (registered user)', () => {
+  it('clears the code boxes when signIn rejects the code', async () => {
+    stubFetchForUser()
+    signInMock.mockResolvedValue({ error: 'CredentialsSignin', code: null })
+    await submitEmail()
+    fillOtpCode(TEST_CODE)
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(AUTH_ERRORS.invalidCode))
+    expect(firstDigit()).toHaveValue('')
+  })
+
+  it('shows the resend button only after a wrong code, and clears the boxes', async () => {
+    stubFetchWrongCodeForUser()
+    await submitEmail()
+    expect(screen.queryByRole('button', { name: RESEND_BTN })).toBeNull()
+    fillOtpCode(TEST_CODE)
+    expect(await screen.findByRole('button', { name: RESEND_BTN })).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent(AUTH_ERRORS.invalidCode)
+    expect(firstDigit()).toHaveValue('')
+  })
+
+  it('resend requests a new login code for the same email and clears the error', async () => {
+    stubFetchWrongCodeForUser()
+    await submitEmail('user@test.com')
+    fillOtpCode(TEST_CODE)
+    fireEvent.click(await screen.findByRole('button', { name: RESEND_BTN }))
+    await waitFor(() => expect(fetchCallsTo('request-login-code')).toHaveLength(2))
+    expect(JSON.parse(fetchCallsTo('request-login-code')[1][1].body as string)).toEqual({ email: 'user@test.com' })
+    await waitFor(() => expect(screen.queryByText(AUTH_ERRORS.invalidCode)).toBeNull())
+    expect(screen.queryByRole('button', { name: RESEND_BTN })).toBeNull()
+    expect(firstDigit()).toHaveValue('')
+  })
+
+  it('uses the new csrf token from the resend for the next verify', async () => {
+    stubFetchWrongCodeForUser()
+    await submitEmail()
+    fillOtpCode(TEST_CODE)
+    fireEvent.click(await screen.findByRole('button', { name: RESEND_BTN }))
+    await waitFor(() => expect(screen.queryByRole('button', { name: RESEND_BTN })).toBeNull())
+    fillOtpCode(TEST_CODE)
+    await waitFor(() => expect(fetchCallsTo('verify-login-code')).toHaveLength(2))
+    const headers = fetchCallsTo('verify-login-code')[1][1].headers as Record<string, string>
+    expect(headers['x-csrf-token']).toBe('csrf-2')
+  })
+
+  it('shows the "code too frequent" message when the resend is rate limited', async () => {
+    stubFetchWrongCodeForUser({ ok: false, body: { error: 'code_rate_limited' } })
+    await submitEmail()
+    fillOtpCode(TEST_CODE)
+    fireEvent.click(await screen.findByRole('button', { name: RESEND_BTN }))
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(AUTH_ERRORS.codeTooFrequent))
+  })
+})
+
+describe('LoginPage — wrong code (new user)', () => {
+  it('resend re-registers with the same email and name', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      if (String(url).includes('check-email')) {
+        return Promise.resolve({ ok: true, json: async () => ({ registered: false }) })
+      }
+      if (String(url).includes('verify-registration-code')) {
+        return Promise.resolve({ ok: false, json: async () => ({ error: 'invalid_code' }) })
+      }
+      return Promise.resolve({ ok: true, json: async () => ({ csrfToken: 'csrf' }) })
+    }))
+    await goToNameStep('new@test.com')
+    fireEvent.change(screen.getByLabelText(NAME_FIELD), { target: { value: 'Мария' } })
+    fireEvent.click(screen.getByRole('button', { name: REQUEST_CODE_BTN }))
+    await waitFor(() => firstDigit())
+    fillOtpCode(TEST_CODE)
+    fireEvent.click(await screen.findByRole('button', { name: RESEND_BTN }))
+    await waitFor(() => expect(fetchCallsTo('/api/auth/register')).toHaveLength(2))
+    expect(JSON.parse(fetchCallsTo('/api/auth/register')[1][1].body as string)).toEqual({ email: 'new@test.com', name: 'Мария' })
+    expect(fetchCallsTo('request-login-code')).toHaveLength(0)
+  })
+})
