@@ -36,6 +36,7 @@ export default function RegisterPage() {
   const [nameInput, setNameInput] = useState('')
   const [emailInput, setEmailInput] = useState('')
   const [csrfToken, setCsrfToken] = useState('')
+  const [canResend, setCanResend] = useState(false)
   const otp = useOtpInput(submitCode)
 
   useEffect(() => {
@@ -83,6 +84,13 @@ export default function RegisterPage() {
     })
   }
 
+  /** Wrong/expired code: show the error, clear the boxes and offer a resend. */
+  function rejectCode(message: string) {
+    setError(message)
+    setCanResend(true)
+    otp.reset({ focus: true })
+  }
+
   async function submitCode(code: string) {
     await run(async () => {
       const verifyRes = await fetch('/api/auth/verify-registration-code', {
@@ -94,15 +102,13 @@ export default function RegisterPage() {
       const verifyData = await verifyRes.json().catch(() => ({})) as { error?: string }
 
       if (!verifyRes.ok) {
-        setError(mapOtpVerifyError(verifyData.error))
-        otp.reset({ focus: true })
+        rejectCode(mapOtpVerifyError(verifyData.error))
         return
       }
 
       const result = await signIn(LOGIN_CODE_PROVIDER_ID, { email, code, redirect: false })
       if (result?.error) {
-        setError(AUTH_ERRORS.invalidCode)
-        otp.reset({ focus: true })
+        rejectCode(AUTH_ERRORS.invalidCode)
       } else {
         router.push('/profile')
         router.refresh()
@@ -110,10 +116,29 @@ export default function RegisterPage() {
     })
   }
 
+  async function resendCode() {
+    await run(async () => {
+      const res = await fetch('/api/auth/register', {
+        method: HTTP_METHOD.POST,
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ email, name }),
+      })
+      const data = await res.json().catch(() => ({})) as { csrfToken?: string; error?: string }
+      if (!res.ok) {
+        setError(data.error === 'code_rate_limited' ? AUTH_ERRORS.codeTooFrequent : AUTH_ERRORS.generic)
+        return
+      }
+      setCsrfToken(data.csrfToken ?? '')
+      setCanResend(false)
+      otp.reset({ focus: true })
+    })
+  }
+
   function goBackToForm() {
     setStep('form')
     otp.reset()
     setError(null)
+    setCanResend(false)
   }
 
   return (
@@ -174,6 +199,7 @@ export default function RegisterPage() {
           error={error}
           loading={loading}
           onBack={goBackToForm}
+          onResend={canResend ? resendCode : undefined}
         />
       )}
 

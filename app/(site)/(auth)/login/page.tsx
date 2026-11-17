@@ -62,6 +62,7 @@ function LoginCodeForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [passwordInput, setPasswordInput] = useState('')
   const [passwordError, setPasswordError] = useState('')
+  const [canResend, setCanResend] = useState(false)
   const otp = useOtpInput(submitCode)
 
   const isRegistered = searchParams.get(REGISTERED_PARAM) === '1'
@@ -162,6 +163,13 @@ function LoginCodeForm() {
     })
   }
 
+  /** Wrong/expired code: show the error, clear the boxes and offer a resend. */
+  function rejectCode(message: string) {
+    setError(message)
+    setCanResend(true)
+    otp.reset({ focus: true })
+  }
+
   async function submitCode(code: string) {
     await run(async () => {
       if (isNewUser) {
@@ -172,14 +180,12 @@ function LoginCodeForm() {
         })
         const verifyData = await verifyRes.json().catch(() => ({})) as { error?: string }
         if (!verifyRes.ok) {
-          setError(mapOtpVerifyError(verifyData.error))
-          otp.reset({ focus: true })
+          rejectCode(mapOtpVerifyError(verifyData.error))
           return
         }
         const result = await signIn(LOGIN_CODE_PROVIDER_ID, { email, code, redirect: false })
         if (result?.error) {
-          setError(AUTH_ERRORS.invalidCode)
-          otp.reset({ focus: true })
+          rejectCode(AUTH_ERRORS.invalidCode)
         } else {
           router.push(callbackUrl)
           router.refresh()
@@ -195,8 +201,7 @@ function LoginCodeForm() {
       const verifyData = await verifyRes.json()
 
       if (!verifyRes.ok) {
-        setError(mapOtpVerifyError(verifyData.error))
-        otp.reset({ focus: true })
+        rejectCode(mapOtpVerifyError(verifyData.error))
         return
       }
 
@@ -216,7 +221,7 @@ function LoginCodeForm() {
       if (result?.code === AUTH_ERROR_ACCOUNT_BLOCKED) {
         setError(AUTH_ERRORS.accountBlocked)
       } else if (result?.error) {
-        setError(AUTH_ERRORS.invalidCode)
+        rejectCode(AUTH_ERRORS.invalidCode)
       } else {
         router.push(callbackUrl)
         router.refresh()
@@ -224,16 +229,42 @@ function LoginCodeForm() {
     })
   }
 
+  async function resendCode() {
+    await run(async () => {
+      const res = isNewUser
+        ? await fetch('/api/auth/register', {
+            method: HTTP_METHOD.POST,
+            headers: JSON_HEADERS,
+            body: JSON.stringify({ email, name }),
+          })
+        : await fetch('/api/auth/request-login-code', {
+            method: HTTP_METHOD.POST,
+            headers: JSON_HEADERS,
+            body: JSON.stringify({ email }),
+          })
+      const data = await res.json().catch(() => ({})) as { csrfToken?: string; error?: string }
+      if (!res.ok) {
+        setError(data.error === 'code_rate_limited' ? AUTH_ERRORS.codeTooFrequent : AUTH_ERRORS.generic)
+        return
+      }
+      setCsrfToken(data.csrfToken ?? '')
+      setCanResend(false)
+      otp.reset({ focus: true })
+    })
+  }
+
   function goBackToEmail() {
     setStep('email')
     otp.reset()
     setError(null)
+    setCanResend(false)
   }
 
   function goBackToName() {
     setStep('name')
     otp.reset()
     setError(null)
+    setCanResend(false)
   }
 
   async function handlePasswordSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
@@ -408,6 +439,7 @@ function LoginCodeForm() {
           error={error}
           loading={loading}
           onBack={isNewUser ? goBackToName : goBackToEmail}
+          onResend={canResend ? resendCode : undefined}
         />
       )}
 

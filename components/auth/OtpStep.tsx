@@ -2,6 +2,7 @@ import { OtpInput } from '@/components/ui/otp/OtpInput'
 import { FormError } from '@/components/ui/form-error/FormError'
 import { Button } from '@/components/ui/buttons/Button'
 import type { useOtpInput } from '@/hooks/useOtpInput'
+import { AUTH_LABELS } from '@/lib/auth-labels'
 import styles from './OtpStep.module.css'
 
 type Props = {
@@ -11,9 +12,11 @@ type Props = {
   error: string | null
   loading: boolean
   onBack: () => void
+  /** When provided, a "resend code" button is shown above "Назад". */
+  onResend?: () => void
 }
 
-export const OtpStep = ({ title, subtitle, otp, error, loading, onBack }: Props) => (
+export const OtpStep = ({ title, subtitle, otp, error, loading, onBack, onResend }: Props) => (
   <>
     <div className={styles.header}>
       <h1 className={styles.title}>{title}</h1>
@@ -37,6 +40,11 @@ export const OtpStep = ({ title, subtitle, otp, error, loading, onBack }: Props)
     </p>
 
     <div className={styles.actions}>
+      {onResend && (
+        <Button size="lg" type="button" fullWidth onClick={onResend} loading={loading} disabled={loading}>
+          {AUTH_LABELS.loginCode.resendCode}
+        </Button>
+      )}
       <Button variant="outline" size="lg" type="button" fullWidth onClick={onBack} disabled={loading}>
         Назад
       </Button>
