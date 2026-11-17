@@ -15,6 +15,7 @@ import {
   LOGIN_CODE_PROVIDER_ID,
   ADMIN_2FA_PROVIDER_ID,
   PASSWORD_MIN_LENGTH,
+  HTTP_STATUS_TOO_MANY_REQUESTS,
 } from '@/lib/constants'
 import { AUTH_ERROR_ACCOUNT_BLOCKED, AUTH_ERROR_PASSWORD_RESET_REQUIRED } from '@/lib/auth/errors'
 import { useAuthForm } from '@/hooks/useAuthForm'
@@ -26,7 +27,8 @@ import { FormError } from '@/components/ui/form-error/FormError'
 import { OtpStep } from '@/components/auth/OtpStep'
 import { HiddenUsernameField } from '@/components/auth/HiddenUsernameField'
 import { AUTH_LABELS } from '@/lib/auth-labels'
-import { mapOtpVerifyError } from '@/lib/auth/mapOtpVerifyError'
+import { otpVerifyErrorMessage } from '@/lib/auth/mapOtpVerifyError'
+import { resendErrorMessage, retryAfterSeconds, tooManyAttemptsMessage } from '@/lib/auth/rateLimitMessage'
 import { validateEmail, validateName } from '@/utils/validateAuthFields'
 import { EyeIcon } from '@/components/icons/EyeIcon'
 import { EyeOffIcon } from '@/components/icons/EyeOffIcon'
@@ -97,7 +99,11 @@ function LoginCodeForm() {
         body: JSON.stringify({ email: emailInput.trim() }),
       })
       if (!checkRes.ok) {
-        setError(AUTH_ERRORS.generic)
+        if (checkRes.status === HTTP_STATUS_TOO_MANY_REQUESTS) {
+          setEmailError(tooManyAttemptsMessage(retryAfterSeconds(checkRes)))
+        } else {
+          setError(AUTH_ERRORS.generic)
+        }
         return
       }
       const checkData = await checkRes.json() as { registered: boolean }
@@ -115,11 +121,11 @@ function LoginCodeForm() {
         headers: JSON_HEADERS,
         body: JSON.stringify({ email: emailInput.trim() }),
       })
-      let resData: { csrfToken?: string; error?: string } = {}
+      let resData: { csrfToken?: string; error?: string; retryAfterSeconds?: number } = {}
       try { resData = await res.json() } catch { /* no body */ }
       if (!res.ok) {
-        if (resData.error === 'code_rate_limited') {
-          setEmailError(AUTH_ERRORS.tooManyAttempts)
+        if (res.status === HTTP_STATUS_TOO_MANY_REQUESTS) {
+          setEmailError(tooManyAttemptsMessage(retryAfterSeconds(res, resData)))
         } else {
           setError(AUTH_ERRORS.generic)
         }
@@ -148,9 +154,9 @@ function LoginCodeForm() {
         body: JSON.stringify({ email, name: nameInput.trim() }),
       })
       if (!res.ok) {
-        const data = await res.json().catch(() => null) as { error?: string } | null
-        if (data?.error === 'code_rate_limited') {
-          setEmailError(AUTH_ERRORS.tooManyAttempts)
+        const data = await res.json().catch(() => null) as { error?: string; retryAfterSeconds?: number } | null
+        if (res.status === HTTP_STATUS_TOO_MANY_REQUESTS) {
+          setEmailError(tooManyAttemptsMessage(retryAfterSeconds(res, data)))
           setStep('email')
         } else {
           setError(AUTH_ERRORS.generic)
@@ -183,7 +189,7 @@ function LoginCodeForm() {
         })
         const verifyData = await verifyRes.json().catch(() => ({})) as { error?: string }
         if (!verifyRes.ok) {
-          rejectCode(mapOtpVerifyError(verifyData.error))
+          rejectCode(otpVerifyErrorMessage(verifyRes, verifyData))
           return
         }
         const result = await signIn(LOGIN_CODE_PROVIDER_ID, { email, code, redirect: false })
@@ -204,7 +210,7 @@ function LoginCodeForm() {
       const verifyData = await verifyRes.json()
 
       if (!verifyRes.ok) {
-        rejectCode(mapOtpVerifyError(verifyData.error))
+        rejectCode(otpVerifyErrorMessage(verifyRes, verifyData))
         return
       }
 
@@ -246,9 +252,9 @@ function LoginCodeForm() {
             headers: JSON_HEADERS,
             body: JSON.stringify({ email }),
           })
-      const data = await res.json().catch(() => ({})) as { csrfToken?: string; error?: string }
+      const data = await res.json().catch(() => ({})) as { csrfToken?: string; error?: string; retryAfterSeconds?: number }
       if (!res.ok) {
-        setError(data.error === 'code_rate_limited' ? AUTH_ERRORS.codeTooFrequent : AUTH_ERRORS.generic)
+        setError(resendErrorMessage(res, data))
         return
       }
       setCsrfToken(data.csrfToken ?? '')

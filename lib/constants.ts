@@ -23,6 +23,8 @@ export const LOGIN_CODE_LENGTH = 4
 export const LOGIN_CODE_ALPHABET = '0123456789'
 export const LOGIN_CODE_TTL_MS = 5 * 60 * 1000
 export const LOGIN_CODE_MAX_ATTEMPTS = 5
+/** How often a new code may be requested for one email (per-email rate limit window). */
+export const LOGIN_CODE_RESEND_WINDOW_MS = 60_000
 export const ADMIN_CHALLENGE_TTL_MS = 10 * 60 * 1000
 
 export const JSON_HEADERS = { 'Content-Type': 'application/json' } as const

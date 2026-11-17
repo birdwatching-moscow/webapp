@@ -7,6 +7,7 @@ import {
   HTTP_METHOD,
   JSON_HEADERS,
   LOGIN_CODE_PROVIDER_ID,
+  HTTP_STATUS_TOO_MANY_REQUESTS,
 } from '@/lib/constants'
 import { useAuthForm } from '@/hooks/useAuthForm'
 import { useOtpInput } from '@/hooks/useOtpInput'
@@ -16,7 +17,8 @@ import { Button } from '@/components/ui/buttons/Button'
 import { Input } from '@/components/ui/input/Input'
 import { OtpStep } from '@/components/auth/OtpStep'
 import { FormError } from '@/components/ui/form-error/FormError'
-import { mapOtpVerifyError } from '@/lib/auth/mapOtpVerifyError'
+import { otpVerifyErrorMessage } from '@/lib/auth/mapOtpVerifyError'
+import { resendErrorMessage, retryAfterSeconds, tooManyAttemptsMessage } from '@/lib/auth/rateLimitMessage'
 import { validateEmail, validateName } from '@/utils/validateAuthFields'
 import styles from '../auth-page.module.css'
 
@@ -64,9 +66,9 @@ export default function RegisterPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => null) as
-          { error?: string; issues?: Partial<Record<'name' | 'email', string[]>> } | null
-        if (data?.error === 'code_rate_limited') {
-          setEmailError(AUTH_ERRORS.tooManyAttempts)
+          { error?: string; retryAfterSeconds?: number; issues?: Partial<Record<'name' | 'email', string[]>> } | null
+        if (res.status === HTTP_STATUS_TOO_MANY_REQUESTS) {
+          setEmailError(tooManyAttemptsMessage(retryAfterSeconds(res, data)))
         } else if (data?.issues) {
           setNameError(data.issues.name?.join(', ') ?? '')
           setEmailError(data.issues.email?.join(', ') ?? '')
@@ -104,7 +106,7 @@ export default function RegisterPage() {
       const verifyData = await verifyRes.json().catch(() => ({})) as { error?: string }
 
       if (!verifyRes.ok) {
-        rejectCode(mapOtpVerifyError(verifyData.error))
+        rejectCode(otpVerifyErrorMessage(verifyRes, verifyData))
         return
       }
 
@@ -126,9 +128,9 @@ export default function RegisterPage() {
         headers: JSON_HEADERS,
         body: JSON.stringify({ email, name }),
       })
-      const data = await res.json().catch(() => ({})) as { csrfToken?: string; error?: string }
+      const data = await res.json().catch(() => ({})) as { csrfToken?: string; error?: string; retryAfterSeconds?: number }
       if (!res.ok) {
-        setError(data.error === 'code_rate_limited' ? AUTH_ERRORS.codeTooFrequent : AUTH_ERRORS.generic)
+        setError(resendErrorMessage(res, data))
         return
       }
       setCsrfToken(data.csrfToken ?? '')

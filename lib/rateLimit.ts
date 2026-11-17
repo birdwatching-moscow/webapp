@@ -1,7 +1,9 @@
+import { LOGIN_CODE_RESEND_WINDOW_MS } from '@/lib/constants'
+
 const IP_WINDOW_MS = 60_000
 const IP_MAX_REQUESTS = 2
 
-const EMAIL_WINDOW_MS = 60_000
+const EMAIL_WINDOW_MS = LOGIN_CODE_RESEND_WINDOW_MS
 const EMAIL_MAX_REQUESTS = 1
 
 const CONTACT_FORM_WINDOW_MS = 10 * 60_000  // 10 minutes
