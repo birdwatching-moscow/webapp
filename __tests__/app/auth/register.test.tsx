@@ -100,6 +100,105 @@ describe('RegisterPage — errors', () => {
   })
 })
 
+describe('RegisterPage — client validation (same as login)', () => {
+  const NAME_REQUIRED = 'Введите имя, чтобы продолжить'
+  const EMAIL_REQUIRED = 'Введите почту, чтобы продолжить'
+  const EMAIL_INVALID = 'Введите почту в формате name@example.ru'
+
+  function fill({ name, email }: { name: string; email: string }) {
+    fireEvent.change(screen.getByLabelText(L.nameField), { target: { value: name } })
+    fireEvent.change(screen.getByLabelText(C.emailField), { target: { value: email } })
+  }
+
+  function clickSubmit() {
+    fireEvent.click(screen.getByRole('button', { name: SUBMIT_BTN }))
+  }
+
+  it('disables native browser validation on the form', () => {
+    render(<RegisterPage />)
+    const form = screen.getByRole('button', { name: SUBMIT_BTN }).closest('form')
+    expect(form).toHaveAttribute('novalidate')
+  })
+
+  it('shows both field errors and does not call the API when name and email are empty', async () => {
+    render(<RegisterPage />)
+    clickSubmit()
+    expect(await screen.findByText(NAME_REQUIRED)).toBeInTheDocument()
+    expect(screen.getByText(EMAIL_REQUIRED)).toBeInTheDocument()
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('shows the name error and does not call the API when only the name is empty', async () => {
+    render(<RegisterPage />)
+    fill({ name: '', email: 'ivan@test.com' })
+    clickSubmit()
+    expect(await screen.findByText(NAME_REQUIRED)).toBeInTheDocument()
+    expect(screen.queryByText(EMAIL_REQUIRED)).toBeNull()
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('treats a whitespace-only name as empty', async () => {
+    render(<RegisterPage />)
+    fill({ name: '   ', email: 'ivan@test.com' })
+    clickSubmit()
+    expect(await screen.findByText(NAME_REQUIRED)).toBeInTheDocument()
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('shows the email error and does not call the API when only the email is empty', async () => {
+    render(<RegisterPage />)
+    fill({ name: 'Иван', email: '' })
+    clickSubmit()
+    expect(await screen.findByText(EMAIL_REQUIRED)).toBeInTheDocument()
+    expect(screen.queryByText(NAME_REQUIRED)).toBeNull()
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('shows the format error and does not call the API for a malformed email', async () => {
+    render(<RegisterPage />)
+    fill({ name: 'Иван', email: 'ivan@test' })
+    clickSubmit()
+    expect(await screen.findByText(EMAIL_INVALID)).toBeInTheDocument()
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('marks the invalid inputs with aria-invalid', async () => {
+    render(<RegisterPage />)
+    clickSubmit()
+    await screen.findByText(NAME_REQUIRED)
+    expect(screen.getByLabelText(L.nameField)).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByLabelText(C.emailField)).toHaveAttribute('aria-invalid', 'true')
+  })
+
+  it('clears a field error as soon as the user edits that field', async () => {
+    render(<RegisterPage />)
+    clickSubmit()
+    await screen.findByText(NAME_REQUIRED)
+    fireEvent.change(screen.getByLabelText(L.nameField), { target: { value: 'И' } })
+    expect(screen.queryByText(NAME_REQUIRED)).toBeNull()
+    expect(screen.getByText(EMAIL_REQUIRED)).toBeInTheDocument()
+  })
+
+  it('trims name and email before sending them', async () => {
+    ;(fetch as Mock).mockResolvedValue({ ok: true, json: async () => ({ csrfToken: 'csrf' }) })
+    render(<RegisterPage />)
+    fill({ name: '  Мария  ', email: '  maria@test.com  ' })
+    clickSubmit()
+    await waitFor(() => expect(fetch).toHaveBeenCalled())
+    const body = JSON.parse((fetch as Mock).mock.calls[0][1].body as string) as Record<string, unknown>
+    expect(body).toEqual({ email: 'maria@test.com', name: 'Мария' })
+  })
+
+  it('shows the rate-limit message under the email field, like login', async () => {
+    ;(fetch as Mock).mockResolvedValue({ ok: false, json: async () => ({ error: 'code_rate_limited' }) })
+    render(<RegisterPage />)
+    fill({ name: 'Иван', email: 'ivan@test.com' })
+    clickSubmit()
+    const message = await screen.findByText(AUTH_ERRORS.tooManyAttempts)
+    expect(screen.getByLabelText(C.emailField)).toHaveAttribute('aria-describedby', message.id)
+  })
+})
+
 describe('RegisterPage — loading state', () => {
   it('disables submit button while request is in flight', async () => {
     let resolve!: (v: unknown) => void
