@@ -80,17 +80,18 @@ export async function POST(req: Request) {
       where: { email, deletedAt: null },
     })
 
-    if (existing) {
-      return NextResponse.json({ error: 'already_registered' }, { status: HTTP_STATUS_UNAUTHORIZED })
+    // Already registered: the code was a login code (see /api/auth/register).
+    // Sign them in without touching the stored name; signIn("login-code")
+    // still enforces role and blocked status.
+    if (!existing) {
+      await prisma.user.create({
+        data: { email, name, passwordHash: null, role: 'USER' },
+      })
+
+      sendMail({ to: email, kind: 'welcome', data: { name } }).catch((err) =>
+        console.error('[register] welcome email failed', err)
+      )
     }
-
-    await prisma.user.create({
-      data: { email, name, passwordHash: null, role: 'USER' },
-    })
-
-    sendMail({ to: email, kind: 'welcome', data: { name } }).catch((err) =>
-      console.error('[register] welcome email failed', err)
-    )
   } catch (err) {
     console.error('POST /api/auth/verify-registration-code failed', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: HTTP_STATUS_INTERNAL_SERVER_ERROR })

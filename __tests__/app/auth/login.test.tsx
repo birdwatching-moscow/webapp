@@ -95,6 +95,12 @@ beforeEach(() => {
 // ── Step 1: email entry ─────────────────────────────────────────────────────
 
 describe('LoginPage — step 1 (email)', () => {
+  it('email step submit button says "Получить код", not "Продолжить"', () => {
+    render(<LoginPage />)
+    expect(screen.getByRole('button', { name: LC.requestCode })).toHaveAttribute('type', 'submit')
+    expect(screen.queryByRole('button', { name: 'Продолжить' })).toBeNull()
+  })
+
   it('renders an email field', () => {
     render(<LoginPage />)
     expect(screen.getByLabelText(C.emailField)).toBeDefined()
@@ -136,7 +142,7 @@ function stubFetchForNewUser() {
 async function goToNameStep(email = 'new@test.com') {
   render(<LoginPage />)
   fireEvent.change(screen.getByLabelText(C.emailField), { target: { value: email } })
-  fireEvent.submit(screen.getByRole('button', { name: 'Продолжить' }))
+  fireEvent.submit(screen.getByRole('button', { name: LC.requestCode }))
   await waitFor(() => screen.getByLabelText(NAME_FIELD))
 }
 
@@ -177,7 +183,7 @@ describe('LoginPage — name step (new user) validation', () => {
 async function submitEmail(email = 'user@test.com') {
   render(<LoginPage />)
   fireEvent.change(screen.getByLabelText(C.emailField), { target: { value: email } })
-  fireEvent.submit(screen.getByRole('button', { name: 'Продолжить' }))
+  fireEvent.submit(screen.getByRole('button', { name: LC.requestCode }))
   await waitFor(() => screen.getByLabelText(`Цифра 1 из ${LOGIN_CODE_LENGTH}`))
 }
 
@@ -650,7 +656,7 @@ describe('LoginPage — too many attempts (429)', () => {
     }))
     render(<LoginPage />)
     fireEvent.change(screen.getByLabelText(C.emailField), { target: { value: 'user@test.com' } })
-    fireEvent.submit(screen.getByRole('button', { name: 'Продолжить' }))
+    fireEvent.submit(screen.getByRole('button', { name: LC.requestCode }))
     expect(await screen.findByText(tooManyAttemptsMessage(180))).toBeInTheDocument()
   })
 
@@ -658,7 +664,7 @@ describe('LoginPage — too many attempts (429)', () => {
     vi.stubGlobal('fetch', vi.fn().mockImplementation(() => rateLimited(60)))
     render(<LoginPage />)
     fireEvent.change(screen.getByLabelText(C.emailField), { target: { value: 'user@test.com' } })
-    fireEvent.submit(screen.getByRole('button', { name: 'Продолжить' }))
+    fireEvent.submit(screen.getByRole('button', { name: LC.requestCode }))
     expect(await screen.findByText(tooManyAttemptsMessage(60))).toBeInTheDocument()
     expect(screen.queryByText(AUTH_ERRORS.generic)).toBeNull()
   })

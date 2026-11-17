@@ -104,14 +104,60 @@ describe('POST /api/auth/register — validation', () => {
   })
 })
 
-describe('POST /api/auth/register — duplicate email', () => {
-  it('returns 200 and sends already-registered email (does not expose enumeration)', async () => {
-    prismaMock.user.findFirst.mockResolvedValue({ id: 'existing-1', email: 'new@test.com' })
-    const res = await POST(makeReq({ email: 'new@test.com', name: 'Иван' }))
+describe('POST /api/auth/register — email already registered', () => {
+  const EXISTING_USER = {
+    id: 'existing-1', email: 'old@test.com', name: 'Мария', role: 'USER', blockedAt: null, deletedAt: null,
+  }
+
+  async function registerExisting(user: Record<string, unknown>) {
+    prismaMock.user.findFirst.mockResolvedValue(user)
+    return POST(makeReq({ email: EXISTING_USER.email, name: 'Иван' }))
+  }
+
+  it('USER: sends a login code instead of the already-registered email', async () => {
+    await registerExisting(EXISTING_USER)
+    expect(prismaMock.loginCode.create).toHaveBeenCalledTimes(1)
+    expect(sendMailMock).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'login-code', to: EXISTING_USER.email })
+    )
+    expect(sendMailMock).not.toHaveBeenCalledWith(expect.objectContaining({ kind: 'already-registered' }))
+  })
+
+  it('USER: the code email greets them by the name stored in the database, not the typed one', async () => {
+    await registerExisting(EXISTING_USER)
+    const mail = sendMailMock.mock.calls[0][0] as { data: { name?: string } }
+    expect(mail.data.name).toBe('Мария')
+  })
+
+  it('USER: does not create or update the user (name stays as it is)', async () => {
+    const updateMock = vi.fn()
+    ;(prismaMock.user as Record<string, unknown>).update = updateMock
+    await registerExisting(EXISTING_USER)
+    expect(updateMock).not.toHaveBeenCalled()
+    delete (prismaMock.user as Record<string, unknown>).update
+  })
+
+  it('USER: response is identical to a new registration (no account enumeration)', async () => {
+    const existingRes = await registerExisting(EXISTING_USER)
+    prismaMock.user.findFirst.mockResolvedValue(null)
+    const newRes = await POST(makeReq({ email: 'brand-new@test.com', name: 'Иван' }))
+    expect(existingRes.status).toBe(newRes.status)
+    expect(await existingRes.json()).toEqual(await newRes.json())
+  })
+
+  it('blocked USER: sends nothing, same response (like /login)', async () => {
+    const res = await registerExisting({ ...EXISTING_USER, blockedAt: new Date() })
+    expect(res.status).toBe(200)
+    expect(prismaMock.loginCode.create).not.toHaveBeenCalled()
+    expect(sendMailMock).not.toHaveBeenCalled()
+  })
+
+  it('ADMIN: keeps the already-registered email pointing to /login (admins sign in with a password)', async () => {
+    const res = await registerExisting({ ...EXISTING_USER, role: 'ADMIN' })
     expect(res.status).toBe(200)
     expect(prismaMock.loginCode.create).not.toHaveBeenCalled()
     expect(sendMailMock).toHaveBeenCalledWith(
-      expect.objectContaining({ kind: 'already-registered', to: 'new@test.com' })
+      expect.objectContaining({ kind: 'already-registered', to: EXISTING_USER.email })
     )
   })
 })

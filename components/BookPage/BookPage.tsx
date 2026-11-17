@@ -1,6 +1,7 @@
 import Image from 'next/image'
-import Link from 'next/link'
 import { InfoIcon } from '@/components/icons/InfoIcon'
+import { FragmentsGallery } from '@/components/BookPage/FragmentsGallery'
+import type { BookFragment } from '@/types/book'
 import { NoticeBanner } from '@/components/NoticeBanner/NoticeBanner'
 import { TeamMemberCard } from '@/components/cards/TeamMemberCard'
 import { getTeamMemberById } from '@/lib/team'
@@ -15,7 +16,7 @@ const NOTICE = 'Предположительно книга будет дост�
 const ABOUT_TEXT =
   'Города наполнены жизнью, которую мы часто не замечаем. Эта книга показывает, что наблюдение за птицами доступно каждому — и начинается с внимательного взгляда вокруг. В книге соединяются строгая наука и живой опыт наблюдений. Читатель постепенно учится различать птиц, узнавать их голоса, учитывать среду обитания и сезонность. Автор делится историями из полевой практики и честно говорит о сложных темах — от угроз, с которыми сталкиваются птицы, до ответственности человека перед живой природой. Книга поможет понять, как устроена жизнь птиц, и выйти на первую осознанную прогулку уже сегодня. Наблюдение за птицами — это способ вернуть себе внимание, спокойствие и ощущение живого мира вокруг.'
 
-const FRAGMENTS = [
+const FRAGMENTS: BookFragment[] = [
   { img: '/book/book-fragment-1.png', pdf: '/book/book-fragment-1.pdf', label: 'Фрагмент 1' },
   { img: '/book/book-fragment-2.png', pdf: '/book/book-fragment-2.pdf', label: 'Фрагмент 2' },
   { img: '/book/book-fragment-3.png', pdf: '/book/book-fragment-3.pdf', label: 'Фрагмент 3' },
@@ -78,19 +79,7 @@ export const BookPage = async () => {
       {/* Фрагменты из книги */}
       <section className={styles.fragmentsSection}>
         <h2 className="text-h1">Фрагменты из книги</h2>
-        <div className={styles.fragmentsScroll}>
-          {FRAGMENTS.map(({ img, pdf, label }) => (
-            <Link key={pdf} href={pdf} target="_blank" rel="noopener noreferrer" className={styles.fragmentCard}>
-              <Image
-                src={img}
-                alt={label}
-                fill
-                sizes="(min-width: 1248px) 33vw, 272px"
-                className={styles.fragmentImage}
-              />
-            </Link>
-          ))}
-        </div>
+        <FragmentsGallery fragments={FRAGMENTS} />
       </section>
     </main>
   )
