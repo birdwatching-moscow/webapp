@@ -54,6 +54,6 @@ describe('HomePrivate — cards', () => {
 describe('HomePrivate — Подробнее button', () => {
   it('links to the private events page', () => {
     render(<HomePrivate />)
-    expect(screen.getByRole('link', { name: 'Подробнее' })).toHaveAttribute('href', '/private-events')
+    expect(screen.getByRole('link', { name: 'Подробнее' })).toHaveAttribute('href', '/private')
   })
 })

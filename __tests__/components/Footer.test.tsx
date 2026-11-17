@@ -71,10 +71,10 @@ describe('Footer — «события» column', () => {
     expect(link).toHaveAttribute('href', '/expeditions')
   })
 
-  it('renders link «Частные» → /private-events', () => {
+  it('renders link «Частные» → /private', () => {
     render(<Footer />)
     const link = screen.getByRole('link', { name: 'Частные' })
-    expect(link).toHaveAttribute('href', '/private-events')
+    expect(link).toHaveAttribute('href', '/private')
   })
 })
 

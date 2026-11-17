@@ -68,7 +68,7 @@ describe('Header — nav links', () => {
   it.each([
     ['Прогулки',    '/walks'],
     ['Экспедиции',  '/expeditions'],
-    ['Частные',     '/private-events'],
+    ['Частные',     '/private'],
     ['Книга',       '/book'],
     ['О проекте',   '/about'],
   ])('renders nav link "%s" with href "%s"', (label, href) => {
@@ -219,7 +219,7 @@ describe('Header — mobile overlay', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Открыть меню' }))
     expect(container.querySelector('a[href="/walks"]')).not.toBeNull()
     expect(container.querySelector('a[href="/expeditions"]')).not.toBeNull()
-    expect(container.querySelector('a[href="/private-events"]')).not.toBeNull()
+    expect(container.querySelector('a[href="/private"]')).not.toBeNull()
     expect(container.querySelector('a[href="/book"]')).not.toBeNull()
     expect(container.querySelector('a[href="/about"]')).not.toBeNull()
   })
