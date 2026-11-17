@@ -397,7 +397,7 @@ function LoginCodeForm() {
             />
             <div className={styles.actions}>
               <Button type="submit" size="lg" fullWidth loading={loading} disabled={loading}>
-                Продолжить
+                {AUTH_LABELS.loginCode.requestCode}
               </Button>
               <Button as="a" href={ROUTES.register} variant="secondary" size="lg" fullWidth>
                 Зарегистрироваться
