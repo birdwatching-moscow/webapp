@@ -42,3 +42,10 @@ describe('HighlightCard — structure', () => {
     expect(container.querySelector('[role="img"]')).toBeNull()
   })
 })
+
+describe('HighlightCard — rich description', () => {
+  it('accepts markup (e.g. a link) in the description', () => {
+    render(<HighlightCard title="Прошлые прогулки" description={<>посмотрите <a href="/media">альбомы</a></>} />)
+    expect(screen.getByRole('link', { name: 'альбомы' })).toHaveAttribute('href', '/media')
+  })
+})
