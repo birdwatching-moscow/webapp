@@ -116,6 +116,61 @@ describe('LoginPage — step 1 (email)', () => {
   })
 })
 
+// ── Step 1 → name step (new user) ──────────────────────────────────────────
+
+const NAME_REQUIRED = 'Введите имя, чтобы продолжить'
+const NAME_FIELD = 'Имя'
+const REQUEST_CODE_BTN = 'Получить код'
+
+// New user: check-email → { registered: false }, then register → ok
+function stubFetchForNewUser() {
+  vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+    if (String(url).includes('check-email')) {
+      return Promise.resolve({ ok: true, json: async () => ({ registered: false }) })
+    }
+    return Promise.resolve({ ok: true, json: async () => ({ csrfToken: 'test-csrf' }) })
+  }))
+}
+
+async function goToNameStep(email = 'new@test.com') {
+  render(<LoginPage />)
+  fireEvent.change(screen.getByLabelText(C.emailField), { target: { value: email } })
+  fireEvent.submit(screen.getByRole('button', { name: 'Продолжить' }))
+  await waitFor(() => screen.getByLabelText(NAME_FIELD))
+}
+
+function registerCalls() {
+  return (fetch as ReturnType<typeof vi.fn>).mock.calls.filter(([url]) =>
+    String(url).includes('/api/auth/register')
+  )
+}
+
+describe('LoginPage — name step (new user) validation', () => {
+  beforeEach(stubFetchForNewUser)
+
+  it('disables native browser validation on the name form', async () => {
+    await goToNameStep()
+    const form = screen.getByRole('button', { name: REQUEST_CODE_BTN }).closest('form')
+    expect(form).toHaveAttribute('novalidate')
+  })
+
+  it('shows the name error and does not call register when the name is empty', async () => {
+    await goToNameStep()
+    fireEvent.click(screen.getByRole('button', { name: REQUEST_CODE_BTN }))
+    expect(await screen.findByText(NAME_REQUIRED)).toBeInTheDocument()
+    expect(screen.getByLabelText(NAME_FIELD)).toHaveAttribute('aria-invalid', 'true')
+    expect(registerCalls()).toHaveLength(0)
+  })
+
+  it('clears the name error as soon as the user types', async () => {
+    await goToNameStep()
+    fireEvent.click(screen.getByRole('button', { name: REQUEST_CODE_BTN }))
+    await screen.findByText(NAME_REQUIRED)
+    fireEvent.change(screen.getByLabelText(NAME_FIELD), { target: { value: 'И' } })
+    expect(screen.queryByText(NAME_REQUIRED)).toBeNull()
+  })
+})
+
 // ── Step 2: OTP code entry ──────────────────────────────────────────────────
 
 async function submitEmail(email = 'user@test.com') {
