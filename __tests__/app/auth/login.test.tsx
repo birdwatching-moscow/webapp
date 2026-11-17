@@ -446,7 +446,7 @@ describe('LoginPage — errors (step 2)', () => {
 
 // ── Wrong code: clear boxes + resend ───────────────────────────────────────
 
-const RESEND_BTN = 'Отправить код заново'
+const RESEND_BTN = LC.resendCode
 
 function firstDigit() {
   return screen.getByLabelText(`Цифра 1 из ${LOGIN_CODE_LENGTH}`)

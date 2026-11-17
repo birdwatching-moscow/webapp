@@ -256,7 +256,7 @@ describe('RegisterPage — OTP step', () => {
 })
 
 describe('RegisterPage — wrong code: resend', () => {
-  const RESEND_BTN = 'Отправить код заново'
+  const RESEND_BTN = AUTH_LABELS.loginCode.resendCode
 
   function registerCalls() {
     return (fetch as Mock).mock.calls.filter(([url]) => String(url).includes('/api/auth/register'))
