@@ -35,6 +35,9 @@ export const HomePodcast = () => (
     <div className={styles.widget}>
       <iframe
         src={WIDGET_SRC}
+        // The player is a whole Yandex Music app (~300 requests, several MB) —
+        // load it only when the user scrolls near this section.
+        loading="lazy"
         width="100%"
         height="450"
         frameBorder="0"
