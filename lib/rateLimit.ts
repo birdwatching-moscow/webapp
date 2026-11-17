@@ -1,6 +1,10 @@
 import { LOGIN_CODE_RESEND_WINDOW_MS } from '@/lib/constants'
+import { createLogger } from '@/lib/logger'
 
 const ONE_MINUTE_MS = 60_000
+const MS_PER_SECOND = 1000
+
+const log = createLogger('rate-limit')
 
 /**
  * Per-route budgets. Each scope has its own counter, so the steps of one flow
@@ -23,15 +27,20 @@ export const RATE_LIMITS = {
 
 export type RateLimitScope = keyof typeof RATE_LIMITS
 
-const EMAIL_WINDOW_MS = LOGIN_CODE_RESEND_WINDOW_MS
-const EMAIL_MAX_REQUESTS = 1
+/**
+ * Codes emailed to one address. 3 per window lets people go back and request
+ * again or resend once or twice, while still stopping mail-bombing an inbox.
+ */
+export const EMAIL_CODE_LIMIT = { maxRequests: 3, windowMs: LOGIN_CODE_RESEND_WINDOW_MS } as const
 
-const CONTACT_FORM_WINDOW_MS = 10 * 60_000  // 10 minutes
-const CONTACT_FORM_MAX_REQUESTS = 3
+const CONTACT_FORM_LIMIT = { maxRequests: 3, windowMs: 10 * ONE_MINUTE_MS } as const
 
-const scopedStore = new Map<string, { count: number; expiresAt: number }>()
-const emailStore = new Map<string, { count: number; expiresAt: number }>()
-const contactFormStore = new Map<string, { count: number; expiresAt: number }>()
+type Entry = { count: number; expiresAt: number }
+type Result = { allowed: boolean; retryAfterSeconds: number }
+
+const scopedStore = new Map<string, Entry>()
+const emailStore = new Map<string, Entry>()
+const contactFormStore = new Map<string, Entry>()
 
 export function _resetStoreForTesting(): void {
   scopedStore.clear()
@@ -39,12 +48,16 @@ export function _resetStoreForTesting(): void {
   contactFormStore.clear()
 }
 
+/**
+ * Fixed-window counter. `scope` is only a label for the log — the key (IP or
+ * email) is never logged.
+ */
 function check(
-  store: Map<string, { count: number; expiresAt: number }>,
+  store: Map<string, Entry>,
+  scope: string,
   key: string,
-  maxRequests: number,
-  windowMs: number,
-): { allowed: boolean; retryAfterSeconds: number } {
+  { maxRequests, windowMs }: { maxRequests: number; windowMs: number },
+): Result {
   const now = Date.now()
   const entry = store.get(key)
 
@@ -55,22 +68,23 @@ function check(
 
   entry.count++
   if (entry.count > maxRequests) {
-    return { allowed: false, retryAfterSeconds: Math.ceil((entry.expiresAt - now) / 1000) }
+    const retryAfterSeconds = Math.ceil((entry.expiresAt - now) / MS_PER_SECOND)
+    log.warn('rate limited', { scope, retryAfterSeconds })
+    return { allowed: false, retryAfterSeconds }
   }
 
   return { allowed: true, retryAfterSeconds: 0 }
 }
 
 /** `key` is the client IP (or user id for checkout); `scope` picks the route's budget. */
-export function checkRateLimit(key: string, scope: RateLimitScope): { allowed: boolean; retryAfterSeconds: number } {
-  const { maxRequests, windowMs } = RATE_LIMITS[scope]
-  return check(scopedStore, `${scope}:${key}`, maxRequests, windowMs)
+export function checkRateLimit(key: string, scope: RateLimitScope): Result {
+  return check(scopedStore, scope, `${scope}:${key}`, RATE_LIMITS[scope])
 }
 
-export function checkEmailCodeRateLimit(email: string): { allowed: boolean; retryAfterSeconds: number } {
-  return check(emailStore, email, EMAIL_MAX_REQUESTS, EMAIL_WINDOW_MS)
+export function checkEmailCodeRateLimit(email: string): Result {
+  return check(emailStore, 'emailCode', email, EMAIL_CODE_LIMIT)
 }
 
-export function checkContactFormRateLimit(ip: string): { allowed: boolean; retryAfterSeconds: number } {
-  return check(contactFormStore, ip, CONTACT_FORM_MAX_REQUESTS, CONTACT_FORM_WINDOW_MS)
+export function checkContactFormRateLimit(ip: string): Result {
+  return check(contactFormStore, 'contactForm', ip, CONTACT_FORM_LIMIT)
 }

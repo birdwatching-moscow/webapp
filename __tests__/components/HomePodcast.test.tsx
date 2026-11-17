@@ -38,4 +38,11 @@ describe('HomePodcast', () => {
     expect(iframe).toBeInTheDocument()
     expect(iframe?.getAttribute('src')).toContain('17448287')
   })
+
+  // The player is a whole Yandex Music app (~300 requests, several MB);
+  // load it only when the user scrolls near the podcast section.
+  it('lazy-loads the Yandex Music widget', () => {
+    render(<HomePodcast />)
+    expect(document.querySelector('iframe')).toHaveAttribute('loading', 'lazy')
+  })
 })

@@ -74,5 +74,6 @@ export const AUTH_LABELS = {
     newPasswordField: 'Новый пароль',
     submit:         'Сохранить пароль',
     submitting:     'Сохраняем…',
+    requestNewLink: 'Запросить новую ссылку',
   },
 } as const;

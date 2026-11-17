@@ -9,7 +9,8 @@ import { createLogger } from '@/lib/logger'
 
 const log = createLogger('auth:password-reset')
 
-const INVALID_LINK = { error: 'Invalid or expired link' }
+// `code` lets the page show its own (Russian) message instead of this text.
+const INVALID_LINK = { error: 'Invalid or expired link', code: 'invalid_link' }
 
 export async function POST(req: Request) {
   const result = await validateRequest(req, confirmResetSchema)

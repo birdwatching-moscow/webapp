@@ -4,7 +4,7 @@ import ConfirmResetPage from '@/app/(site)/(auth)/8qfzgof9uev06a/reset-password/
 import { AUTH_ERRORS } from '@/lib/auth-errors'
 import { AUTH_LABELS } from '@/lib/auth-labels'
 import { HTTP_METHOD, JSON_HEADERS } from '@/lib/constants'
-import { API_ROUTES } from '@/utils/routes'
+import { API_ROUTES, ROUTES } from '@/utils/routes'
 
 const pushMock = vi.fn()
 vi.mock('next/navigation', () => ({
@@ -13,9 +13,15 @@ vi.mock('next/navigation', () => ({
 }))
 
 const L = AUTH_LABELS.resetConfirm
+const ASP = AUTH_LABELS.adminSetPassword
 
-function fillAndSubmit(password = 'newpassword123') {
-  fireEvent.change(screen.getByLabelText(L.newPasswordField), { target: { value: password } })
+// A password that passes the client rules (>= PASSWORD_MIN_LENGTH, latin only)
+const VALID_PASSWORD = 'newpassword-12345'
+
+// Fills both fields like a user would; `confirm` defaults to the same password.
+function fillAndSubmit(password = VALID_PASSWORD, confirm = password) {
+  fireEvent.change(screen.getByLabelText(ASP.passwordField), { target: { value: password } })
+  fireEvent.change(screen.getByLabelText(ASP.confirmField), { target: { value: confirm } })
   fireEvent.submit(screen.getByRole('button', { name: L.submit }))
 }
 
@@ -27,8 +33,47 @@ beforeEach(() => {
 describe('ConfirmResetPage — rendering', () => {
   it('renders new password field and submit button', () => {
     render(<ConfirmResetPage />)
-    expect(screen.getByLabelText(L.newPasswordField)).toBeInTheDocument()
+    expect(screen.getByLabelText(ASP.passwordField)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: L.submit })).toBeInTheDocument()
+  })
+})
+
+describe('ConfirmResetPage — same fields and rules as the first password ("Создайте пароль")', () => {
+  it('has a "Подтвердите пароль" field', () => {
+    render(<ConfirmResetPage />)
+    expect(screen.getByLabelText(ASP.confirmField)).toHaveAttribute('autocomplete', 'new-password')
+  })
+
+  it('passwords that do not match: mismatch error under the confirm field, no API call', async () => {
+    render(<ConfirmResetPage />)
+    fillAndSubmit(VALID_PASSWORD, `${VALID_PASSWORD}x`)
+    expect(await screen.findByText(ASP.mismatch)).toBeInTheDocument()
+    expect(screen.getByLabelText(ASP.confirmField)).toHaveAttribute('aria-invalid', 'true')
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('non-latin confirmation: latin-only error under the confirm field, no API call', async () => {
+    render(<ConfirmResetPage />)
+    fillAndSubmit(VALID_PASSWORD, 'подтверждение-12345')
+    expect(await screen.findByText(ASP.latinOnly)).toBeInTheDocument()
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('shows the latin-only error while typing, before submit', () => {
+    render(<ConfirmResetPage />)
+    fireEvent.change(screen.getByLabelText(ASP.passwordField), { target: { value: 'пароль' } })
+    expect(screen.getByText(ASP.latinOnly)).toBeInTheDocument()
+  })
+
+  it('each field has a show/hide password button', () => {
+    render(<ConfirmResetPage />)
+    const [showNew, showConfirm] = screen.getAllByRole('button', { name: 'Показать пароль' })
+    fireEvent.click(showNew)
+    expect(screen.getByLabelText(ASP.passwordField)).toHaveAttribute('type', 'text')
+    expect(screen.getByLabelText(ASP.confirmField)).toHaveAttribute('type', 'password')
+    fireEvent.click(showConfirm)
+    expect(screen.getByLabelText(ASP.confirmField)).toHaveAttribute('type', 'text')
+    expect(screen.getAllByRole('button', { name: 'Скрыть пароль' })).toHaveLength(2)
   })
 })
 
@@ -61,24 +106,52 @@ describe('ConfirmResetPage — errors & loading', () => {
     render(<ConfirmResetPage />)
     fillAndSubmit()
 
-    const button = screen.getByRole('button')
+    // The page also has show/hide buttons, so pick the submit button by its text.
+    const button = screen.getByRole('button', { name: L.submitting })
     expect(button).toBeDisabled()
-    expect(button).toHaveTextContent(L.submitting)
+    expect(button).toHaveAttribute('type', 'submit')
 
     resolvePromise({ ok: true })
     await waitFor(() => expect(pushMock).toHaveBeenCalled())
   })
 
-  it('shows error message from API response', async () => {
+  it('used or expired link: explains it in Russian and offers to request a new link', async () => {
     (fetch as Mock).mockResolvedValue({
       ok: false,
-      text: async () => JSON.stringify({ error: 'Ссылка устарела или недействительна.' }),
+      status: 400,
+      text: async () => JSON.stringify({ error: 'Invalid or expired link', code: 'invalid_link' }),
     })
     render(<ConfirmResetPage />)
     fillAndSubmit()
     await waitFor(() =>
-      expect(screen.getByRole('alert')).toHaveTextContent('Ссылка устарела или недействительна.')
+      expect(screen.getByRole('alert')).toHaveTextContent(AUTH_ERRORS.resetLinkInvalid)
     )
+    expect(screen.queryByText(/Invalid or expired link/)).toBeNull()
+    expect(screen.getByRole('link', { name: L.requestNewLink })).toHaveAttribute('href', ROUTES.resetPassword)
+  })
+
+  it('never shows the raw "Validation failed" from the server', async () => {
+    (fetch as Mock).mockResolvedValue({
+      ok: false,
+      status: 400,
+      text: async () => JSON.stringify({ error: 'Validation failed', issues: { newPassword: ['Too small'] } }),
+    })
+    render(<ConfirmResetPage />)
+    fillAndSubmit()
+    expect(await screen.findByText(ASP.tooShort)).toBeInTheDocument()
+    expect(screen.queryByText(/Validation failed|Too small/)).toBeNull()
+  })
+
+  it('unknown server error text is replaced by the generic message', async () => {
+    (fetch as Mock).mockResolvedValue({
+      ok: false,
+      status: 500,
+      text: async () => JSON.stringify({ error: 'Internal server error' }),
+    })
+    render(<ConfirmResetPage />)
+    fillAndSubmit()
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(AUTH_ERRORS.generic))
+    expect(screen.queryByText('Internal server error')).toBeNull()
   })
 
   it('falls back to generic error when API returns no error message or non-JSON', async () => {
@@ -97,5 +170,34 @@ describe('ConfirmResetPage — errors & loading', () => {
     await waitFor(() =>
       expect(screen.getByRole('alert')).toHaveTextContent(AUTH_ERRORS.network)
     )
+  })
+})
+describe('ConfirmResetPage — client validation (same rules as "Создайте пароль")', () => {
+  it('disables native browser validation on the form', () => {
+    render(<ConfirmResetPage />)
+    expect(screen.getByRole('button', { name: L.submit }).closest('form')).toHaveAttribute('novalidate')
+  })
+
+  it('too short: shows the length rule under the field and does not call the API', async () => {
+    render(<ConfirmResetPage />)
+    fillAndSubmit('short1')
+    expect(await screen.findByText(ASP.tooShort)).toBeInTheDocument()
+    expect(screen.getByLabelText(ASP.passwordField)).toHaveAttribute('aria-invalid', 'true')
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('non-latin characters: shows the latin-only rule and does not call the API', async () => {
+    render(<ConfirmResetPage />)
+    fillAndSubmit('пароль-кириллицей-123')
+    expect(await screen.findByText(ASP.latinOnly)).toBeInTheDocument()
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('clears the field error as soon as the user edits the password', async () => {
+    render(<ConfirmResetPage />)
+    fillAndSubmit('short1')
+    await screen.findByText(ASP.tooShort)
+    fireEvent.change(screen.getByLabelText(ASP.passwordField), { target: { value: 'short12' } })
+    expect(screen.queryByText(ASP.tooShort)).toBeNull()
   })
 })
