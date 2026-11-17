@@ -6,10 +6,10 @@ import { useAuthForm } from '@/hooks/useAuthForm'
 import { ROUTES, API_ROUTES } from '@/utils/routes'
 import { AUTH_ERRORS } from '@/lib/auth-errors'
 import { AUTH_LABELS } from '@/lib/auth-labels'
-import { PASSWORD_MIN_LENGTH, HTTP_METHOD, JSON_HEADERS } from '@/lib/constants'
-import { validateNewPassword } from '@/utils/validateAuthFields'
+import { HTTP_METHOD, JSON_HEADERS } from '@/lib/constants'
+import { useNewPasswordFields } from '@/hooks/useNewPasswordFields'
+import { NewPasswordFields } from '@/components/auth/NewPasswordFields'
 import { Button } from '@/components/ui/buttons/Button'
-import { Input } from '@/components/ui/input/Input'
 import { FormError } from '@/components/ui/form-error/FormError'
 import styles from '../../../auth-page.module.css'
 
@@ -37,18 +37,12 @@ export default function ConfirmResetPage() {
   const router = useRouter()
   const params = useParams<{ token: string }>()
   const { error, setError, loading, run } = useAuthForm()
-  const [passwordInput, setPasswordInput] = useState('')
-  const [passwordError, setPasswordError] = useState('')
+  const fields = useNewPasswordFields()
   const [linkInvalid, setLinkInvalid] = useState(false)
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
-    const validationError = validateNewPassword(passwordInput)
-    if (validationError) {
-      setPasswordError(validationError)
-      return
-    }
-    setPasswordError('')
+    if (!fields.validate()) return
 
     await run(async () => {
       const res = await fetch(API_ROUTES.resetPassword, {
@@ -56,7 +50,7 @@ export default function ConfirmResetPage() {
         headers: JSON_HEADERS,
         body: JSON.stringify({
           token: params.token,
-          newPassword: passwordInput,
+          newPassword: fields.password,
         }),
       })
 
@@ -72,7 +66,8 @@ export default function ConfirmResetPage() {
         setLinkInvalid(true)
         setError(AUTH_ERRORS.resetLinkInvalid)
       } else if (data?.issues?.newPassword) {
-        setPasswordError(validateNewPassword(passwordInput) ?? AUTH_LABELS.adminSetPassword.tooShort)
+        // Server rules match the client ones; this only happens if they drift.
+        fields.setPasswordError(AUTH_LABELS.adminSetPassword.tooShort)
       } else {
         setError(AUTH_ERRORS.generic)
       }
@@ -88,20 +83,7 @@ export default function ConfirmResetPage() {
       <FormError message={error} />
 
       <form onSubmit={handleSubmit} className={styles.form} noValidate>
-        <Input
-          id="password"
-          name="password"
-          type="password"
-          placeholder={L.newPasswordField}
-          aria-label={L.newPasswordField}
-          value={passwordInput}
-          onChange={e => { setPasswordInput(e.target.value); setPasswordError('') }}
-          autoComplete="new-password"
-          required
-          minLength={PASSWORD_MIN_LENGTH}
-          error={passwordError}
-          className={styles.fieldInput}
-        />
+        <NewPasswordFields fields={fields} disabled={loading} inputClassName={styles.fieldInput} />
         <div className={styles.actions}>
           {linkInvalid ? (
             <Button as="a" href={ROUTES.resetPassword} size="lg" fullWidth>

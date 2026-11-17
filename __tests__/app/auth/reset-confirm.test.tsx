@@ -106,9 +106,10 @@ describe('ConfirmResetPage — errors & loading', () => {
     render(<ConfirmResetPage />)
     fillAndSubmit()
 
-    const button = screen.getByRole('button')
+    // The page also has show/hide buttons, so pick the submit button by its text.
+    const button = screen.getByRole('button', { name: L.submitting })
     expect(button).toBeDisabled()
-    expect(button).toHaveTextContent(L.submitting)
+    expect(button).toHaveAttribute('type', 'submit')
 
     resolvePromise({ ok: true })
     await waitFor(() => expect(pushMock).toHaveBeenCalled())

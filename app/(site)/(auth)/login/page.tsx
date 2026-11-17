@@ -14,7 +14,6 @@ import {
   JSON_HEADERS,
   LOGIN_CODE_PROVIDER_ID,
   ADMIN_2FA_PROVIDER_ID,
-  PASSWORD_MIN_LENGTH,
   HTTP_STATUS_TOO_MANY_REQUESTS,
 } from '@/lib/constants'
 import { AUTH_ERROR_ACCOUNT_BLOCKED, AUTH_ERROR_PASSWORD_RESET_REQUIRED } from '@/lib/auth/errors'
@@ -26,12 +25,12 @@ import { Input } from '@/components/ui/input/Input'
 import { FormError } from '@/components/ui/form-error/FormError'
 import { OtpStep } from '@/components/auth/OtpStep'
 import { HiddenUsernameField } from '@/components/auth/HiddenUsernameField'
+import { NewPasswordFields } from '@/components/auth/NewPasswordFields'
+import { useNewPasswordFields } from '@/hooks/useNewPasswordFields'
 import { AUTH_LABELS } from '@/lib/auth-labels'
 import { otpVerifyErrorMessage } from '@/lib/auth/mapOtpVerifyError'
 import { resendErrorMessage, retryAfterSeconds, tooManyAttemptsMessage } from '@/lib/auth/rateLimitMessage'
 import { validateEmail, validateName } from '@/utils/validateAuthFields'
-import { EyeIcon } from '@/components/icons/EyeIcon'
-import { EyeOffIcon } from '@/components/icons/EyeOffIcon'
 import styles from '../auth-page.module.css'
 
 const LA = AUTH_LABELS.adminPassword
@@ -57,12 +56,7 @@ function LoginCodeForm() {
   const [nameInput, setNameInput] = useState('')
   const [nameError, setNameError] = useState('')
   const [name, setName] = useState('')
-  const [newPasswordInput, setNewPasswordInput] = useState('')
-  const [confirmPasswordInput, setConfirmPasswordInput] = useState('')
-  const [newPasswordError, setNewPasswordError] = useState('')
-  const [confirmPasswordError, setConfirmPasswordError] = useState('')
-  const [showNewPassword, setShowNewPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const newPassword = useNewPasswordFields()
   const [passwordInput, setPasswordInput] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const [canResend, setCanResend] = useState(false)
@@ -311,28 +305,8 @@ function LoginCodeForm() {
 
   async function handleSetPasswordSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
-    const password = newPasswordInput
-    const confirm = confirmPasswordInput
-
-    if (/[^\x21-\x7E]/.test(password)) {
-      setNewPasswordError(ASP.latinOnly)
-      return
-    }
-
-    if (/[^\x21-\x7E]/.test(confirm)) {
-      setConfirmPasswordError(ASP.latinOnly)
-      return
-    }
-
-    if (password.length < PASSWORD_MIN_LENGTH) {
-      setNewPasswordError(ASP.tooShort)
-      return
-    }
-
-    if (password !== confirm) {
-      setConfirmPasswordError(ASP.mismatch)
-      return
-    }
+    if (!newPassword.validate()) return
+    const password = newPassword.password
 
     await run(async () => {
       const setRes = await fetch('/api/auth/set-initial-password', {
@@ -499,50 +473,7 @@ function LoginCodeForm() {
 
           <form onSubmit={handleSetPasswordSubmit} className={styles.form} noValidate>
             <HiddenUsernameField email={email} />
-            <Input
-              id="newPassword"
-              name="newPassword"
-              type={showNewPassword ? 'text' : 'password'}
-              label={ASP.passwordField}
-              value={newPasswordInput}
-              onChange={e => {
-                const val = e.target.value
-                setNewPasswordInput(val)
-                setNewPasswordError(/[^\x21-\x7E]/.test(val) ? ASP.latinOnly : '')
-              }}
-              autoComplete="new-password"
-              disabled={loading}
-              error={newPasswordError || undefined}
-              invalid={Boolean(confirmPasswordError)}
-              className={styles.fieldInput}
-              trailing={
-                <button type="button" className={styles.eyeButton} onClick={() => setShowNewPassword(v => !v)} aria-label={showNewPassword ? 'Скрыть пароль' : 'Показать пароль'}>
-                  {showNewPassword ? <EyeOffIcon /> : <EyeIcon />}
-                </button>
-              }
-            />
-            <Input
-              id="confirmPassword"
-              name="confirmPassword"
-              type={showConfirmPassword ? 'text' : 'password'}
-              label={ASP.confirmField}
-              value={confirmPasswordInput}
-              onChange={e => {
-                const val = e.target.value
-                setConfirmPasswordInput(val)
-                setConfirmPasswordError(/[^\x21-\x7E]/.test(val) ? ASP.latinOnly : '')
-              }}
-              error={confirmPasswordError || undefined}
-              invalid={Boolean(newPasswordError)}
-              autoComplete="new-password"
-              disabled={loading}
-              className={styles.fieldInput}
-              trailing={
-                <button type="button" className={styles.eyeButton} onClick={() => setShowConfirmPassword(v => !v)} aria-label={showConfirmPassword ? 'Скрыть пароль' : 'Показать пароль'}>
-                  {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
-                </button>
-              }
-            />
+            <NewPasswordFields fields={newPassword} disabled={loading} inputClassName={styles.fieldInput} />
             <div className={styles.actions}>
               <Button type="submit" size="lg" fullWidth loading={loading} disabled={loading}>
                 {loading ? ASP.submitting : ASP.submit}
