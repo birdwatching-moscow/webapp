@@ -528,6 +528,25 @@ describe('LoginPage — wrong code (registered user)', () => {
     fireEvent.click(await screen.findByRole('button', { name: RESEND_BTN }))
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(AUTH_ERRORS.codeTooFrequent))
   })
+
+  it('confirms a successful resend with a status message', async () => {
+    stubFetchWrongCodeForUser()
+    await submitEmail()
+    fillOtpCode(TEST_CODE)
+    fireEvent.click(await screen.findByRole('button', { name: RESEND_BTN }))
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(LC.codeResent))
+  })
+
+  it('hides the resend confirmation once the next code is checked', async () => {
+    stubFetchWrongCodeForUser()
+    await submitEmail()
+    fillOtpCode(TEST_CODE)
+    fireEvent.click(await screen.findByRole('button', { name: RESEND_BTN }))
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(LC.codeResent))
+    fillOtpCode(TEST_CODE)
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(AUTH_ERRORS.invalidCode))
+    expect(screen.queryByText(LC.codeResent)).toBeNull()
+  })
 })
 
 describe('LoginPage — wrong code (new user)', () => {

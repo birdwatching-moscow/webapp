@@ -299,4 +299,18 @@ describe('RegisterPage — wrong code: resend', () => {
     fireEvent.click(await screen.findByRole('button', { name: RESEND_BTN }))
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(AUTH_ERRORS.codeTooFrequent))
   })
+
+  it('confirms a successful resend with a status message', async () => {
+    ;(fetch as Mock)
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ csrfToken: 'csrf' }) })
+      .mockResolvedValueOnce({ ok: false, json: async () => ({ error: 'invalid_code' }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ csrfToken: 'csrf-2' }) })
+    render(<RegisterPage />)
+    await submitForm()
+    fillOtpCode('9'.repeat(LOGIN_CODE_LENGTH))
+    fireEvent.click(await screen.findByRole('button', { name: RESEND_BTN }))
+    await waitFor(() =>
+      expect(screen.getByRole('status')).toHaveTextContent(AUTH_LABELS.loginCode.codeResent)
+    )
+  })
 })
