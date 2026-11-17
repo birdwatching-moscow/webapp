@@ -63,6 +63,7 @@ function LoginCodeForm() {
   const [passwordInput, setPasswordInput] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const [canResend, setCanResend] = useState(false)
+  const [notice, setNotice] = useState<string | null>(null)
   const otp = useOtpInput(submitCode)
 
   const isRegistered = searchParams.get(REGISTERED_PARAM) === '1'
@@ -171,6 +172,7 @@ function LoginCodeForm() {
   }
 
   async function submitCode(code: string) {
+    setNotice(null)
     await run(async () => {
       if (isNewUser) {
         const verifyRes = await fetch('/api/auth/verify-registration-code', {
@@ -230,6 +232,7 @@ function LoginCodeForm() {
   }
 
   async function resendCode() {
+    setNotice(null)
     await run(async () => {
       const res = isNewUser
         ? await fetch('/api/auth/register', {
@@ -249,6 +252,7 @@ function LoginCodeForm() {
       }
       setCsrfToken(data.csrfToken ?? '')
       setCanResend(false)
+      setNotice(AUTH_LABELS.loginCode.codeResent)
       otp.reset({ focus: true })
     })
   }
@@ -258,6 +262,7 @@ function LoginCodeForm() {
     otp.reset()
     setError(null)
     setCanResend(false)
+    setNotice(null)
   }
 
   function goBackToName() {
@@ -265,6 +270,7 @@ function LoginCodeForm() {
     otp.reset()
     setError(null)
     setCanResend(false)
+    setNotice(null)
   }
 
   async function handlePasswordSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
@@ -440,6 +446,7 @@ function LoginCodeForm() {
           loading={loading}
           onBack={isNewUser ? goBackToName : goBackToEmail}
           onResend={canResend ? resendCode : undefined}
+          notice={notice}
         />
       )}
 

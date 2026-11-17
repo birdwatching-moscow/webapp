@@ -37,6 +37,7 @@ export default function RegisterPage() {
   const [emailInput, setEmailInput] = useState('')
   const [csrfToken, setCsrfToken] = useState('')
   const [canResend, setCanResend] = useState(false)
+  const [notice, setNotice] = useState<string | null>(null)
   const otp = useOtpInput(submitCode)
 
   useEffect(() => {
@@ -92,6 +93,7 @@ export default function RegisterPage() {
   }
 
   async function submitCode(code: string) {
+    setNotice(null)
     await run(async () => {
       const verifyRes = await fetch('/api/auth/verify-registration-code', {
         method: HTTP_METHOD.POST,
@@ -117,6 +119,7 @@ export default function RegisterPage() {
   }
 
   async function resendCode() {
+    setNotice(null)
     await run(async () => {
       const res = await fetch('/api/auth/register', {
         method: HTTP_METHOD.POST,
@@ -130,6 +133,7 @@ export default function RegisterPage() {
       }
       setCsrfToken(data.csrfToken ?? '')
       setCanResend(false)
+      setNotice(AUTH_LABELS.loginCode.codeResent)
       otp.reset({ focus: true })
     })
   }
@@ -139,6 +143,7 @@ export default function RegisterPage() {
     otp.reset()
     setError(null)
     setCanResend(false)
+    setNotice(null)
   }
 
   return (
@@ -200,6 +205,7 @@ export default function RegisterPage() {
           loading={loading}
           onBack={goBackToForm}
           onResend={canResend ? resendCode : undefined}
+          notice={notice}
         />
       )}
 

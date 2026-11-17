@@ -14,9 +14,11 @@ type Props = {
   onBack: () => void
   /** When provided, a "resend code" button is shown above "Назад". */
   onResend?: () => void
+  /** Non-error status, e.g. confirmation that a new code was sent. */
+  notice?: string | null
 }
 
-export const OtpStep = ({ title, subtitle, otp, error, loading, onBack, onResend }: Props) => (
+export const OtpStep = ({ title, subtitle, otp, error, loading, onBack, onResend, notice }: Props) => (
   <>
     <div className={styles.header}>
       <h1 className={styles.title}>{title}</h1>
@@ -34,6 +36,8 @@ export const OtpStep = ({ title, subtitle, otp, error, loading, onBack, onResend
     />
 
     <FormError message={error} />
+
+    {notice && <p role="status" className={styles.notice}>{notice}</p>}
 
     <p className={styles.hint}>
       Код действует ограниченное время. Проверьте «Спам» и «Промоакции».
