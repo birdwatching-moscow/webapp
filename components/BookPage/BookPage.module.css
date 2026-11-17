@@ -132,10 +132,12 @@
   display: none; /* Chrome/Safari */
 }
 
+/* Height follows the PDF page, so the whole page is visible.
+   Matches public/book/book-fragment-*.png (1224×1584, US Letter). */
 .fragmentCard {
   position: relative;
   flex: 0 0 272px;
-  height: 384px;
+  aspect-ratio: 1224 / 1584;
   border-radius: var(--radius-lg);
   border: var(--stroke-default) solid var(--color-border);
   overflow: hidden;
@@ -144,8 +146,7 @@
 }
 
 .fragmentImage {
-  object-fit: cover;
-  object-position: top;
+  object-fit: contain;
 }
 
 /* ─── Desktop (min-width: 1248px) ──────────────────────────────────────────── */
@@ -198,10 +199,5 @@
 
   .fragmentCard {
     flex: none;
-    height: 480px;
-  }
-
-  .fragmentImage {
-    object-position: top;
   }
 }
