@@ -244,6 +244,32 @@ async function advanceToPasswordStep(email = 'admin@test.com', challengeToken = 
   await waitFor(() => screen.getByLabelText(C.passwordField))
 }
 
+describe('LoginPage — step 3 (admin password) validation', () => {
+  const PASSWORD_REQUIRED = 'Введите пароль, чтобы продолжить'
+
+  it('disables native browser validation on the password form', async () => {
+    await advanceToPasswordStep()
+    const form = screen.getByRole('button', { name: LA.submit }).closest('form')
+    expect(form).toHaveAttribute('novalidate')
+  })
+
+  it('shows the password error and does not call signIn when the password is empty', async () => {
+    await advanceToPasswordStep()
+    fireEvent.click(screen.getByRole('button', { name: LA.submit }))
+    expect(await screen.findByText(PASSWORD_REQUIRED)).toBeInTheDocument()
+    expect(screen.getByLabelText(C.passwordField)).toHaveAttribute('aria-invalid', 'true')
+    expect(signInMock).not.toHaveBeenCalled()
+  })
+
+  it('clears the password error as soon as the user types', async () => {
+    await advanceToPasswordStep()
+    fireEvent.click(screen.getByRole('button', { name: LA.submit }))
+    await screen.findByText(PASSWORD_REQUIRED)
+    fireEvent.change(screen.getByLabelText(C.passwordField), { target: { value: 'x' } })
+    expect(screen.queryByText(PASSWORD_REQUIRED)).toBeNull()
+  })
+})
+
 describe('LoginPage — step 3 (admin password)', () => {
   it('calls signIn("admin-2fa") with email, challengeToken, and password', async () => {
     signInMock.mockResolvedValue({ error: null, code: null })
