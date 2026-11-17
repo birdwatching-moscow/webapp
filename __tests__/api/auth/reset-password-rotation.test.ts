@@ -98,6 +98,15 @@ describe('POST /api/auth/reset-password — token already used', () => {
     expect(res.status).toBe(HTTP_STATUS_BAD_REQUEST)
     expect(prismaMock.user.update).not.toHaveBeenCalled()
   })
+
+  it('returns the machine-readable code "invalid_link" so the page can explain it', async () => {
+    prismaMock.passwordResetToken.findUnique.mockResolvedValue({
+      ...VALID_TOKEN_ROW,
+      usedAt: new Date(),
+    })
+    const res = await POST(makeReq({ token: 'rawtoken123', newPassword: '1234567890123456' }))
+    expect((await res.json()).code).toBe('invalid_link')
+  })
 })
 
 describe('POST /api/auth/reset-password — user not found', () => {
