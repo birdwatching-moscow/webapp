@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import RegisterPage from '@/app/(site)/(auth)/register/page'
 import { AUTH_ERRORS } from '@/lib/auth-errors'
 import { AUTH_LABELS } from '@/lib/auth-labels'
+import { tooManyAttemptsMessage, codeTooFrequentMessage } from '@/lib/auth/rateLimitMessage'
 import {
   HTTP_METHOD,
   JSON_HEADERS,
@@ -189,12 +190,17 @@ describe('RegisterPage — client validation (same as login)', () => {
     expect(body).toEqual({ email: 'maria@test.com', name: 'Мария' })
   })
 
-  it('shows the rate-limit message under the email field, like login', async () => {
-    ;(fetch as Mock).mockResolvedValue({ ok: false, json: async () => ({ error: 'code_rate_limited' }) })
+  it('shows the rate-limit message with the server wait time under the email field, like login', async () => {
+    ;(fetch as Mock).mockResolvedValue({
+      ok: false,
+      status: 429,
+      headers: new Headers({ 'Retry-After': '120' }),
+      json: async () => ({ error: 'code_rate_limited', retryAfterSeconds: 120 }),
+    })
     render(<RegisterPage />)
     fill({ name: 'Иван', email: 'ivan@test.com' })
     clickSubmit()
-    const message = await screen.findByText(AUTH_ERRORS.tooManyAttempts)
+    const message = await screen.findByText(tooManyAttemptsMessage(120))
     expect(screen.getByLabelText(C.emailField)).toHaveAttribute('aria-describedby', message.id)
   })
 })
@@ -292,12 +298,33 @@ describe('RegisterPage — wrong code: resend', () => {
     ;(fetch as Mock)
       .mockResolvedValueOnce({ ok: true, json: async () => ({ csrfToken: 'csrf' }) })
       .mockResolvedValueOnce({ ok: false, json: async () => ({ error: 'invalid_code' }) })
-      .mockResolvedValueOnce({ ok: false, json: async () => ({ error: 'code_rate_limited' }) })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 429,
+        headers: new Headers({ 'Retry-After': '150' }),
+        json: async () => ({ error: 'code_rate_limited', retryAfterSeconds: 150 }),
+      })
     render(<RegisterPage />)
     await submitForm()
     fillOtpCode('9'.repeat(LOGIN_CODE_LENGTH))
     fireEvent.click(await screen.findByRole('button', { name: RESEND_BTN }))
-    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(AUTH_ERRORS.codeTooFrequent))
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(codeTooFrequentMessage(150)))
+  })
+
+  it('code step: verify rate limit shows "too many attempts" with the wait time, not "wrong code"', async () => {
+    ;(fetch as Mock)
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ csrfToken: 'csrf' }) })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 429,
+        headers: new Headers({ 'Retry-After': '240' }),
+        json: async () => ({ error: 'Too many requests' }),
+      })
+    render(<RegisterPage />)
+    await submitForm()
+    fillOtpCode('9'.repeat(LOGIN_CODE_LENGTH))
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(tooManyAttemptsMessage(240)))
+    expect(screen.queryByText(AUTH_ERRORS.invalidCode)).toBeNull()
   })
 
   it('confirms a successful resend with a status message', async () => {

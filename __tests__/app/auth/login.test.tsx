@@ -5,6 +5,7 @@ import { AUTH_ERRORS } from '@/lib/auth-errors'
 import { AUTH_ERROR_ACCOUNT_BLOCKED, AUTH_ERROR_PASSWORD_RESET_REQUIRED } from '@/lib/auth/errors'
 import { ADMIN_2FA_PROVIDER_ID, LOGIN_CODE_PROVIDER_ID, LOGIN_CODE_LENGTH } from '@/lib/constants'
 import { AUTH_LABELS } from '@/lib/auth-labels'
+import { tooManyAttemptsMessage, codeTooFrequentMessage } from '@/lib/auth/rateLimitMessage'
 
 const { pushMock, refreshMock, searchParamsGetMock, signInMock } = vi.hoisted(() => ({
   pushMock: vi.fn(),
@@ -481,7 +482,12 @@ function fetchCallsTo(path: string) {
   return (fetch as ReturnType<typeof vi.fn>).mock.calls.filter(([url]) => String(url).includes(path))
 }
 
-type StubResponse = { ok: boolean; body: Record<string, unknown> }
+type StubResponse = {
+  ok: boolean
+  body: Record<string, unknown>
+  status?: number
+  headers?: Record<string, string>
+}
 
 // Registered user whose code is rejected by verify-login-code.
 // `resend` controls what the second request-login-code call returns.
@@ -498,7 +504,12 @@ function stubFetchWrongCodeForUser(resend: StubResponse = { ok: true, body: { cs
     if (requestCount === 1) {
       return Promise.resolve({ ok: true, json: async () => ({ csrfToken: 'csrf-1' }) })
     }
-    return Promise.resolve({ ok: resend.ok, json: async () => resend.body })
+    return Promise.resolve({
+      ok: resend.ok,
+      status: resend.status,
+      headers: new Headers(resend.headers),
+      json: async () => resend.body,
+    })
   }))
 }
 
@@ -546,12 +557,17 @@ describe('LoginPage — wrong code (registered user)', () => {
     expect(headers['x-csrf-token']).toBe('csrf-2')
   })
 
-  it('shows the "code too frequent" message when the resend is rate limited', async () => {
-    stubFetchWrongCodeForUser({ ok: false, body: { error: 'code_rate_limited' } })
+  it('shows the "code too frequent" message with the server wait time when the resend is rate limited', async () => {
+    stubFetchWrongCodeForUser({
+      ok: false,
+      status: 429,
+      headers: { 'Retry-After': '150' },
+      body: { error: 'code_rate_limited', retryAfterSeconds: 150 },
+    })
     await submitEmail()
     fillOtpCode(TEST_CODE)
     fireEvent.click(await screen.findByRole('button', { name: RESEND_BTN }))
-    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(AUTH_ERRORS.codeTooFrequent))
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(codeTooFrequentMessage(150)))
   })
 
   it('confirms a successful resend with a status message', async () => {
@@ -594,5 +610,69 @@ describe('LoginPage — wrong code (new user)', () => {
     await waitFor(() => expect(fetchCallsTo('/api/auth/register')).toHaveLength(2))
     expect(JSON.parse(fetchCallsTo('/api/auth/register')[1][1].body as string)).toEqual({ email: 'new@test.com', name: 'Мария' })
     expect(fetchCallsTo('request-login-code')).toHaveLength(0)
+  })
+})
+
+// ── Rate limits (429): show the wait time the server sent ──────────────────
+
+const TOO_MANY = 429
+
+function rateLimited(seconds: number, body: Record<string, unknown> = { error: 'Too many requests' }) {
+  return Promise.resolve({
+    ok: false,
+    status: TOO_MANY,
+    headers: new Headers({ 'Retry-After': String(seconds) }),
+    json: async () => body,
+  })
+}
+
+describe('LoginPage — too many attempts (429)', () => {
+  it('code step: shows "too many attempts" with the server wait time, not "wrong code"', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      if (String(url).includes('check-email')) {
+        return Promise.resolve({ ok: true, json: async () => ({ registered: true }) })
+      }
+      if (String(url).includes('verify-login-code')) return rateLimited(120)
+      return Promise.resolve({ ok: true, json: async () => ({ csrfToken: 'csrf' }) })
+    }))
+    await submitEmail()
+    fillOtpCode(TEST_CODE)
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(tooManyAttemptsMessage(120)))
+    expect(screen.queryByText(AUTH_ERRORS.invalidCode)).toBeNull()
+  })
+
+  it('email step: request-login-code rate limit shows the wait time under the email field', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      if (String(url).includes('check-email')) {
+        return Promise.resolve({ ok: true, json: async () => ({ registered: true }) })
+      }
+      return rateLimited(180, { error: 'code_rate_limited', retryAfterSeconds: 180 })
+    }))
+    render(<LoginPage />)
+    fireEvent.change(screen.getByLabelText(C.emailField), { target: { value: 'user@test.com' } })
+    fireEvent.submit(screen.getByRole('button', { name: 'Продолжить' }))
+    expect(await screen.findByText(tooManyAttemptsMessage(180))).toBeInTheDocument()
+  })
+
+  it('email step: check-email rate limit shows the wait time instead of a generic error', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(() => rateLimited(60)))
+    render(<LoginPage />)
+    fireEvent.change(screen.getByLabelText(C.emailField), { target: { value: 'user@test.com' } })
+    fireEvent.submit(screen.getByRole('button', { name: 'Продолжить' }))
+    expect(await screen.findByText(tooManyAttemptsMessage(60))).toBeInTheDocument()
+    expect(screen.queryByText(AUTH_ERRORS.generic)).toBeNull()
+  })
+
+  it('name step: register rate limit sends the user back to email with the wait time', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      if (String(url).includes('check-email')) {
+        return Promise.resolve({ ok: true, json: async () => ({ registered: false }) })
+      }
+      return rateLimited(240, { error: 'code_rate_limited', retryAfterSeconds: 240 })
+    }))
+    await goToNameStep()
+    fireEvent.change(screen.getByLabelText(NAME_FIELD), { target: { value: 'Мария' } })
+    fireEvent.click(screen.getByRole('button', { name: REQUEST_CODE_BTN }))
+    expect(await screen.findByText(tooManyAttemptsMessage(240))).toBeInTheDocument()
   })
 })
