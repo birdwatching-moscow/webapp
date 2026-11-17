@@ -3,6 +3,8 @@ import { render, screen } from '@testing-library/react'
 
 const { authMock } = vi.hoisted(() => ({ authMock: vi.fn() }))
 vi.mock('@/lib/auth', () => ({ auth: authMock }))
+// AdminNav reads the current path; outside the Next.js router usePathname() is null.
+vi.mock('next/navigation', () => ({ usePathname: () => '/admin/walks' }))
 
 import AdminLayout from '@/app/admin/layout'
 

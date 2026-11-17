@@ -12,7 +12,7 @@ const { prismaMock, bcryptHashMock } = vi.hoisted(() => ({
 vi.mock('@/lib/prisma', () => ({ prisma: prismaMock }))
 vi.mock('bcryptjs', () => ({ default: { hash: bcryptHashMock, compare: vi.fn() } }))
 
-import { POST } from '@/app/api/auth/reset-password/route'
+import { POST } from '@/app/api/auth/8qfzgof9uev06a/reset-password/route'
 import { HTTP_METHOD, JSON_HEADERS, HTTP_STATUS_BAD_REQUEST, PASSWORD_MIN_LENGTH } from '@/lib/constants'
 
 const VALID_TOKEN_ROW = {

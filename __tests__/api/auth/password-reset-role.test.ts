@@ -11,8 +11,9 @@ const { prismaMock, sendMailMock } = vi.hoisted(() => ({
 vi.mock('@/lib/prisma', () => ({ prisma: prismaMock }))
 vi.mock('@/lib/mail', () => ({ sendMail: sendMailMock }))
 
-import { POST } from '@/app/api/auth/request-password-reset/route'
+import { POST } from '@/app/api/auth/8qfzgof9uev06a/request-password-reset/route'
 import { HTTP_METHOD, JSON_HEADERS, HTTP_STATUS_BAD_REQUEST } from '@/lib/constants'
+import { ROUTES } from '@/utils/routes'
 
 const USER = { id: 'user-1', email: 'user@test.com', role: 'USER', deletedAt: null }
 const ADMIN = { id: 'admin-1', email: 'admin@test.com', role: 'ADMIN', deletedAt: null }
@@ -51,6 +52,19 @@ describe('POST /api/auth/request-password-reset — role guard', () => {
     expect(res.status).toBe(200)
     expect(prismaMock.passwordResetToken.create).toHaveBeenCalledTimes(1)
     expect(sendMailMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('ADMIN email: the reset link in the email points at the hidden reset path', async () => {
+    prismaMock.user.findFirst.mockResolvedValue(ADMIN)
+    await POST(makeReq(ADMIN.email))
+    const { link } = sendMailMock.mock.calls[0][0].data as { link: string }
+    const { pathname } = new URL(link)
+    const prefix = `${ROUTES.resetPassword}/`
+    expect(pathname.startsWith(prefix)).toBe(true)
+    // exactly one non-empty segment (the token) after the reset path
+    const token = pathname.slice(prefix.length)
+    expect(token).not.toBe('')
+    expect(token).not.toContain('/')
   })
 
   it('SUPERADMIN email: creates one PasswordResetToken row and sends mail', async () => {

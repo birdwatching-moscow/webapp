@@ -1,13 +1,26 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { PhotoCard } from '@/components/PhotoCard/PhotoCard'
+import { IMAGE_SIZES } from '@/utils/imageSizes'
 
 vi.mock('next/image', () => ({
-  default: ({ src, alt }: { src: string; alt: string }) => (
+  default: ({ src, alt, sizes }: { src: string; alt: string; sizes?: string }) => (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt={alt} />
+    <img src={src} alt={alt} sizes={sizes} />
   ),
 }))
+
+describe('PhotoCard — responsive sizes (required with fill)', () => {
+  it('defaults sizes to the width inside the page gutters, not 100vw', () => {
+    render(<PhotoCard src="/test.jpg" alt="Test photo" />)
+    expect(screen.getByRole('img', { name: 'Test photo' })).toHaveAttribute('sizes', IMAGE_SIZES.pageWidth)
+  })
+
+  it('passes a custom sizes value through', () => {
+    render(<PhotoCard src="/test.jpg" alt="Test photo" sizes="(min-width: 1248px) 33vw, 100vw" />)
+    expect(screen.getByRole('img', { name: 'Test photo' })).toHaveAttribute('sizes', '(min-width: 1248px) 33vw, 100vw')
+  })
+})
 
 describe('PhotoCard — structure', () => {
   it('renders an img with the given alt', () => {

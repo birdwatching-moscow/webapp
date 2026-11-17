@@ -25,3 +25,8 @@
   flex-direction: column;
   gap: var(--space-3);
 }
+
+.notice {
+  composes: text-body from global;
+  color: var(--color-primary);
+}

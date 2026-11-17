@@ -1,6 +1,9 @@
 import Image from 'next/image'
 import styles from './WalksPageHero.module.css'
 
+// .mediaContainer is capped at 329px wide on every breakpoint
+const HERO_IMAGE_SIZES = '329px'
+
 export const WalksPageHero = () => (
   <section className={styles.hero}>
     <div className={styles.imageWrapper}>
@@ -9,6 +12,7 @@ export const WalksPageHero = () => (
           src="/placeholders/videos-placeholder.png"
           alt=""
           fill
+          sizes={HERO_IMAGE_SIZES}
           priority
           className={styles.image}
         />

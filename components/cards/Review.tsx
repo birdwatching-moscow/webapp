@@ -10,6 +10,8 @@ export type ReviewProps = {
 }
 
 const DEFAULT_AUTHOR_IMAGE = '/placeholders/review-image.png'
+// Matches .photoWrapper in Review.module.css
+const AVATAR_SIZES = '80px'
 
 export const Review = ({ authorImageUrl = DEFAULT_AUTHOR_IMAGE, authorName, body, href, className }: ReviewProps) => {
   const cls = [styles.root, href && styles.linked, className].filter(Boolean).join(' ')
@@ -18,7 +20,7 @@ export const Review = ({ authorImageUrl = DEFAULT_AUTHOR_IMAGE, authorName, body
     <>
       <div className={styles.header}>
         <div className={styles.photoWrapper}>
-          <AspectRatioImage ratio="1-1" src={authorImageUrl} alt={authorName} />
+          <AspectRatioImage ratio="1-1" src={authorImageUrl} alt={authorName} sizes={AVATAR_SIZES} />
         </div>
         <p className="text-h2">{authorName}</p>
       </div>

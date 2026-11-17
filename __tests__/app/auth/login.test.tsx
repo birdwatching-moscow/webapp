@@ -5,6 +5,7 @@ import { AUTH_ERRORS } from '@/lib/auth-errors'
 import { AUTH_ERROR_ACCOUNT_BLOCKED, AUTH_ERROR_PASSWORD_RESET_REQUIRED } from '@/lib/auth/errors'
 import { ADMIN_2FA_PROVIDER_ID, LOGIN_CODE_PROVIDER_ID, LOGIN_CODE_LENGTH } from '@/lib/constants'
 import { AUTH_LABELS } from '@/lib/auth-labels'
+import { tooManyAttemptsMessage, codeTooFrequentMessage } from '@/lib/auth/rateLimitMessage'
 
 const { pushMock, refreshMock, searchParamsGetMock, signInMock } = vi.hoisted(() => ({
   pushMock: vi.fn(),
@@ -116,6 +117,61 @@ describe('LoginPage — step 1 (email)', () => {
   })
 })
 
+// ── Step 1 → name step (new user) ──────────────────────────────────────────
+
+const NAME_REQUIRED = 'Введите имя, чтобы продолжить'
+const NAME_FIELD = 'Имя'
+const REQUEST_CODE_BTN = 'Получить код'
+
+// New user: check-email → { registered: false }, then register → ok
+function stubFetchForNewUser() {
+  vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+    if (String(url).includes('check-email')) {
+      return Promise.resolve({ ok: true, json: async () => ({ registered: false }) })
+    }
+    return Promise.resolve({ ok: true, json: async () => ({ csrfToken: 'test-csrf' }) })
+  }))
+}
+
+async function goToNameStep(email = 'new@test.com') {
+  render(<LoginPage />)
+  fireEvent.change(screen.getByLabelText(C.emailField), { target: { value: email } })
+  fireEvent.submit(screen.getByRole('button', { name: 'Продолжить' }))
+  await waitFor(() => screen.getByLabelText(NAME_FIELD))
+}
+
+function registerCalls() {
+  return (fetch as ReturnType<typeof vi.fn>).mock.calls.filter(([url]) =>
+    String(url).includes('/api/auth/register')
+  )
+}
+
+describe('LoginPage — name step (new user) validation', () => {
+  beforeEach(stubFetchForNewUser)
+
+  it('disables native browser validation on the name form', async () => {
+    await goToNameStep()
+    const form = screen.getByRole('button', { name: REQUEST_CODE_BTN }).closest('form')
+    expect(form).toHaveAttribute('novalidate')
+  })
+
+  it('shows the name error and does not call register when the name is empty', async () => {
+    await goToNameStep()
+    fireEvent.click(screen.getByRole('button', { name: REQUEST_CODE_BTN }))
+    expect(await screen.findByText(NAME_REQUIRED)).toBeInTheDocument()
+    expect(screen.getByLabelText(NAME_FIELD)).toHaveAttribute('aria-invalid', 'true')
+    expect(registerCalls()).toHaveLength(0)
+  })
+
+  it('clears the name error as soon as the user types', async () => {
+    await goToNameStep()
+    fireEvent.click(screen.getByRole('button', { name: REQUEST_CODE_BTN }))
+    await screen.findByText(NAME_REQUIRED)
+    fireEvent.change(screen.getByLabelText(NAME_FIELD), { target: { value: 'И' } })
+    expect(screen.queryByText(NAME_REQUIRED)).toBeNull()
+  })
+})
+
 // ── Step 2: OTP code entry ──────────────────────────────────────────────────
 
 async function submitEmail(email = 'user@test.com') {
@@ -188,6 +244,32 @@ async function advanceToPasswordStep(email = 'admin@test.com', challengeToken = 
   fillOtpCode(TEST_CODE)
   await waitFor(() => screen.getByLabelText(C.passwordField))
 }
+
+describe('LoginPage — step 3 (admin password) validation', () => {
+  const PASSWORD_REQUIRED = 'Введите пароль, чтобы продолжить'
+
+  it('disables native browser validation on the password form', async () => {
+    await advanceToPasswordStep()
+    const form = screen.getByRole('button', { name: LA.submit }).closest('form')
+    expect(form).toHaveAttribute('novalidate')
+  })
+
+  it('shows the password error and does not call signIn when the password is empty', async () => {
+    await advanceToPasswordStep()
+    fireEvent.click(screen.getByRole('button', { name: LA.submit }))
+    expect(await screen.findByText(PASSWORD_REQUIRED)).toBeInTheDocument()
+    expect(screen.getByLabelText(C.passwordField)).toHaveAttribute('aria-invalid', 'true')
+    expect(signInMock).not.toHaveBeenCalled()
+  })
+
+  it('clears the password error as soon as the user types', async () => {
+    await advanceToPasswordStep()
+    fireEvent.click(screen.getByRole('button', { name: LA.submit }))
+    await screen.findByText(PASSWORD_REQUIRED)
+    fireEvent.change(screen.getByLabelText(C.passwordField), { target: { value: 'x' } })
+    expect(screen.queryByText(PASSWORD_REQUIRED)).toBeNull()
+  })
+})
 
 describe('LoginPage — step 3 (admin password)', () => {
   it('calls signIn("admin-2fa") with email, challengeToken, and password', async () => {
@@ -279,6 +361,31 @@ async function advanceToSetPasswordStep(email = 'admin@test.com') {
   await waitFor(() => screen.getByLabelText(ASP.passwordField))
 }
 
+// Chrome / password managers need a username field next to a password field
+// to know which account the password belongs to.
+function usernameFieldIn(form: HTMLFormElement | null) {
+  return form?.querySelector<HTMLInputElement>('input[autocomplete="username"]') ?? null
+}
+
+describe('LoginPage — password forms carry a hidden username field', () => {
+  it('admin password step: hidden, read-only username field with the email', async () => {
+    await advanceToPasswordStep('admin@test.com')
+    const field = usernameFieldIn(screen.getByLabelText(C.passwordField).closest('form'))
+    expect(field).not.toBeNull()
+    expect(field).toHaveValue('admin@test.com')
+    expect(field).toHaveAttribute('hidden')
+    expect(field).toHaveAttribute('readonly')
+  })
+
+  it('set-password step: hidden, read-only username field with the email', async () => {
+    await advanceToSetPasswordStep('admin@test.com')
+    const field = usernameFieldIn(screen.getByLabelText(ASP.passwordField).closest('form'))
+    expect(field).not.toBeNull()
+    expect(field).toHaveValue('admin@test.com')
+    expect(field).toHaveAttribute('hidden')
+  })
+})
+
 describe('LoginPage — set-password step (admin first login)', () => {
   it('shows mismatch error when passwords do not match', async () => {
     await advanceToSetPasswordStep()
@@ -360,5 +467,212 @@ describe('LoginPage — errors (step 2)', () => {
     await waitFor(() =>
       expect(screen.getByRole('alert')).toHaveTextContent(AUTH_ERRORS.accountBlocked)
     )
+  })
+})
+
+// ── Wrong code: clear boxes + resend ───────────────────────────────────────
+
+const RESEND_BTN = LC.resendCode
+
+function firstDigit() {
+  return screen.getByLabelText(`Цифра 1 из ${LOGIN_CODE_LENGTH}`)
+}
+
+function fetchCallsTo(path: string) {
+  return (fetch as ReturnType<typeof vi.fn>).mock.calls.filter(([url]) => String(url).includes(path))
+}
+
+type StubResponse = {
+  ok: boolean
+  body: Record<string, unknown>
+  status?: number
+  headers?: Record<string, string>
+}
+
+// Registered user whose code is rejected by verify-login-code.
+// `resend` controls what the second request-login-code call returns.
+function stubFetchWrongCodeForUser(resend: StubResponse = { ok: true, body: { csrfToken: 'csrf-2' } }) {
+  let requestCount = 0
+  vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+    if (String(url).includes('check-email')) {
+      return Promise.resolve({ ok: true, json: async () => ({ registered: true }) })
+    }
+    if (String(url).includes('verify-login-code')) {
+      return Promise.resolve({ ok: false, json: async () => ({ error: 'invalid_code' }) })
+    }
+    requestCount += 1
+    if (requestCount === 1) {
+      return Promise.resolve({ ok: true, json: async () => ({ csrfToken: 'csrf-1' }) })
+    }
+    return Promise.resolve({
+      ok: resend.ok,
+      status: resend.status,
+      headers: new Headers(resend.headers),
+      json: async () => resend.body,
+    })
+  }))
+}
+
+describe('LoginPage — wrong code (registered user)', () => {
+  it('clears the code boxes when signIn rejects the code', async () => {
+    stubFetchForUser()
+    signInMock.mockResolvedValue({ error: 'CredentialsSignin', code: null })
+    await submitEmail()
+    fillOtpCode(TEST_CODE)
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(AUTH_ERRORS.invalidCode))
+    expect(firstDigit()).toHaveValue('')
+  })
+
+  it('shows the resend button only after a wrong code, and clears the boxes', async () => {
+    stubFetchWrongCodeForUser()
+    await submitEmail()
+    expect(screen.queryByRole('button', { name: RESEND_BTN })).toBeNull()
+    fillOtpCode(TEST_CODE)
+    expect(await screen.findByRole('button', { name: RESEND_BTN })).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent(AUTH_ERRORS.invalidCode)
+    expect(firstDigit()).toHaveValue('')
+  })
+
+  it('resend requests a new login code for the same email and clears the error', async () => {
+    stubFetchWrongCodeForUser()
+    await submitEmail('user@test.com')
+    fillOtpCode(TEST_CODE)
+    fireEvent.click(await screen.findByRole('button', { name: RESEND_BTN }))
+    await waitFor(() => expect(fetchCallsTo('request-login-code')).toHaveLength(2))
+    expect(JSON.parse(fetchCallsTo('request-login-code')[1][1].body as string)).toEqual({ email: 'user@test.com' })
+    await waitFor(() => expect(screen.queryByText(AUTH_ERRORS.invalidCode)).toBeNull())
+    expect(screen.queryByRole('button', { name: RESEND_BTN })).toBeNull()
+    expect(firstDigit()).toHaveValue('')
+  })
+
+  it('uses the new csrf token from the resend for the next verify', async () => {
+    stubFetchWrongCodeForUser()
+    await submitEmail()
+    fillOtpCode(TEST_CODE)
+    fireEvent.click(await screen.findByRole('button', { name: RESEND_BTN }))
+    await waitFor(() => expect(screen.queryByRole('button', { name: RESEND_BTN })).toBeNull())
+    fillOtpCode(TEST_CODE)
+    await waitFor(() => expect(fetchCallsTo('verify-login-code')).toHaveLength(2))
+    const headers = fetchCallsTo('verify-login-code')[1][1].headers as Record<string, string>
+    expect(headers['x-csrf-token']).toBe('csrf-2')
+  })
+
+  it('shows the "code too frequent" message with the server wait time when the resend is rate limited', async () => {
+    stubFetchWrongCodeForUser({
+      ok: false,
+      status: 429,
+      headers: { 'Retry-After': '150' },
+      body: { error: 'code_rate_limited', retryAfterSeconds: 150 },
+    })
+    await submitEmail()
+    fillOtpCode(TEST_CODE)
+    fireEvent.click(await screen.findByRole('button', { name: RESEND_BTN }))
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(codeTooFrequentMessage(150)))
+  })
+
+  it('confirms a successful resend with a status message', async () => {
+    stubFetchWrongCodeForUser()
+    await submitEmail()
+    fillOtpCode(TEST_CODE)
+    fireEvent.click(await screen.findByRole('button', { name: RESEND_BTN }))
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(LC.codeResent))
+  })
+
+  it('hides the resend confirmation once the next code is checked', async () => {
+    stubFetchWrongCodeForUser()
+    await submitEmail()
+    fillOtpCode(TEST_CODE)
+    fireEvent.click(await screen.findByRole('button', { name: RESEND_BTN }))
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(LC.codeResent))
+    fillOtpCode(TEST_CODE)
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(AUTH_ERRORS.invalidCode))
+    expect(screen.queryByText(LC.codeResent)).toBeNull()
+  })
+})
+
+describe('LoginPage — wrong code (new user)', () => {
+  it('resend re-registers with the same email and name', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      if (String(url).includes('check-email')) {
+        return Promise.resolve({ ok: true, json: async () => ({ registered: false }) })
+      }
+      if (String(url).includes('verify-registration-code')) {
+        return Promise.resolve({ ok: false, json: async () => ({ error: 'invalid_code' }) })
+      }
+      return Promise.resolve({ ok: true, json: async () => ({ csrfToken: 'csrf' }) })
+    }))
+    await goToNameStep('new@test.com')
+    fireEvent.change(screen.getByLabelText(NAME_FIELD), { target: { value: 'Мария' } })
+    fireEvent.click(screen.getByRole('button', { name: REQUEST_CODE_BTN }))
+    await waitFor(() => firstDigit())
+    fillOtpCode(TEST_CODE)
+    fireEvent.click(await screen.findByRole('button', { name: RESEND_BTN }))
+    await waitFor(() => expect(fetchCallsTo('/api/auth/register')).toHaveLength(2))
+    expect(JSON.parse(fetchCallsTo('/api/auth/register')[1][1].body as string)).toEqual({ email: 'new@test.com', name: 'Мария' })
+    expect(fetchCallsTo('request-login-code')).toHaveLength(0)
+  })
+})
+
+// ── Rate limits (429): show the wait time the server sent ──────────────────
+
+const TOO_MANY = 429
+
+function rateLimited(seconds: number, body: Record<string, unknown> = { error: 'Too many requests' }) {
+  return Promise.resolve({
+    ok: false,
+    status: TOO_MANY,
+    headers: new Headers({ 'Retry-After': String(seconds) }),
+    json: async () => body,
+  })
+}
+
+describe('LoginPage — too many attempts (429)', () => {
+  it('code step: shows "too many attempts" with the server wait time, not "wrong code"', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      if (String(url).includes('check-email')) {
+        return Promise.resolve({ ok: true, json: async () => ({ registered: true }) })
+      }
+      if (String(url).includes('verify-login-code')) return rateLimited(120)
+      return Promise.resolve({ ok: true, json: async () => ({ csrfToken: 'csrf' }) })
+    }))
+    await submitEmail()
+    fillOtpCode(TEST_CODE)
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(tooManyAttemptsMessage(120)))
+    expect(screen.queryByText(AUTH_ERRORS.invalidCode)).toBeNull()
+  })
+
+  it('email step: request-login-code rate limit shows the wait time under the email field', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      if (String(url).includes('check-email')) {
+        return Promise.resolve({ ok: true, json: async () => ({ registered: true }) })
+      }
+      return rateLimited(180, { error: 'code_rate_limited', retryAfterSeconds: 180 })
+    }))
+    render(<LoginPage />)
+    fireEvent.change(screen.getByLabelText(C.emailField), { target: { value: 'user@test.com' } })
+    fireEvent.submit(screen.getByRole('button', { name: 'Продолжить' }))
+    expect(await screen.findByText(tooManyAttemptsMessage(180))).toBeInTheDocument()
+  })
+
+  it('email step: check-email rate limit shows the wait time instead of a generic error', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(() => rateLimited(60)))
+    render(<LoginPage />)
+    fireEvent.change(screen.getByLabelText(C.emailField), { target: { value: 'user@test.com' } })
+    fireEvent.submit(screen.getByRole('button', { name: 'Продолжить' }))
+    expect(await screen.findByText(tooManyAttemptsMessage(60))).toBeInTheDocument()
+    expect(screen.queryByText(AUTH_ERRORS.generic)).toBeNull()
+  })
+
+  it('name step: register rate limit sends the user back to email with the wait time', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      if (String(url).includes('check-email')) {
+        return Promise.resolve({ ok: true, json: async () => ({ registered: false }) })
+      }
+      return rateLimited(240, { error: 'code_rate_limited', retryAfterSeconds: 240 })
+    }))
+    await goToNameStep()
+    fireEvent.change(screen.getByLabelText(NAME_FIELD), { target: { value: 'Мария' } })
+    fireEvent.click(screen.getByRole('button', { name: REQUEST_CODE_BTN }))
+    expect(await screen.findByText(tooManyAttemptsMessage(240))).toBeInTheDocument()
   })
 })

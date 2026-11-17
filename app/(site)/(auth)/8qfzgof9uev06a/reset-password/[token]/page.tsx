@@ -3,14 +3,14 @@
 import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useAuthForm } from '@/hooks/useAuthForm'
-import { ROUTES } from '@/utils/routes'
+import { ROUTES, API_ROUTES } from '@/utils/routes'
 import { AUTH_ERRORS } from '@/lib/auth-errors'
 import { AUTH_LABELS } from '@/lib/auth-labels'
 import { PASSWORD_MIN_LENGTH, HTTP_METHOD, JSON_HEADERS } from '@/lib/constants'
 import { Button } from '@/components/ui/buttons/Button'
 import { Input } from '@/components/ui/input/Input'
 import { FormError } from '@/components/ui/form-error/FormError'
-import styles from '../../auth-page.module.css'
+import styles from '../../../auth-page.module.css'
 
 const L = AUTH_LABELS.resetConfirm
 const C = AUTH_LABELS.common
@@ -34,7 +34,7 @@ export default function ConfirmResetPage() {
     e.preventDefault()
 
     await run(async () => {
-      const res = await fetch('/api/auth/reset-password', {
+      const res = await fetch(API_ROUTES.resetPassword, {
         method: HTTP_METHOD.POST,
         headers: JSON_HEADERS,
         body: JSON.stringify({

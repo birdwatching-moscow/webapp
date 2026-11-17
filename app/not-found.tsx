@@ -3,6 +3,9 @@ import { Button } from '@/components/ui/buttons/Button'
 import { ROUTES } from '@/utils/routes'
 import styles from './not-found.module.css'
 
+// .imageWrapper: full width on mobile, fixed 480px from the desktop breakpoint
+const IMAGE_SIZES = '(min-width: 1248px) 480px, 100vw'
+
 export default function NotFound() {
   return (
     <main className={styles.hero}>
@@ -21,6 +24,7 @@ export default function NotFound() {
           src="/placeholders/hero-media.png"
           alt=""
           fill
+          sizes={IMAGE_SIZES}
           className={styles.placeholder}
           aria-hidden
         />
@@ -28,6 +32,7 @@ export default function NotFound() {
           src="/404-image.png"
           alt="Птичье гнездо"
           fill
+          sizes={IMAGE_SIZES}
           className={styles.image}
           priority
         />

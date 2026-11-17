@@ -7,6 +7,7 @@ import {
   HTTP_METHOD,
   JSON_HEADERS,
   LOGIN_CODE_PROVIDER_ID,
+  HTTP_STATUS_TOO_MANY_REQUESTS,
 } from '@/lib/constants'
 import { useAuthForm } from '@/hooks/useAuthForm'
 import { useOtpInput } from '@/hooks/useOtpInput'
@@ -16,7 +17,9 @@ import { Button } from '@/components/ui/buttons/Button'
 import { Input } from '@/components/ui/input/Input'
 import { OtpStep } from '@/components/auth/OtpStep'
 import { FormError } from '@/components/ui/form-error/FormError'
-import { mapOtpVerifyError } from '@/lib/auth/mapOtpVerifyError'
+import { otpVerifyErrorMessage } from '@/lib/auth/mapOtpVerifyError'
+import { resendErrorMessage, retryAfterSeconds, tooManyAttemptsMessage } from '@/lib/auth/rateLimitMessage'
+import { validateEmail, validateName } from '@/utils/validateAuthFields'
 import styles from '../auth-page.module.css'
 
 const L = AUTH_LABELS.register
@@ -27,13 +30,16 @@ type RegisterStep = 'form' | 'code'
 export default function RegisterPage() {
   const router = useRouter()
   const { error, setError, loading, run } = useAuthForm()
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
+  const [nameError, setNameError] = useState('')
+  const [emailError, setEmailError] = useState('')
   const [step, setStep] = useState<RegisterStep>('form')
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
   const [nameInput, setNameInput] = useState('')
   const [emailInput, setEmailInput] = useState('')
   const [csrfToken, setCsrfToken] = useState('')
+  const [canResend, setCanResend] = useState(false)
+  const [notice, setNotice] = useState<string | null>(null)
   const otp = useOtpInput(submitCode)
 
   useEffect(() => {
@@ -42,21 +48,30 @@ export default function RegisterPage() {
 
   async function handleFormSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
-    setFieldErrors({})
+    const nextNameError = validateName(nameInput)
+    const nextEmailError = validateEmail(emailInput)
+    setNameError(nextNameError ?? '')
+    setEmailError(nextEmailError ?? '')
+    if (nextNameError || nextEmailError) return
+
+    const trimmedName = nameInput.trim()
+    const trimmedEmail = emailInput.trim()
 
     await run(async () => {
       const res = await fetch('/api/auth/register', {
         method: HTTP_METHOD.POST,
         headers: JSON_HEADERS,
-        body: JSON.stringify({ email: emailInput, name: nameInput }),
+        body: JSON.stringify({ email: trimmedEmail, name: trimmedName }),
       })
 
       if (!res.ok) {
-        const data = await res.json().catch(() => null)
-        if (data?.error === 'code_rate_limited') {
-          setError(AUTH_ERRORS.codeTooFrequent)
+        const data = await res.json().catch(() => null) as
+          { error?: string; retryAfterSeconds?: number; issues?: Partial<Record<'name' | 'email', string[]>> } | null
+        if (res.status === HTTP_STATUS_TOO_MANY_REQUESTS) {
+          setEmailError(tooManyAttemptsMessage(retryAfterSeconds(res, data)))
         } else if (data?.issues) {
-          setFieldErrors(data.issues)
+          setNameError(data.issues.name?.join(', ') ?? '')
+          setEmailError(data.issues.email?.join(', ') ?? '')
         } else {
           setError(AUTH_ERRORS.generic)
         }
@@ -65,14 +80,22 @@ export default function RegisterPage() {
 
       const data = await res.json()
       setCsrfToken(data.csrfToken ?? '')
-      setEmail(emailInput)
-      setName(nameInput)
+      setEmail(trimmedEmail)
+      setName(trimmedName)
       otp.reset()
       setStep('code')
     })
   }
 
+  /** Wrong/expired code: show the error, clear the boxes and offer a resend. */
+  function rejectCode(message: string) {
+    setError(message)
+    setCanResend(true)
+    otp.reset({ focus: true })
+  }
+
   async function submitCode(code: string) {
+    setNotice(null)
     await run(async () => {
       const verifyRes = await fetch('/api/auth/verify-registration-code', {
         method: HTTP_METHOD.POST,
@@ -83,15 +106,13 @@ export default function RegisterPage() {
       const verifyData = await verifyRes.json().catch(() => ({})) as { error?: string }
 
       if (!verifyRes.ok) {
-        setError(mapOtpVerifyError(verifyData.error))
-        otp.reset({ focus: true })
+        rejectCode(otpVerifyErrorMessage(verifyRes, verifyData))
         return
       }
 
       const result = await signIn(LOGIN_CODE_PROVIDER_ID, { email, code, redirect: false })
       if (result?.error) {
-        setError(AUTH_ERRORS.invalidCode)
-        otp.reset({ focus: true })
+        rejectCode(AUTH_ERRORS.invalidCode)
       } else {
         router.push('/profile')
         router.refresh()
@@ -99,10 +120,32 @@ export default function RegisterPage() {
     })
   }
 
+  async function resendCode() {
+    setNotice(null)
+    await run(async () => {
+      const res = await fetch('/api/auth/register', {
+        method: HTTP_METHOD.POST,
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ email, name }),
+      })
+      const data = await res.json().catch(() => ({})) as { csrfToken?: string; error?: string; retryAfterSeconds?: number }
+      if (!res.ok) {
+        setError(resendErrorMessage(res, data))
+        return
+      }
+      setCsrfToken(data.csrfToken ?? '')
+      setCanResend(false)
+      setNotice(AUTH_LABELS.loginCode.codeResent)
+      otp.reset({ focus: true })
+    })
+  }
+
   function goBackToForm() {
     setStep('form')
     otp.reset()
     setError(null)
+    setCanResend(false)
+    setNotice(null)
   }
 
   return (
@@ -119,7 +162,7 @@ export default function RegisterPage() {
 
           <FormError message={error} />
 
-          <form onSubmit={handleFormSubmit} className={styles.form}>
+          <form onSubmit={handleFormSubmit} className={styles.form} noValidate>
             <Input
               id="name"
               name="name"
@@ -127,10 +170,10 @@ export default function RegisterPage() {
               placeholder="Имя"
               aria-label={L.nameField}
               value={nameInput}
-              onChange={e => setNameInput(e.target.value)}
+              onChange={e => { setNameInput(e.target.value); setNameError('') }}
               autoComplete="name"
               required
-              error={fieldErrors.name?.join(', ')}
+              error={nameError}
               className={styles.fieldInput}
             />
             <Input
@@ -140,10 +183,10 @@ export default function RegisterPage() {
               placeholder="Ваш email"
               aria-label={C.emailField}
               value={emailInput}
-              onChange={e => setEmailInput(e.target.value)}
+              onChange={e => { setEmailInput(e.target.value); setEmailError('') }}
               autoComplete="email"
               required
-              error={fieldErrors.email?.join(', ')}
+              error={emailError}
               className={styles.fieldInput}
             />
             <div className={styles.actions}>
@@ -163,6 +206,8 @@ export default function RegisterPage() {
           error={error}
           loading={loading}
           onBack={goBackToForm}
+          onResend={canResend ? resendCode : undefined}
+          notice={notice}
         />
       )}
 

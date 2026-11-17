@@ -1,10 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { authMock, expeditionMock, expeditionDayMock, requestMock } = vi.hoisted(() => ({
+const { authMock, expeditionMock, expeditionDayMock, requestMock, userMock } = vi.hoisted(() => ({
   authMock: vi.fn(),
   expeditionMock: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
   expeditionDayMock: { deleteMany: vi.fn(), createMany: vi.fn() },
   requestMock: { count: vi.fn() },
+  // publishExpedition checks the publishing admin still exists before recording publishedBy
+  userMock: { count: vi.fn().mockResolvedValue(1) },
 }))
 
 vi.mock('@/lib/auth', () => ({ auth: authMock }))
@@ -13,6 +15,7 @@ vi.mock('@/lib/prisma', () => ({
     expedition: expeditionMock,
     expeditionDay: expeditionDayMock,
     request: requestMock,
+    user: userMock,
   },
 }))
 

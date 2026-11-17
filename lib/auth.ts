@@ -2,6 +2,7 @@ import NextAuth, { CredentialsSignin } from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
 import { authorizeCredentials, authorizeLoginCode, authorizeAdminTwoFactor } from '@/lib/auth/authorize'
 import { AuthCodeError } from '@/lib/auth/errors'
+import { authLogger } from '@/lib/auth/authLogger'
 import { SESSION_MAX_AGE_SECONDS, SESSION_UPDATE_AGE_SECONDS, LOGIN_CODE_PROVIDER_ID, ADMIN_2FA_PROVIDER_ID } from '@/lib/constants'
 import authConfig from '@/auth.config'
 import type { AuthorizedUser } from '@/types/auth'
@@ -32,6 +33,8 @@ async function withSigninErrors(
 // auth.config.ts. `NextAuth()` still type-checks the argument.
 export const authOptions = {
   ...authConfig,
+  // Wrong codes are expected → one debug line; real failures → error with cause.
+  logger: authLogger,
   // `updateAge` gives sliding renewal — middleware.ts must fire on every request.
   session: {
     strategy: 'jwt' as const,

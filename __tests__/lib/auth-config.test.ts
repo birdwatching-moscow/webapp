@@ -33,3 +33,11 @@ describe('authOptions session block', () => {
     expect(authOptions.session?.strategy).toBe('jwt')
   })
 })
+
+describe('authOptions logger', () => {
+  it('routes Auth.js error, warn and debug through the app logger', () => {
+    expect(typeof authOptions.logger?.error).toBe('function')
+    expect(typeof authOptions.logger?.warn).toBe('function')
+    expect(typeof authOptions.logger?.debug).toBe('function')
+  })
+})

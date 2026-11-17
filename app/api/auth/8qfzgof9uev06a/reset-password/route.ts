@@ -5,6 +5,9 @@ import { prisma } from '@/lib/prisma'
 import { confirmResetSchema } from '@/lib/validation/auth'
 import { BCRYPT_COST, HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_INTERNAL_SERVER_ERROR } from '@/lib/constants'
 import { validateRequest } from '@/lib/api/validate'
+import { createLogger } from '@/lib/logger'
+
+const log = createLogger('auth:password-reset')
 
 const INVALID_LINK = { error: 'Invalid or expired link' }
 
@@ -67,7 +70,7 @@ export async function POST(req: Request) {
       },
     })
   } catch (err) {
-    console.error('POST /api/auth/reset-password failed', err)
+    log.error('reset confirm failed', { err })
     return NextResponse.json({ error: 'Internal server error' }, { status: HTTP_STATUS_INTERNAL_SERVER_ERROR })
   }
 

@@ -3,6 +3,9 @@ import { getActiveExpeditions } from '@/lib/expeditions'
 import { ExpeditionCard } from '@/components/ExpeditionCard/ExpeditionCard'
 import styles from './Expeditions.module.css'
 
+// .mediaContainer is capped at 329px wide on every breakpoint
+const HERO_IMAGE_SIZES = '329px'
+
 export const Expeditions = async () => {
   const expeditions = await getActiveExpeditions()
 
@@ -15,6 +18,7 @@ export const Expeditions = async () => {
               src="/placeholders/videos-placeholder.png"
               alt=""
               fill
+              sizes={HERO_IMAGE_SIZES}
               priority
               className={styles.image}
             />

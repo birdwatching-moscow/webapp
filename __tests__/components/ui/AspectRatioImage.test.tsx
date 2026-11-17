@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { AspectRatioImage } from '@/components/ui/aspect-ratio-image/AspectRatioImage'
+import { IMAGE_SIZES } from '@/utils/imageSizes'
 
 vi.mock('next/image', () => ({
   default: ({ src, alt, fill, ...props }: { src: string; alt: string; fill?: boolean; [key: string]: unknown }) => (
@@ -64,5 +65,17 @@ describe('AspectRatioImage — className', () => {
   it('className is forwarded to the wrapper', () => {
     const { container } = render(<AspectRatioImage ratio="1-1" alt="test" className="my-img" />)
     expect(container.firstChild).toHaveClass('my-img')
+  })
+})
+
+describe('AspectRatioImage — responsive sizes (required with fill)', () => {
+  it('defaults sizes to a card width, not 100vw', () => {
+    render(<AspectRatioImage ratio="16-9" src="/a.jpg" alt="A bird" />)
+    expect(screen.getByRole('img', { name: 'A bird' })).toHaveAttribute('sizes', IMAGE_SIZES.cardThird)
+  })
+
+  it('passes a custom sizes value through', () => {
+    render(<AspectRatioImage ratio="1-1" src="/a.jpg" alt="A bird" sizes="80px" />)
+    expect(screen.getByRole('img', { name: 'A bird' })).toHaveAttribute('sizes', '80px')
   })
 })

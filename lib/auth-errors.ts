@@ -6,8 +6,11 @@ export const AUTH_ERRORS = {
   accountBlocked: 'Доступ к аккаунту ограничен. Напишите на birdwatching@mail.ru.',
   invalidCode:      'Неверный код. Проверьте его и попробуйте ещё раз.',
   expiredCode:      'Срок действия кода истёк. Отправьте новый код.',
-  tooManyAttempts:  'Слишком много попыток. Новый код можно отправить через 1 минуту.',
-  codeTooFrequent:  'Код уже был отправлен. Запросить новый можно через 1 минуту.',
   invalidChallenge: 'Сессия истекла. Начните вход заново.',
   passwordResetRequired: 'Пароль устарел. Запросите сброс пароля.',
+
+  emailRequired:    'Введите почту, чтобы продолжить',
+  emailInvalid:     'Введите почту в формате name@example.ru',
+  nameRequired:     'Введите имя, чтобы продолжить',
+  passwordRequired: 'Введите пароль, чтобы продолжить',
 } as const;

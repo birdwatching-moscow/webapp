@@ -39,6 +39,7 @@ export const AUTH_LABELS = {
     codeField:         'Код из письма',
     codeSentTo:        'Если аккаунт с этой почтой существует, письмо с кодом уже отправлено.',
     resendCode:        'Отправить код снова',
+    codeResent:        'Новый код отправлен. Проверьте почту.',
     changeEmail:       'Указать другой email',
   },
 
@@ -65,7 +66,7 @@ export const AUTH_LABELS = {
     submit:       'Отправить ссылку',
     submitting:   'Отправляем…',
     successTitle: 'Проверьте почту',
-    successText:  'Если этот email зарегистрирован, мы отправили ссылку для сброса пароля.',
+    successText:  'Мы отправили ссылку для сброса пароля.',
   },
 
   resetConfirm: {

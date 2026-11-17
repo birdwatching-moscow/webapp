@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState, useRef, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 import { ROUTES } from '@/utils/routes'
@@ -15,6 +15,7 @@ import {
   LOGIN_CODE_PROVIDER_ID,
   ADMIN_2FA_PROVIDER_ID,
   PASSWORD_MIN_LENGTH,
+  HTTP_STATUS_TOO_MANY_REQUESTS,
 } from '@/lib/constants'
 import { AUTH_ERROR_ACCOUNT_BLOCKED, AUTH_ERROR_PASSWORD_RESET_REQUIRED } from '@/lib/auth/errors'
 import { useAuthForm } from '@/hooks/useAuthForm'
@@ -24,8 +25,11 @@ import { Button } from '@/components/ui/buttons/Button'
 import { Input } from '@/components/ui/input/Input'
 import { FormError } from '@/components/ui/form-error/FormError'
 import { OtpStep } from '@/components/auth/OtpStep'
+import { HiddenUsernameField } from '@/components/auth/HiddenUsernameField'
 import { AUTH_LABELS } from '@/lib/auth-labels'
-import { mapOtpVerifyError } from '@/lib/auth/mapOtpVerifyError'
+import { otpVerifyErrorMessage } from '@/lib/auth/mapOtpVerifyError'
+import { resendErrorMessage, retryAfterSeconds, tooManyAttemptsMessage } from '@/lib/auth/rateLimitMessage'
+import { validateEmail, validateName } from '@/utils/validateAuthFields'
 import { EyeIcon } from '@/components/icons/EyeIcon'
 import { EyeOffIcon } from '@/components/icons/EyeOffIcon'
 import styles from '../auth-page.module.css'
@@ -59,7 +63,10 @@ function LoginCodeForm() {
   const [confirmPasswordError, setConfirmPasswordError] = useState('')
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const passwordInputRef = useRef<HTMLInputElement>(null)
+  const [passwordInput, setPasswordInput] = useState('')
+  const [passwordError, setPasswordError] = useState('')
+  const [canResend, setCanResend] = useState(false)
+  const [notice, setNotice] = useState<string | null>(null)
   const otp = useOtpInput(submitCode)
 
   const isRegistered = searchParams.get(REGISTERED_PARAM) === '1'
@@ -69,7 +76,7 @@ function LoginCodeForm() {
   }, [step, otp.digitRefs])
 
   useEffect(() => {
-    if (step === 'password') passwordInputRef.current?.focus()
+    if (step === 'password') document.getElementById('password')?.focus()
   }, [step])
 
   useEffect(() => {
@@ -78,12 +85,9 @@ function LoginCodeForm() {
 
   async function handleEmailSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
-    if (!emailInput.trim()) {
-      setEmailError('Введите почту, чтобы продолжить')
-      return
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.trim())) {
-      setEmailError('Введите почту в формате name@example.ru')
+    const validationError = validateEmail(emailInput)
+    if (validationError) {
+      setEmailError(validationError)
       return
     }
     setEmailError('')
@@ -95,7 +99,11 @@ function LoginCodeForm() {
         body: JSON.stringify({ email: emailInput.trim() }),
       })
       if (!checkRes.ok) {
-        setError(AUTH_ERRORS.generic)
+        if (checkRes.status === HTTP_STATUS_TOO_MANY_REQUESTS) {
+          setEmailError(tooManyAttemptsMessage(retryAfterSeconds(checkRes)))
+        } else {
+          setError(AUTH_ERRORS.generic)
+        }
         return
       }
       const checkData = await checkRes.json() as { registered: boolean }
@@ -113,11 +121,11 @@ function LoginCodeForm() {
         headers: JSON_HEADERS,
         body: JSON.stringify({ email: emailInput.trim() }),
       })
-      let resData: { csrfToken?: string; error?: string } = {}
+      let resData: { csrfToken?: string; error?: string; retryAfterSeconds?: number } = {}
       try { resData = await res.json() } catch { /* no body */ }
       if (!res.ok) {
-        if (resData.error === 'code_rate_limited') {
-          setEmailError(AUTH_ERRORS.tooManyAttempts)
+        if (res.status === HTTP_STATUS_TOO_MANY_REQUESTS) {
+          setEmailError(tooManyAttemptsMessage(retryAfterSeconds(res, resData)))
         } else {
           setError(AUTH_ERRORS.generic)
         }
@@ -132,8 +140,9 @@ function LoginCodeForm() {
 
   async function handleNameSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
-    if (!nameInput.trim()) {
-      setNameError('Введите имя, чтобы продолжить')
+    const validationError = validateName(nameInput)
+    if (validationError) {
+      setNameError(validationError)
       return
     }
     setNameError('')
@@ -145,9 +154,9 @@ function LoginCodeForm() {
         body: JSON.stringify({ email, name: nameInput.trim() }),
       })
       if (!res.ok) {
-        const data = await res.json().catch(() => null) as { error?: string } | null
-        if (data?.error === 'code_rate_limited') {
-          setEmailError(AUTH_ERRORS.tooManyAttempts)
+        const data = await res.json().catch(() => null) as { error?: string; retryAfterSeconds?: number } | null
+        if (res.status === HTTP_STATUS_TOO_MANY_REQUESTS) {
+          setEmailError(tooManyAttemptsMessage(retryAfterSeconds(res, data)))
           setStep('email')
         } else {
           setError(AUTH_ERRORS.generic)
@@ -162,7 +171,15 @@ function LoginCodeForm() {
     })
   }
 
+  /** Wrong/expired code: show the error, clear the boxes and offer a resend. */
+  function rejectCode(message: string) {
+    setError(message)
+    setCanResend(true)
+    otp.reset({ focus: true })
+  }
+
   async function submitCode(code: string) {
+    setNotice(null)
     await run(async () => {
       if (isNewUser) {
         const verifyRes = await fetch('/api/auth/verify-registration-code', {
@@ -172,14 +189,12 @@ function LoginCodeForm() {
         })
         const verifyData = await verifyRes.json().catch(() => ({})) as { error?: string }
         if (!verifyRes.ok) {
-          setError(mapOtpVerifyError(verifyData.error))
-          otp.reset({ focus: true })
+          rejectCode(otpVerifyErrorMessage(verifyRes, verifyData))
           return
         }
         const result = await signIn(LOGIN_CODE_PROVIDER_ID, { email, code, redirect: false })
         if (result?.error) {
-          setError(AUTH_ERRORS.invalidCode)
-          otp.reset({ focus: true })
+          rejectCode(AUTH_ERRORS.invalidCode)
         } else {
           router.push(callbackUrl)
           router.refresh()
@@ -195,8 +210,7 @@ function LoginCodeForm() {
       const verifyData = await verifyRes.json()
 
       if (!verifyRes.ok) {
-        setError(mapOtpVerifyError(verifyData.error))
-        otp.reset({ focus: true })
+        rejectCode(otpVerifyErrorMessage(verifyRes, verifyData))
         return
       }
 
@@ -216,7 +230,7 @@ function LoginCodeForm() {
       if (result?.code === AUTH_ERROR_ACCOUNT_BLOCKED) {
         setError(AUTH_ERRORS.accountBlocked)
       } else if (result?.error) {
-        setError(AUTH_ERRORS.invalidCode)
+        rejectCode(AUTH_ERRORS.invalidCode)
       } else {
         router.push(callbackUrl)
         router.refresh()
@@ -224,22 +238,56 @@ function LoginCodeForm() {
     })
   }
 
+  async function resendCode() {
+    setNotice(null)
+    await run(async () => {
+      const res = isNewUser
+        ? await fetch('/api/auth/register', {
+            method: HTTP_METHOD.POST,
+            headers: JSON_HEADERS,
+            body: JSON.stringify({ email, name }),
+          })
+        : await fetch('/api/auth/request-login-code', {
+            method: HTTP_METHOD.POST,
+            headers: JSON_HEADERS,
+            body: JSON.stringify({ email }),
+          })
+      const data = await res.json().catch(() => ({})) as { csrfToken?: string; error?: string; retryAfterSeconds?: number }
+      if (!res.ok) {
+        setError(resendErrorMessage(res, data))
+        return
+      }
+      setCsrfToken(data.csrfToken ?? '')
+      setCanResend(false)
+      setNotice(AUTH_LABELS.loginCode.codeResent)
+      otp.reset({ focus: true })
+    })
+  }
+
   function goBackToEmail() {
     setStep('email')
     otp.reset()
     setError(null)
+    setCanResend(false)
+    setNotice(null)
   }
 
   function goBackToName() {
     setStep('name')
     otp.reset()
     setError(null)
+    setCanResend(false)
+    setNotice(null)
   }
 
   async function handlePasswordSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
-    const form = new FormData(e.currentTarget)
-    const password = String(form.get('password') ?? '')
+    const password = passwordInput
+    if (!password) {
+      setPasswordError(AUTH_ERRORS.passwordRequired)
+      return
+    }
+    setPasswordError('')
 
     await run(async () => {
       const result = await signIn(ADMIN_2FA_PROVIDER_ID, {
@@ -368,7 +416,7 @@ function LoginCodeForm() {
 
           <FormError message={error} />
 
-          <form onSubmit={handleNameSubmit} className={styles.form}>
+          <form onSubmit={handleNameSubmit} className={styles.form} noValidate>
             <Input
               id="name"
               name="name"
@@ -404,6 +452,8 @@ function LoginCodeForm() {
           error={error}
           loading={loading}
           onBack={isNewUser ? goBackToName : goBackToEmail}
+          onResend={canResend ? resendCode : undefined}
+          notice={notice}
         />
       )}
 
@@ -415,18 +465,20 @@ function LoginCodeForm() {
 
           <FormError message={error} />
 
-          <form onSubmit={handlePasswordSubmit} className={styles.form}>
-            <div>
-              <label htmlFor="password">{C.passwordField}</label>
-              <input
-                ref={passwordInputRef}
-                id="password"
-                name="password"
-                type="password"
-                required
-                autoComplete="current-password"
-              />
-            </div>
+          <form onSubmit={handlePasswordSubmit} className={styles.form} noValidate>
+            <HiddenUsernameField email={email} />
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              label={C.passwordField}
+              value={passwordInput}
+              onChange={e => { setPasswordInput(e.target.value); setPasswordError('') }}
+              autoComplete="current-password"
+              required
+              error={passwordError}
+              className={styles.fieldInput}
+            />
             <div className={styles.actions}>
               <Button type="submit" fullWidth loading={loading} disabled={loading}>
                 {loading ? LA.submitting : LA.submit}
@@ -446,6 +498,7 @@ function LoginCodeForm() {
           <FormError message={error} />
 
           <form onSubmit={handleSetPasswordSubmit} className={styles.form} noValidate>
+            <HiddenUsernameField email={email} />
             <Input
               id="newPassword"
               name="newPassword"
