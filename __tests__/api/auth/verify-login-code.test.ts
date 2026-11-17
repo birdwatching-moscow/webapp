@@ -180,8 +180,9 @@ describe('POST /api/auth/verify-login-code — ADMIN no passwordHash (first logi
 describe('POST /api/auth/verify-login-code — ADMIN invalid code', () => {
   beforeEach(() => {
     prismaMock.user.findFirst.mockResolvedValue(ADMIN)
-    // First findFirst: no match (wrong/expired/over-limit). Second: active code to increment.
+    // 1st: main match → no match; 2nd: expired check → no expired code; 3rd: active code to increment.
     prismaMock.loginCode.findFirst
+      .mockResolvedValueOnce(null)
       .mockResolvedValueOnce(null)
       .mockResolvedValueOnce(ACTIVE_CODE)
   })
@@ -209,6 +210,7 @@ describe('POST /api/auth/verify-login-code — ADMIN invalid code', () => {
     prismaMock.loginCode.findFirst.mockReset()
     prismaMock.loginCode.findFirst
       .mockResolvedValueOnce(null)  // no match
+      .mockResolvedValueOnce(null)  // no expired code
       .mockResolvedValueOnce(null)  // no active code to increment
     const res = await POST(makeReq({ email: ADMIN.email, code: 'WRONG1' }))
     expect(res.status).toBe(HTTP_STATUS_UNAUTHORIZED)
@@ -218,6 +220,7 @@ describe('POST /api/auth/verify-login-code — ADMIN invalid code', () => {
   it('returns 401 when code is at attempt limit', async () => {
     prismaMock.loginCode.findFirst.mockReset()
     prismaMock.loginCode.findFirst
+      .mockResolvedValueOnce(null)
       .mockResolvedValueOnce(null)
       .mockResolvedValueOnce({ ...ACTIVE_CODE, attempts: LOGIN_CODE_MAX_ATTEMPTS })
     const res = await POST(makeReq({ email: ADMIN.email, code: 'ABCD2F' }))

@@ -1,0 +1,94 @@
+/* ─── Mobile (single-column, image first) ──────────────────────────────────── */
+
+.hero {
+  width: 100%;
+  padding-inline: var(--page-gutter);
+  padding-top: var(--space-8);
+  padding-bottom: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Mobile: image is first child by default */
+.imageWrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Portrait 9:16 container — full width on mobile, capped at 584px tall */
+.mediaContainer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  max-height: 584px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* When max-height kicks in, width shrinks to match the aspect ratio */
+@supports (aspect-ratio: 9 / 16) {
+  .mediaContainer {
+    max-width: calc(584px * 9 / 16); /* ~328.5px once max-height is hit */
+  }
+}
+
+.image {
+  object-fit: cover;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.heading {
+  margin: 0;
+}
+
+.paragraphs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.paragraph {
+  margin: 0;
+  color: var(--color-muted-foreground);
+}
+
+/* ─── Desktop (two-column, text left / media right) ────────────────────────── */
+
+@media (min-width: 1248px) {
+  .hero {
+    flex-direction: row;
+    align-items: center;
+    gap: 48px;
+    padding-top: 96px;
+    padding-bottom: 96px;
+  }
+
+  /* Text goes left */
+  .text {
+    order: 1;
+    flex: 0 0 50%;
+  }
+
+  /* Image column goes right, centers the 329×584 media within */
+  .imageWrapper {
+    order: 2;
+    flex: 0 0 50%;
+  }
+
+  /* Exact Figma dimensions: 329×584, border-radius 12px */
+  .mediaContainer {
+    width: 329px;
+    height: 584px;
+    aspect-ratio: unset;
+    max-height: unset;
+    max-width: unset;
+    margin: 0 auto;
+  }
+}

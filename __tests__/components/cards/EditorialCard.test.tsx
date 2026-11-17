@@ -21,9 +21,14 @@ describe('EditorialCard — content', () => {
     expect(screen.getByText(base.title)).toBeInTheDocument()
   })
 
-  it('title has text-h1 class', () => {
+  it('title has text-h2 class', () => {
     render(<EditorialCard {...base} />)
-    expect(screen.getByText(base.title).className).toMatch(/text-h1/)
+    expect(screen.getByText(base.title).className).toMatch(/text-h2/)
+  })
+
+  it('title is an <h3> heading', () => {
+    render(<EditorialCard {...base} />)
+    expect(screen.getByRole('heading', { level: 3, name: base.title })).toBeInTheDocument()
   })
 
   it('renders subtitle', () => {
@@ -59,5 +64,15 @@ describe('EditorialCard — structure', () => {
     const { container } = render(<EditorialCard {...base} />)
     expect(container.querySelector('button')).toBeNull()
     expect(container.querySelector('a')).toBeNull()
+  })
+})
+
+describe('EditorialCard — link', () => {
+  it('wraps the card in an external link when href is provided', () => {
+    render(<EditorialCard {...base} href="https://example.com/article" />)
+    const link = screen.getByRole('link', { name: new RegExp(base.title) })
+    expect(link).toHaveAttribute('href', 'https://example.com/article')
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer')
   })
 })

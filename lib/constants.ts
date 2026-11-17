@@ -19,7 +19,7 @@ export const BCRYPT_COST = 12
 export const PASSWORD_RESET_TOKEN_TTL_MS = 60 * 60 * 1000
 
 // Email one-time login code (USER accounts)
-export const LOGIN_CODE_LENGTH = 6
+export const LOGIN_CODE_LENGTH = 4
 export const LOGIN_CODE_ALPHABET = '0123456789'
 export const LOGIN_CODE_TTL_MS = 5 * 60 * 1000
 export const LOGIN_CODE_MAX_ATTEMPTS = 5
@@ -70,8 +70,8 @@ export const YOOKASSA_DESCRIPTION_MAX_LENGTH = 128
 // Return-page reconciliation poll cadence
 export const ORDER_STATUS_POLL_INTERVAL_MS = 2000
 
-// Yandex Cloud Postbox — SMTP gateway is fixed by the provider, not an env var
-export const POSTBOX_SMTP_HOST = 'postbox.cloud.yandex.net'
-export const POSTBOX_SMTP_PORT = 587
+// Yandex Cloud Postbox
 export const POSTBOX_DEFAULT_FROM_ADDRESS = 'no-reply@localhost'
 export const POSTBOX_DEFAULT_FROM_NAME = 'Птицы Москвы'
+
+export const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'birdwatching@mail.ru'

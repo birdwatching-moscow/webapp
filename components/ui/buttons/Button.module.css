@@ -1,16 +1,14 @@
 .button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  composes: inline-flex-center from global;
   border: none;
   border-radius: var(--radius-lg);
   cursor: pointer;
   font-family: 'Manrope', sans-serif;
   font-weight: 500;
-  font-size: 16px;
+  font-size: var(--font-size-md);
   line-height: 1;
   text-decoration: none;
-  transition: background-color 0.15s, border-color 0.15s, opacity 0.15s;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
   white-space: nowrap;
 }
 
@@ -36,15 +34,43 @@
 }
 
 .secondary {
-  background: transparent;
-  color: var(--color-primary);
+  /* Override these custom properties to theme this variant without !important */
+  --_secondary-color:          var(--color-primary);
+  --_secondary-border-color:   var(--_secondary-color);
+  --_secondary-bg:             transparent;
+  --_secondary-padding-inline: var(--space-5);
+
+  background: var(--_secondary-bg);
+  color: var(--_secondary-color);
+  border: var(--stroke-default) solid var(--_secondary-border-color);
+  padding: 0 var(--_secondary-padding-inline);
+}
+
+.secondary:hover:not(:disabled):not([aria-disabled='true']) {
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
+.outline {
+  background: var(--color-background);
+  color: var(--color-foreground);
   border: var(--stroke-default) solid var(--color-primary);
   padding: 0 var(--space-5);
 }
 
-.secondary:hover:not(:disabled):not([aria-disabled='true']) {
-  border-color: var(--color-primary-hover);
-  color: var(--color-primary-hover);
+.outline:hover:not(:disabled):not([aria-disabled='true']) {
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
+.destructive {
+  background: var(--color-error);
+  color: #fff;
+  padding: 0 var(--space-5);
+}
+
+.destructive:hover:not(:disabled):not([aria-disabled='true']) {
+  opacity: 0.88;
 }
 
 .ghost {
@@ -72,6 +98,19 @@
   height: var(--size-control-sm);
 }
 
+.lg {
+  height: var(--size-control-header-mobile);
+  padding: var(--space-3) var(--space-7);
+  font-size: var(--font-size-lg);
+  font-weight: 500;
+  gap: var(--space-2);
+}
+
+.fullWidth {
+  display: flex;
+  width: 100%;
+}
+
 /* Disabled / loading */
 
 .button:disabled,
@@ -79,4 +118,9 @@
   opacity: var(--opacity-disabled);
   cursor: not-allowed;
   pointer-events: none;
+}
+
+.button[aria-busy='true'] {
+  opacity: 1;
+  cursor: wait;
 }

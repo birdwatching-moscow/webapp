@@ -1,0 +1,155 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* ── Upload zone ─────────────────────────────────── */
+
+.zone {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-lg);
+  border: 1.5px dashed var(--color-border);
+  background: color-mix(in srgb, var(--color-border) 20%, transparent);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  outline: none;
+}
+
+.zone:hover:not(.zoneDisabled),
+.zone:focus-visible:not(.zoneDisabled) {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 4%, transparent);
+}
+
+.zone.dragOver {
+  border-color: var(--color-primary);
+  border-style: solid;
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+}
+
+.zone.zoneDisabled {
+  cursor: default;
+  opacity: var(--opacity-disabled);
+}
+
+/* ── Empty state ─────────────────────────────────── */
+
+.empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.emptyIcon {
+  width: 32px;
+  height: 32px;
+  color: var(--color-muted-foreground);
+  flex-shrink: 0;
+}
+
+.emptyLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-muted-foreground);
+  text-align: center;
+}
+
+.emptyHint {
+  font-size: var(--font-size-xs);
+  color: color-mix(in srgb, var(--color-muted-foreground) 70%, transparent);
+}
+
+/* ── Preview ─────────────────────────────────────── */
+
+.preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.zone:hover .overlay,
+.zone:focus-visible .overlay {
+  opacity: 1;
+}
+
+.overlayLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.03em;
+}
+
+/* ── URL input row ───────────────────────────────── */
+
+.urlRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.urlLabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-muted-foreground);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.urlInput {
+  flex: 1;
+  min-width: 0;
+  padding: 0 var(--space-3);
+  height: var(--size-control-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-foreground);
+  background: var(--color-background);
+  outline: none;
+  transition: border-color 0.15s;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.urlInput:focus {
+  border-color: var(--color-primary);
+}
+
+.urlInput:disabled {
+  opacity: var(--opacity-disabled);
+}
+
+/* ── Hidden file input ───────────────────────────── */
+
+.fileInput {
+  display: none;
+}
+
+/* ── Error ───────────────────────────────────────── */
+
+.error {
+  font-size: var(--font-size-xs);
+  color: var(--color-error);
+  margin: 0;
+}

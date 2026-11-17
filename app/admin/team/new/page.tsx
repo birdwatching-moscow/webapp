@@ -1,20 +1,19 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createTeamMember } from '@/app/admin/team/_actions'
+import { ProfileLinkField } from '@/app/admin/team/[id]/ProfileLinkField'
+import { ROUTES } from '@/utils/routes'
 
 export default function NewTeamMemberPage() {
   async function handleCreate(formData: FormData) {
     'use server'
-    const profileLinks = (formData.get('profileLinks') as string)
-      .split('\n')
-      .map((u) => u.trim())
-      .filter(Boolean)
+    const link = ((formData.get('profileLink') as string) ?? '').trim()
     const id = await createTeamMember({
       name: formData.get('name') as string,
       photoUrl: formData.get('photoUrl') as string,
       education: (formData.get('education') as string) || undefined,
       achievements: (formData.get('achievements') as string) || undefined,
-      profileLinks,
+      profileLinks: link ? [link] : [],
       sortOrder: parseInt(formData.get('sortOrder') as string, 10),
     })
     redirect(`/admin/team/${id}`)
@@ -23,7 +22,7 @@ export default function NewTeamMemberPage() {
   return (
     <div>
       <h1>Новый участник команды</h1>
-      <Link href="/admin/team">← Назад</Link>
+      <Link href={ROUTES.admin.team}>← Назад</Link>
       <form action={handleCreate}>
         <label>
           Имя
@@ -41,10 +40,8 @@ export default function NewTeamMemberPage() {
           Достижения
           <textarea name="achievements" />
         </label>
-        <label>
-          Ссылки профиля (по одной на строку)
-          <textarea name="profileLinks" rows={3} />
-        </label>
+        <label>Профиль</label>
+        <ProfileLinkField defaultValue="" />
         <label>
           Порядок сортировки
           <input name="sortOrder" type="number" defaultValue={0} required />

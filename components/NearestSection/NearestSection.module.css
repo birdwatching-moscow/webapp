@@ -1,0 +1,22 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.heading {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 32px;
+}
+
+.moreButton {
+  min-width: 260px;
+}
+
+@media (min-width: 1248px) {
+  .moreButton {
+    max-width: 406px;
+  }
+}

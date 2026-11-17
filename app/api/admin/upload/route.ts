@@ -46,8 +46,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'file too large' }, { status: HTTP_STATUS_BAD_REQUEST })
   }
 
+  const folder = new URL(request.url).searchParams.get('folder')
+  const VALID_FOLDERS = new Set(['walks', 'expeditions', 'team'])
+  const prefix = folder && VALID_FOLDERS.has(folder) ? folder : 'uploads'
+
   const ext = MIME_TO_EXT[file.type]
-  const key = `uploads/${randomUUID()}.${ext}`
+  const key = `${prefix}/${randomUUID()}.${ext}`
   const buffer = Buffer.from(await file.arrayBuffer())
 
   try {

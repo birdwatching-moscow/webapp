@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { createExpedition } from '@/app/admin/expeditions/_actions'
+import { ROUTES } from '@/utils/routes'
 
 export default async function NewExpeditionPage() {
   const guides = await prisma.teamMember.findMany({ orderBy: { name: 'asc' } })
@@ -33,7 +34,7 @@ export default async function NewExpeditionPage() {
   return (
     <div>
       <h1>Новая экспедиция</h1>
-      <Link href="/admin/expeditions">← Назад</Link>
+      <Link href={ROUTES.admin.expeditions}>← Назад</Link>
       <form action={handleCreate}>
         <label>
           Название

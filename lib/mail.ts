@@ -1,12 +1,10 @@
-import nodemailer from 'nodemailer'
+import { SESv2Client, SendEmailCommand } from '@aws-sdk/client-sesv2'
 import {
-  POSTBOX_SMTP_HOST,
-  POSTBOX_SMTP_PORT,
   POSTBOX_DEFAULT_FROM_ADDRESS,
   POSTBOX_DEFAULT_FROM_NAME,
 } from '@/lib/constants'
 
-export type MailKind = 'welcome' | 'password-reset' | 'order-paid' | 'login-code'
+export type MailKind = 'welcome' | 'password-reset' | 'order-paid' | 'login-code' | 'already-registered' | 'contact-request'
 
 interface MailTemplate {
   subject: string
@@ -14,16 +12,12 @@ interface MailTemplate {
   text: string
 }
 
-// Created once at module load. Auth credentials may be absent in local dev —
-// no connection is attempted until sendMail() is called, and sendMail() guards
-// on POSTBOX_SMTP_USER before ever touching the transporter.
-const transporter = nodemailer.createTransport({
-  host: POSTBOX_SMTP_HOST,
-  port: POSTBOX_SMTP_PORT,
-  secure: false, // STARTTLS on port 587
-  auth: {
-    user: process.env.POSTBOX_SMTP_USER,
-    pass: process.env.POSTBOX_SMTP_PASSWORD,
+const sesClient = new SESv2Client({
+  endpoint: 'https://postbox.cloud.yandex.net',
+  region: 'ru-central1',
+  credentials: {
+    accessKeyId:     process.env.POSTBOX_KEY_ID     ?? '',
+    secretAccessKey: process.env.POSTBOX_KEY_SECRET ?? '',
   },
 })
 
@@ -89,6 +83,34 @@ function loginCodeTemplate(data: Record<string, string>): MailTemplate {
   }
 }
 
+function alreadyRegisteredTemplate(data: Record<string, string>): MailTemplate {
+  const loginUrl = data.loginUrl ?? '/login'
+  return {
+    subject: 'Вы уже зарегистрированы на Birdwatching Moscow',
+    html: `
+      <div>
+        <h1>Вы уже зарегистрированы</h1>
+        <p>Кто-то попытался зарегистрироваться с вашим адресом электронной почты на сайте Birdwatching Moscow.</p>
+        <p>Если это были вы — просто войдите в аккаунт по ссылке ниже:</p>
+        <p><a href="${loginUrl}">${loginUrl}</a></p>
+        <p>Если вы не делали этого запроса, проигнорируйте письмо.</p>
+      </div>
+    `,
+    text: `Кто-то попытался зарегистрироваться с вашим адресом на сайте Birdwatching Moscow.\n\nЕсли это были вы — войдите по ссылке: ${loginUrl}\n\nЕсли нет — просто проигнорируйте это письмо.`,
+  }
+}
+
+function contactRequestTemplate(data: Record<string, string>): MailTemplate {
+  const { label, name, email, message } = data
+  const subject = `${name} — ${label}`
+  const text = `Имя: ${name}\nПочта: ${email}\nКомментарий: ${message}`
+  return {
+    subject,
+    html: `<p><b>Имя:</b> ${name}</p><p><b>Почта:</b> ${email}</p><p><b>Комментарий:</b> ${message}</p>`,
+    text,
+  }
+}
+
 function buildTemplate(kind: MailKind, data: Record<string, string>): MailTemplate {
   switch (kind) {
     case 'welcome':
@@ -99,6 +121,10 @@ function buildTemplate(kind: MailKind, data: Record<string, string>): MailTempla
       return orderPaidTemplate(data)
     case 'login-code':
       return loginCodeTemplate(data)
+    case 'already-registered':
+      return alreadyRegisteredTemplate(data)
+    case 'contact-request':
+      return contactRequestTemplate(data)
   }
 }
 
@@ -107,23 +133,26 @@ export async function sendMail(args: {
   kind: MailKind
   data: Record<string, string>
 }): Promise<void> {
-  if (!process.env.POSTBOX_SMTP_USER) {
-    console.error('[mail] POSTBOX_SMTP_USER not set — skipping')
-    return
-  }
+  if (!process.env.POSTBOX_KEY_ID) return
 
   const fromAddress = process.env.POSTBOX_FROM_ADDRESS || POSTBOX_DEFAULT_FROM_ADDRESS
   const fromName = process.env.POSTBOX_FROM_NAME || POSTBOX_DEFAULT_FROM_NAME
   const { subject, html, text } = buildTemplate(args.kind, args.data)
 
   try {
-    await transporter.sendMail({
-      from: `"${fromName}" <${fromAddress}>`,
-      to: args.to,
-      subject,
-      html,
-      text,
-    })
+    await sesClient.send(new SendEmailCommand({
+      FromEmailAddress: `"${fromName}" <${fromAddress}>`,
+      Destination: { ToAddresses: [args.to] },
+      Content: {
+        Simple: {
+          Subject: { Data: subject, Charset: 'UTF-8' },
+          Body: {
+            Html: { Data: html, Charset: 'UTF-8' },
+            Text: { Data: text, Charset: 'UTF-8' },
+          },
+        },
+      },
+    }))
   } catch (err) {
     console.error('[mail] send failed:', err)
   }

@@ -7,7 +7,7 @@
   display: block;
   font-family: 'Manrope', sans-serif;
   font-weight: 500;
-  font-size: 14px;
+  font-size: var(--font-size-sm);
   line-height: 16px;
   color: var(--color-foreground);
   margin-bottom: var(--space-2);
@@ -26,7 +26,7 @@
   color: var(--color-foreground);
   font-family: 'Manrope', sans-serif;
   font-weight: 500;
-  font-size: 16px;
+  font-size: var(--font-size-md);
   cursor: pointer;
   text-align: left;
 }
@@ -47,9 +47,7 @@
 }
 
 .chevron {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  composes: flex-center from global;
   width: var(--size-control-icon);
   height: var(--size-control-icon);
   flex-shrink: 0;
@@ -65,7 +63,7 @@
   top: calc(100% + var(--space-1));
   left: 0;
   right: 0;
-  z-index: 10;
+  z-index: var(--z-index-dropdown);
   list-style: none;
   padding: var(--space-1) 0;
   border: var(--stroke-default) solid var(--color-border);
@@ -84,7 +82,7 @@
   color: var(--color-foreground);
   font-family: 'Manrope', sans-serif;
   font-weight: 500;
-  font-size: 16px;
+  font-size: var(--font-size-md);
 }
 
 .option:hover {

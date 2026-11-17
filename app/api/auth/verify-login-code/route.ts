@@ -54,11 +54,21 @@ export async function POST(req: Request) {
   })
 
   if (!match) {
+    const expired = await prisma.loginCode.findFirst({
+      where: { email, codeHash: hashLoginCode(code), usedAt: null, expiresAt: { lte: now } },
+      orderBy: { createdAt: 'desc' },
+    })
+    if (expired) {
+      return NextResponse.json({ error: 'expired_code' }, { status: HTTP_STATUS_UNAUTHORIZED })
+    }
     const active = await prisma.loginCode.findFirst({
       where: { email, usedAt: null, expiresAt: { gt: now } },
       orderBy: { createdAt: 'desc' },
     })
     if (active) {
+      if (active.attempts >= LOGIN_CODE_MAX_ATTEMPTS) {
+        return NextResponse.json({ error: 'too_many_attempts' }, { status: HTTP_STATUS_UNAUTHORIZED })
+      }
       await prisma.loginCode.update({
         where: { id: active.id },
         data: { attempts: { increment: 1 } },

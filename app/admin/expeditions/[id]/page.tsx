@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { updateExpedition, publishExpedition, cancelExpedition, deleteExpedition } from '@/app/admin/expeditions/_actions'
+import { ROUTES } from '@/utils/routes'
 
 export default async function EditExpeditionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -70,7 +71,7 @@ export default async function EditExpeditionPage({ params }: { params: Promise<{
   return (
     <div>
       <h1>{expedition.title}</h1>
-      <Link href="/admin/expeditions">← Назад</Link>
+      <Link href={ROUTES.admin.expeditions}>← Назад</Link>
       <p>Статус: {expedition.status}</p>
 
       <div>

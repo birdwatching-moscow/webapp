@@ -1,0 +1,512 @@
+'use client'
+
+import { Suspense, useState, useRef, useEffect } from 'react'
+import Link from 'next/link'
+import { signIn } from 'next-auth/react'
+import { ROUTES } from '@/utils/routes'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { safeRedirect } from '@/utils/safeRedirect'
+import {
+  RETURN_URL_PARAM,
+  CALLBACK_URL_PARAM,
+  REGISTERED_PARAM,
+  HTTP_METHOD,
+  JSON_HEADERS,
+  LOGIN_CODE_PROVIDER_ID,
+  ADMIN_2FA_PROVIDER_ID,
+  PASSWORD_MIN_LENGTH,
+} from '@/lib/constants'
+import { AUTH_ERROR_ACCOUNT_BLOCKED, AUTH_ERROR_PASSWORD_RESET_REQUIRED } from '@/lib/auth/errors'
+import { useAuthForm } from '@/hooks/useAuthForm'
+import { useOtpInput } from '@/hooks/useOtpInput'
+import { AUTH_ERRORS } from '@/lib/auth-errors'
+import { Button } from '@/components/ui/buttons/Button'
+import { Input } from '@/components/ui/input/Input'
+import { FormError } from '@/components/ui/form-error/FormError'
+import { OtpStep } from '@/components/auth/OtpStep'
+import { AUTH_LABELS } from '@/lib/auth-labels'
+import { mapOtpVerifyError } from '@/lib/auth/mapOtpVerifyError'
+import { EyeIcon } from '@/components/icons/EyeIcon'
+import { EyeOffIcon } from '@/components/icons/EyeOffIcon'
+import styles from '../auth-page.module.css'
+
+const LA = AUTH_LABELS.adminPassword
+const ASP = AUTH_LABELS.adminSetPassword
+const C = AUTH_LABELS.common
+
+type LoginStep = 'email' | 'name' | 'code' | 'password' | 'set-password'
+
+function LoginCodeForm() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackUrl = safeRedirect(
+    searchParams.get(RETURN_URL_PARAM) ?? searchParams.get(CALLBACK_URL_PARAM)
+  )
+  const { error, setError, loading, run } = useAuthForm()
+  const [step, setStep] = useState<LoginStep>('email')
+  const [email, setEmail] = useState('')
+  const [emailInput, setEmailInput] = useState('')
+  const [emailError, setEmailError] = useState('')
+  const [csrfToken, setCsrfToken] = useState('')
+  const [challengeToken, setChallengeToken] = useState('')
+  const [isNewUser, setIsNewUser] = useState(false)
+  const [nameInput, setNameInput] = useState('')
+  const [nameError, setNameError] = useState('')
+  const [name, setName] = useState('')
+  const [newPasswordInput, setNewPasswordInput] = useState('')
+  const [confirmPasswordInput, setConfirmPasswordInput] = useState('')
+  const [newPasswordError, setNewPasswordError] = useState('')
+  const [confirmPasswordError, setConfirmPasswordError] = useState('')
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const passwordInputRef = useRef<HTMLInputElement>(null)
+  const otp = useOtpInput(submitCode)
+
+  const isRegistered = searchParams.get(REGISTERED_PARAM) === '1'
+
+  useEffect(() => {
+    if (step === 'code') otp.digitRefs.current[0]?.focus()
+  }, [step, otp.digitRefs])
+
+  useEffect(() => {
+    if (step === 'password') passwordInputRef.current?.focus()
+  }, [step])
+
+  useEffect(() => {
+    if (step === 'set-password') document.getElementById('newPassword')?.focus()
+  }, [step])
+
+  async function handleEmailSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (!emailInput.trim()) {
+      setEmailError('Введите почту, чтобы продолжить')
+      return
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.trim())) {
+      setEmailError('Введите почту в формате name@example.ru')
+      return
+    }
+    setEmailError('')
+
+    await run(async () => {
+      const checkRes = await fetch('/api/auth/check-email', {
+        method: HTTP_METHOD.POST,
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ email: emailInput.trim() }),
+      })
+      if (!checkRes.ok) {
+        setError(AUTH_ERRORS.generic)
+        return
+      }
+      const checkData = await checkRes.json() as { registered: boolean }
+
+      if (!checkData.registered) {
+        setIsNewUser(true)
+        setEmail(emailInput.trim())
+        setStep('name')
+        return
+      }
+
+      setIsNewUser(false)
+      const res = await fetch('/api/auth/request-login-code', {
+        method: HTTP_METHOD.POST,
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ email: emailInput.trim() }),
+      })
+      let resData: { csrfToken?: string; error?: string } = {}
+      try { resData = await res.json() } catch { /* no body */ }
+      if (!res.ok) {
+        if (resData.error === 'code_rate_limited') {
+          setEmailError(AUTH_ERRORS.tooManyAttempts)
+        } else {
+          setError(AUTH_ERRORS.generic)
+        }
+        return
+      }
+      setCsrfToken(resData.csrfToken ?? '')
+      setEmail(emailInput.trim())
+      otp.reset()
+      setStep('code')
+    })
+  }
+
+  async function handleNameSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (!nameInput.trim()) {
+      setNameError('Введите имя, чтобы продолжить')
+      return
+    }
+    setNameError('')
+
+    await run(async () => {
+      const res = await fetch('/api/auth/register', {
+        method: HTTP_METHOD.POST,
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ email, name: nameInput.trim() }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null) as { error?: string } | null
+        if (data?.error === 'code_rate_limited') {
+          setEmailError(AUTH_ERRORS.tooManyAttempts)
+          setStep('email')
+        } else {
+          setError(AUTH_ERRORS.generic)
+        }
+        return
+      }
+      const data = await res.json() as { csrfToken?: string }
+      setCsrfToken(data.csrfToken ?? '')
+      setName(nameInput.trim())
+      otp.reset()
+      setStep('code')
+    })
+  }
+
+  async function submitCode(code: string) {
+    await run(async () => {
+      if (isNewUser) {
+        const verifyRes = await fetch('/api/auth/verify-registration-code', {
+          method: HTTP_METHOD.POST,
+          headers: { ...JSON_HEADERS, 'x-csrf-token': csrfToken },
+          body: JSON.stringify({ email, code, name }),
+        })
+        const verifyData = await verifyRes.json().catch(() => ({})) as { error?: string }
+        if (!verifyRes.ok) {
+          setError(mapOtpVerifyError(verifyData.error))
+          otp.reset({ focus: true })
+          return
+        }
+        const result = await signIn(LOGIN_CODE_PROVIDER_ID, { email, code, redirect: false })
+        if (result?.error) {
+          setError(AUTH_ERRORS.invalidCode)
+          otp.reset({ focus: true })
+        } else {
+          router.push(callbackUrl)
+          router.refresh()
+        }
+        return
+      }
+
+      const verifyRes = await fetch('/api/auth/verify-login-code', {
+        method: HTTP_METHOD.POST,
+        headers: { ...JSON_HEADERS, 'x-csrf-token': csrfToken },
+        body: JSON.stringify({ email, code }),
+      })
+      const verifyData = await verifyRes.json()
+
+      if (!verifyRes.ok) {
+        setError(mapOtpVerifyError(verifyData.error))
+        otp.reset({ focus: true })
+        return
+      }
+
+      if (verifyData.next === 'password') {
+        setChallengeToken(verifyData.challengeToken)
+        setStep('password')
+        return
+      }
+
+      if (verifyData.next === 'set-password') {
+        setChallengeToken(verifyData.challengeToken)
+        setStep('set-password')
+        return
+      }
+
+      const result = await signIn(LOGIN_CODE_PROVIDER_ID, { email, code, redirect: false })
+      if (result?.code === AUTH_ERROR_ACCOUNT_BLOCKED) {
+        setError(AUTH_ERRORS.accountBlocked)
+      } else if (result?.error) {
+        setError(AUTH_ERRORS.invalidCode)
+      } else {
+        router.push(callbackUrl)
+        router.refresh()
+      }
+    })
+  }
+
+  function goBackToEmail() {
+    setStep('email')
+    otp.reset()
+    setError(null)
+  }
+
+  function goBackToName() {
+    setStep('name')
+    otp.reset()
+    setError(null)
+  }
+
+  async function handlePasswordSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const form = new FormData(e.currentTarget)
+    const password = String(form.get('password') ?? '')
+
+    await run(async () => {
+      const result = await signIn(ADMIN_2FA_PROVIDER_ID, {
+        email,
+        challengeToken,
+        password,
+        redirect: false,
+      })
+      if (result?.code === AUTH_ERROR_ACCOUNT_BLOCKED) {
+        setError(AUTH_ERRORS.accountBlocked)
+      } else if (result?.code === AUTH_ERROR_PASSWORD_RESET_REQUIRED) {
+        setError(AUTH_ERRORS.passwordResetRequired)
+      } else if (result?.error) {
+        setError(AUTH_ERRORS.wrongCredentials)
+      } else {
+        router.push(callbackUrl)
+        router.refresh()
+      }
+    })
+  }
+
+  async function handleSetPasswordSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const password = newPasswordInput
+    const confirm = confirmPasswordInput
+
+    if (/[^\x21-\x7E]/.test(password)) {
+      setNewPasswordError(ASP.latinOnly)
+      return
+    }
+
+    if (/[^\x21-\x7E]/.test(confirm)) {
+      setConfirmPasswordError(ASP.latinOnly)
+      return
+    }
+
+    if (password.length < PASSWORD_MIN_LENGTH) {
+      setNewPasswordError(ASP.tooShort)
+      return
+    }
+
+    if (password !== confirm) {
+      setConfirmPasswordError(ASP.mismatch)
+      return
+    }
+
+    await run(async () => {
+      const setRes = await fetch('/api/auth/set-initial-password', {
+        method: HTTP_METHOD.POST,
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ email, challengeToken, password }),
+      })
+      if (!setRes.ok) {
+        setError(AUTH_ERRORS.network)
+        return
+      }
+      const setData = await setRes.json()
+
+      const result = await signIn(ADMIN_2FA_PROVIDER_ID, {
+        email,
+        challengeToken: setData.challengeToken,
+        password,
+        redirect: false,
+      })
+      if (result?.code === AUTH_ERROR_ACCOUNT_BLOCKED) {
+        setError(AUTH_ERRORS.accountBlocked)
+      } else if (result?.code === AUTH_ERROR_PASSWORD_RESET_REQUIRED) {
+        setError(AUTH_ERRORS.passwordResetRequired)
+      } else if (result?.error) {
+        setError(AUTH_ERRORS.wrongCredentials)
+      } else {
+        router.push(callbackUrl)
+        router.refresh()
+      }
+    })
+  }
+
+  return (
+    <main className={styles.wrap}>
+
+      {step === 'email' && (
+        <>
+          <div className={styles.header}>
+            <h1 className={styles.title}>Войти</h1>
+            <p className={styles.subtitle}>
+              {isRegistered
+                ? 'Регистрация прошла успешно. Войдите в аккаунт.'
+                : 'Введите почту, чтобы войти или создать аккаунт.'}
+            </p>
+          </div>
+
+          <FormError message={error} />
+
+          <form onSubmit={handleEmailSubmit} className={styles.form} noValidate>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="Ваш email"
+              aria-label={C.emailField}
+              value={emailInput}
+              onChange={e => { setEmailInput(e.target.value); setEmailError('') }}
+              autoComplete="email"
+              required
+              error={emailError}
+              className={styles.fieldInput}
+            />
+            <div className={styles.actions}>
+              <Button type="submit" size="lg" fullWidth loading={loading} disabled={loading}>
+                Продолжить
+              </Button>
+              <Button as="a" href={ROUTES.register} variant="secondary" size="lg" fullWidth>
+                Зарегистрироваться
+              </Button>
+            </div>
+          </form>
+        </>
+      )}
+
+      {step === 'name' && (
+        <>
+          <div className={styles.header}>
+            <h1 className={styles.title}>Регистрация</h1>
+            <p className={styles.subtitle}>Введите имя, чтобы создать аккаунт</p>
+          </div>
+
+          <FormError message={error} />
+
+          <form onSubmit={handleNameSubmit} className={styles.form}>
+            <Input
+              id="name"
+              name="name"
+              type="text"
+              placeholder="Имя"
+              aria-label="Имя"
+              value={nameInput}
+              onChange={e => { setNameInput(e.target.value); setNameError('') }}
+              autoComplete="name"
+              required
+              error={nameError}
+              className={styles.fieldInput}
+            />
+            <div className={styles.actions}>
+              <Button type="submit" size="lg" fullWidth loading={loading} disabled={loading}>
+                Получить код
+              </Button>
+              <Button type="button" variant="secondary" size="lg" fullWidth onClick={goBackToEmail} disabled={loading}>
+                Назад
+              </Button>
+            </div>
+          </form>
+        </>
+      )}
+
+      {step === 'code' && (
+        <OtpStep
+          title="Введите код"
+          subtitle={isNewUser
+            ? `Код подтверждения отправлен на ${email}`
+            : `Если вы зарегистрированы, на ${email} придёт код`}
+          otp={otp}
+          error={error}
+          loading={loading}
+          onBack={isNewUser ? goBackToName : goBackToEmail}
+        />
+      )}
+
+      {step === 'password' && (
+        <>
+          <div className={styles.header}>
+            <h1 className={styles.title}>{LA.title}</h1>
+          </div>
+
+          <FormError message={error} />
+
+          <form onSubmit={handlePasswordSubmit} className={styles.form}>
+            <div>
+              <label htmlFor="password">{C.passwordField}</label>
+              <input
+                ref={passwordInputRef}
+                id="password"
+                name="password"
+                type="password"
+                required
+                autoComplete="current-password"
+              />
+            </div>
+            <div className={styles.actions}>
+              <Button type="submit" fullWidth loading={loading} disabled={loading}>
+                {loading ? LA.submitting : LA.submit}
+              </Button>
+            </div>
+          </form>
+          <Link href={ROUTES.resetPassword}>Забыли пароль?</Link>
+        </>
+      )}
+
+      {step === 'set-password' && (
+        <>
+          <div className={styles.header}>
+            <h1 className={styles.title}>{ASP.title}</h1>
+          </div>
+
+          <FormError message={error} />
+
+          <form onSubmit={handleSetPasswordSubmit} className={styles.form} noValidate>
+            <Input
+              id="newPassword"
+              name="newPassword"
+              type={showNewPassword ? 'text' : 'password'}
+              label={ASP.passwordField}
+              value={newPasswordInput}
+              onChange={e => {
+                const val = e.target.value
+                setNewPasswordInput(val)
+                setNewPasswordError(/[^\x21-\x7E]/.test(val) ? ASP.latinOnly : '')
+              }}
+              autoComplete="new-password"
+              disabled={loading}
+              error={newPasswordError || undefined}
+              invalid={Boolean(confirmPasswordError)}
+              className={styles.fieldInput}
+              trailing={
+                <button type="button" className={styles.eyeButton} onClick={() => setShowNewPassword(v => !v)} aria-label={showNewPassword ? 'Скрыть пароль' : 'Показать пароль'}>
+                  {showNewPassword ? <EyeOffIcon /> : <EyeIcon />}
+                </button>
+              }
+            />
+            <Input
+              id="confirmPassword"
+              name="confirmPassword"
+              type={showConfirmPassword ? 'text' : 'password'}
+              label={ASP.confirmField}
+              value={confirmPasswordInput}
+              onChange={e => {
+                const val = e.target.value
+                setConfirmPasswordInput(val)
+                setConfirmPasswordError(/[^\x21-\x7E]/.test(val) ? ASP.latinOnly : '')
+              }}
+              error={confirmPasswordError || undefined}
+              invalid={Boolean(newPasswordError)}
+              autoComplete="new-password"
+              disabled={loading}
+              className={styles.fieldInput}
+              trailing={
+                <button type="button" className={styles.eyeButton} onClick={() => setShowConfirmPassword(v => !v)} aria-label={showConfirmPassword ? 'Скрыть пароль' : 'Показать пароль'}>
+                  {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
+                </button>
+              }
+            />
+            <div className={styles.actions}>
+              <Button type="submit" size="lg" fullWidth loading={loading} disabled={loading}>
+                {loading ? ASP.submitting : ASP.submit}
+              </Button>
+            </div>
+          </form>
+        </>
+      )}
+
+    </main>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginCodeForm />
+    </Suspense>
+  )
+}

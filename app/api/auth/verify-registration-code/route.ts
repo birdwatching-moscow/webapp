@@ -8,7 +8,6 @@ import { checkRateLimit } from '@/lib/rateLimit'
 import { verifyLoginCsrfToken } from '@/lib/auth/csrf'
 import {
   LOGIN_CODE_MAX_ATTEMPTS,
-  HTTP_STATUS_CONFLICT,
   HTTP_STATUS_FORBIDDEN,
   HTTP_STATUS_INTERNAL_SERVER_ERROR,
   HTTP_STATUS_TOO_MANY_REQUESTS,
@@ -53,11 +52,21 @@ export async function POST(req: Request) {
   })
 
   if (!match) {
+    const expired = await prisma.loginCode.findFirst({
+      where: { email, codeHash: hashLoginCode(code), usedAt: null, expiresAt: { lte: now } },
+      orderBy: { createdAt: 'desc' },
+    })
+    if (expired) {
+      return NextResponse.json({ error: 'expired_code' }, { status: HTTP_STATUS_UNAUTHORIZED })
+    }
     const active = await prisma.loginCode.findFirst({
       where: { email, usedAt: null, expiresAt: { gt: now } },
       orderBy: { createdAt: 'desc' },
     })
     if (active) {
+      if (active.attempts >= LOGIN_CODE_MAX_ATTEMPTS) {
+        return NextResponse.json({ error: 'too_many_attempts' }, { status: HTTP_STATUS_UNAUTHORIZED })
+      }
       await prisma.loginCode.update({
         where: { id: active.id },
         data: { attempts: { increment: 1 } },
@@ -72,7 +81,7 @@ export async function POST(req: Request) {
     })
 
     if (existing) {
-      return NextResponse.json({ error: 'Email is already taken' }, { status: HTTP_STATUS_CONFLICT })
+      return NextResponse.json({ error: 'already_registered' }, { status: HTTP_STATUS_UNAUTHORIZED })
     }
 
     await prisma.user.create({
