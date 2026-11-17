@@ -20,6 +20,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    // The private events page was renamed; keep old links and search results working
+    return [{ source: "/private-events", destination: "/private", permanent: true }];
+  },
   async headers() {
     return [{ source: "/:path*", headers: SECURITY_HEADERS }];
   },

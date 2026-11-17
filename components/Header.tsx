@@ -12,7 +12,7 @@ import styles from './Header.module.css'
 const NAV_LINKS = [
   { label: 'Прогулки',   href: ROUTES.walks },
   { label: 'Экспедиции', href: ROUTES.expeditions },
-  { label: 'Частные',    href: ROUTES.privateEvents },
+  { label: 'Частные',    href: ROUTES.private },
   { label: 'Книга',      href: ROUTES.book },
   { label: 'О проекте',  href: ROUTES.about },
 ]

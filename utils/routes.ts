@@ -16,7 +16,12 @@ export const ROUTES = {
   walk:          (slug: string) => `/walks/${slug}` as const,
   expeditions:   '/expeditions',
   expedition:    (slug: string) => `/expeditions/${slug}` as const,
-  privateEvents: '/private-events',
+  private:       '/private',
+  privateSections: {
+    parks:         '/private/parks',
+    lectures:      '/private/lectures',
+    consultations: '/private/consultations',
+  },
   privateWalks:         '/private-walks',
   privateLectures:      '/private-lectures',
   privateConsultations: '/private-consultations',

@@ -49,7 +49,7 @@ export const HomePrivate = () => (
       ))}
     </div>
 
-    <Button as="a" size="lg" fullWidth href={ROUTES.privateEvents} className={styles.moreButton}>
+    <Button as="a" size="lg" fullWidth href={ROUTES.private} className={styles.moreButton}>
       Подробнее
     </Button>
   </section>
