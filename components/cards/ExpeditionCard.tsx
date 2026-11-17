@@ -1,6 +1,6 @@
 'use client'
 
-import { ImagePlaceholder } from '@/components/ui/image-placeholder/ImagePlaceholder'
+import { AspectRatioImage } from '@/components/ui/aspect-ratio-image/AspectRatioImage'
 import styles from './ExpeditionCard.module.css'
 
 export type ExpeditionCardProps = {
@@ -33,7 +33,7 @@ export const ExpeditionCard = ({
         onClick={() => onPreview?.()}
         type="button"
       >
-        <ImagePlaceholder ratio="4-3" src={imageUrl} alt={imageAlt} className={styles.image} />
+        <AspectRatioImage ratio="4-3" src={imageUrl} alt={imageAlt} className={styles.image} />
         <span className={styles.infoIcon} aria-hidden="true">ⓘ</span>
       </button>
       <div className={styles.text}>

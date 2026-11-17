@@ -1,5 +1,5 @@
 import { getTeamMembers } from '@/lib/team'
-import { TeamCard } from '@/components/cards/TeamCard'
+import { TeamMemberCard } from '@/components/cards/TeamMemberCard'
 import { VoronyeGnezdoBanner } from '@/components/VoronyeGnezdoBanner/VoronyeGnezdoBanner'
 import { validPhotoUrl } from '@/utils/image'
 import styles from './Team.module.css'
@@ -23,12 +23,12 @@ export const Team = async () => {
         <h2 className={styles.teamTitle}>Наша команда</h2>
         <div className={styles.teamGrid}>
           {members.map((member) => (
-            <TeamCard
+            <TeamMemberCard
               key={member.id}
               name={member.name}
               role={member.education ?? ''}
               details={member.achievements ?? ''}
-              imageUrl={validPhotoUrl(member.photoUrl)}
+              imageUrl={validPhotoUrl(member.photoUrl) ?? '/placeholders/photo-placeholder.png'}
               imageAlt={member.name}
               ebirdHref={member.profileLinks[0]}
               className={styles.teamCard}

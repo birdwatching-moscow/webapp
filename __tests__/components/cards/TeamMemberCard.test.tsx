@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { TeamCard } from '@/components/cards/TeamCard'
+import { TeamMemberCard } from '@/components/cards/TeamMemberCard'
 
 vi.mock('next/image', () => ({
   default: ({ src, alt, fill, ...props }: { src: string; alt: string; fill?: boolean; [key: string]: unknown }) => (
@@ -23,62 +23,62 @@ const base = {
   ebirdHref: 'https://ebird.org/profile/example',
 }
 
-describe('TeamCard — content', () => {
+describe('TeamMemberCard — content', () => {
   it('renders name', () => {
-    render(<TeamCard {...base} />)
+    render(<TeamMemberCard {...base} />)
     expect(screen.getByText(base.name)).toBeInTheDocument()
   })
 
   it('name element has text-h2 class', () => {
-    render(<TeamCard {...base} />)
+    render(<TeamMemberCard {...base} />)
     expect(screen.getByText(base.name).className).toMatch(/text-h2/)
   })
 
   it('renders role', () => {
-    render(<TeamCard {...base} />)
+    render(<TeamMemberCard {...base} />)
     expect(screen.getByText(base.role)).toBeInTheDocument()
   })
 
   it('renders details', () => {
-    render(<TeamCard {...base} />)
+    render(<TeamMemberCard {...base} />)
     expect(screen.getByText(base.details)).toBeInTheDocument()
   })
 })
 
-describe('TeamCard — eBird link', () => {
+describe('TeamMemberCard — eBird link', () => {
   it('renders an anchor with ebirdHref when provided', () => {
-    render(<TeamCard {...base} />)
+    render(<TeamMemberCard {...base} />)
     expect(screen.getByRole('link', { name: /ebird/i })).toHaveAttribute('href', base.ebirdHref)
   })
 
   it('does not render eBird button when ebirdHref is omitted', () => {
     const { ebirdHref: _unused, ...noLink } = base
-    render(<TeamCard {...noLink} />)
+    render(<TeamMemberCard {...noLink} />)
     expect(screen.queryByRole('link')).toBeNull()
   })
 })
 
-describe('TeamCard — photo', () => {
+describe('TeamMemberCard — photo', () => {
   it('renders placeholder role="img" when imageUrl is not provided', () => {
     const { ebirdHref: _unused, ...noLink } = base
-    const { container } = render(<TeamCard {...noLink} />)
+    const { container } = render(<TeamMemberCard {...noLink} />)
     expect(container.querySelector('[role="img"]')).toBeInTheDocument()
   })
 
   it('renders img element when imageUrl is provided', () => {
-    render(<TeamCard {...base} imageUrl="/photo.jpg" />)
+    render(<TeamMemberCard {...base} imageUrl="/photo.jpg" />)
     expect(screen.getByAltText(base.imageAlt)).toBeInTheDocument()
   })
 })
 
-describe('TeamCard — structure', () => {
+describe('TeamMemberCard — structure', () => {
   it('root element is <article>', () => {
-    const { container } = render(<TeamCard {...base} />)
+    const { container } = render(<TeamMemberCard {...base} />)
     expect(container.firstChild?.nodeName).toBe('ARTICLE')
   })
 
   it('className prop is forwarded to the root element', () => {
-    const { container } = render(<TeamCard {...base} className="extra" />)
+    const { container } = render(<TeamMemberCard {...base} className="extra" />)
     expect(container.firstChild).toHaveClass('extra')
   })
 })

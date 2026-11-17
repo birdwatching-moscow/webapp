@@ -14,8 +14,8 @@ export default auth((req) => {
     "font-src 'self' https://api.fontshare.com https://cdn.fontshare.com https://fonts.gstatic.com",
     "img-src 'self' data: blob: https://flagcdn.com https://upload.wikimedia.org https://unpkg.com https://storage.yandexcloud.net",
     "connect-src 'self'",
-    "frame-src https://music.yandex.ru",
-    "frame-ancestors 'none'",
+    "frame-src 'self' https://music.yandex.ru",
+    "frame-ancestors 'self'",
     "base-uri 'self'",
     "form-action 'self'",
   ].join('; ')

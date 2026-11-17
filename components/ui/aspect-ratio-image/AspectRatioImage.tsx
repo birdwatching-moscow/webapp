@@ -1,9 +1,9 @@
 import Image from 'next/image';
-import styles from './ImagePlaceholder.module.css';
+import styles from './AspectRatioImage.module.css';
 
 export type AspectRatio = '16-9' | '4-3' | '1-1' | '9-16';
 
-export type ImagePlaceholderProps = {
+export type AspectRatioImageProps = {
   ratio:      AspectRatio;
   src?:       string;
   alt:        string;
@@ -17,7 +17,7 @@ const RATIO_MAP: Record<AspectRatio, string> = {
   '9-16': '9 / 16',
 };
 
-export const ImagePlaceholder = ({ ratio, src, alt, className }: ImagePlaceholderProps) => {
+export const AspectRatioImage = ({ ratio, src, alt, className }: AspectRatioImageProps) => {
   const cls = [styles.wrapper, className].filter(Boolean).join(' ');
 
   if (src) {
