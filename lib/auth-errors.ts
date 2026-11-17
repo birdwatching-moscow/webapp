@@ -13,4 +13,5 @@ export const AUTH_ERRORS = {
   emailInvalid:     'Введите почту в формате name@example.ru',
   nameRequired:     'Введите имя, чтобы продолжить',
   passwordRequired: 'Введите пароль, чтобы продолжить',
+  resetLinkInvalid: 'Ссылка для сброса пароля недействительна или уже использована. Запросите новую.',
 } as const;
