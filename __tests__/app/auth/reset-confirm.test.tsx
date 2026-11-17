@@ -18,8 +18,10 @@ const ASP = AUTH_LABELS.adminSetPassword
 // A password that passes the client rules (>= PASSWORD_MIN_LENGTH, latin only)
 const VALID_PASSWORD = 'newpassword-12345'
 
-function fillAndSubmit(password = VALID_PASSWORD) {
-  fireEvent.change(screen.getByLabelText(L.newPasswordField), { target: { value: password } })
+// Fills both fields like a user would; `confirm` defaults to the same password.
+function fillAndSubmit(password = VALID_PASSWORD, confirm = password) {
+  fireEvent.change(screen.getByLabelText(ASP.passwordField), { target: { value: password } })
+  fireEvent.change(screen.getByLabelText(ASP.confirmField), { target: { value: confirm } })
   fireEvent.submit(screen.getByRole('button', { name: L.submit }))
 }
 
@@ -31,8 +33,47 @@ beforeEach(() => {
 describe('ConfirmResetPage — rendering', () => {
   it('renders new password field and submit button', () => {
     render(<ConfirmResetPage />)
-    expect(screen.getByLabelText(L.newPasswordField)).toBeInTheDocument()
+    expect(screen.getByLabelText(ASP.passwordField)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: L.submit })).toBeInTheDocument()
+  })
+})
+
+describe('ConfirmResetPage — same fields and rules as the first password ("Создайте пароль")', () => {
+  it('has a "Подтвердите пароль" field', () => {
+    render(<ConfirmResetPage />)
+    expect(screen.getByLabelText(ASP.confirmField)).toHaveAttribute('autocomplete', 'new-password')
+  })
+
+  it('passwords that do not match: mismatch error under the confirm field, no API call', async () => {
+    render(<ConfirmResetPage />)
+    fillAndSubmit(VALID_PASSWORD, `${VALID_PASSWORD}x`)
+    expect(await screen.findByText(ASP.mismatch)).toBeInTheDocument()
+    expect(screen.getByLabelText(ASP.confirmField)).toHaveAttribute('aria-invalid', 'true')
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('non-latin confirmation: latin-only error under the confirm field, no API call', async () => {
+    render(<ConfirmResetPage />)
+    fillAndSubmit(VALID_PASSWORD, 'подтверждение-12345')
+    expect(await screen.findByText(ASP.latinOnly)).toBeInTheDocument()
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('shows the latin-only error while typing, before submit', () => {
+    render(<ConfirmResetPage />)
+    fireEvent.change(screen.getByLabelText(ASP.passwordField), { target: { value: 'пароль' } })
+    expect(screen.getByText(ASP.latinOnly)).toBeInTheDocument()
+  })
+
+  it('each field has a show/hide password button', () => {
+    render(<ConfirmResetPage />)
+    const [showNew, showConfirm] = screen.getAllByRole('button', { name: 'Показать пароль' })
+    fireEvent.click(showNew)
+    expect(screen.getByLabelText(ASP.passwordField)).toHaveAttribute('type', 'text')
+    expect(screen.getByLabelText(ASP.confirmField)).toHaveAttribute('type', 'password')
+    fireEvent.click(showConfirm)
+    expect(screen.getByLabelText(ASP.confirmField)).toHaveAttribute('type', 'text')
+    expect(screen.getAllByRole('button', { name: 'Скрыть пароль' })).toHaveLength(2)
   })
 })
 
@@ -140,7 +181,7 @@ describe('ConfirmResetPage — client validation (same rules as "Создайт�
     render(<ConfirmResetPage />)
     fillAndSubmit('short1')
     expect(await screen.findByText(ASP.tooShort)).toBeInTheDocument()
-    expect(screen.getByLabelText(L.newPasswordField)).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByLabelText(ASP.passwordField)).toHaveAttribute('aria-invalid', 'true')
     expect(fetch).not.toHaveBeenCalled()
   })
 
@@ -155,7 +196,7 @@ describe('ConfirmResetPage — client validation (same rules as "Создайт�
     render(<ConfirmResetPage />)
     fillAndSubmit('short1')
     await screen.findByText(ASP.tooShort)
-    fireEvent.change(screen.getByLabelText(L.newPasswordField), { target: { value: 'short12' } })
+    fireEvent.change(screen.getByLabelText(ASP.passwordField), { target: { value: 'short12' } })
     expect(screen.queryByText(ASP.tooShort)).toBeNull()
   })
 })
