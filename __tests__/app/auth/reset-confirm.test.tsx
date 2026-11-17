@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import ConfirmResetPage from '@/app/(site)/(auth)/reset-password/[token]/page'
+import ConfirmResetPage from '@/app/(site)/(auth)/8qfzgof9uev06a/reset-password/[token]/page'
 import { AUTH_ERRORS } from '@/lib/auth-errors'
 import { AUTH_LABELS } from '@/lib/auth-labels'
 import { HTTP_METHOD, JSON_HEADERS } from '@/lib/constants'
+import { API_ROUTES } from '@/utils/routes'
 
 const pushMock = vi.fn()
 vi.mock('next/navigation', () => ({
@@ -39,7 +40,7 @@ describe('ConfirmResetPage — success', () => {
     fillAndSubmit('mySecretPassword99')
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith('/api/auth/reset-password', {
+      expect(fetch).toHaveBeenCalledWith(API_ROUTES.resetPassword, {
         method: HTTP_METHOD.POST,
         headers: JSON_HEADERS,
         body: JSON.stringify({
