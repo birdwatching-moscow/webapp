@@ -121,33 +121,7 @@
   gap: var(--space-5);
 }
 
-.fragmentsScroll {
-  display: flex;
-  gap: var(--space-4);
-  overflow-x: auto;
-  scrollbar-width: none; /* Firefox */
-}
-
-.fragmentsScroll::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
-}
-
-/* Height follows the PDF page, so the whole page is visible.
-   Matches public/book/book-fragment-*.png (1224×1584, US Letter). */
-.fragmentCard {
-  position: relative;
-  flex: 0 0 272px;
-  aspect-ratio: 1224 / 1584;
-  border-radius: var(--radius-lg);
-  border: var(--stroke-default) solid var(--color-border);
-  overflow: hidden;
-  background: var(--color-background);
-  display: block;
-}
-
-.fragmentImage {
-  object-fit: contain;
-}
+/* Fragment cards + lightbox styles live in FragmentsGallery.module.css */
 
 /* ─── Desktop (min-width: 1248px) ──────────────────────────────────────────── */
 
@@ -189,15 +163,5 @@
   /* Fragments */
   .fragmentsSection {
     padding-top: var(--space-10);
-  }
-
-  .fragmentsScroll {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    overflow-x: unset;
-  }
-
-  .fragmentCard {
-    flex: none;
   }
 }

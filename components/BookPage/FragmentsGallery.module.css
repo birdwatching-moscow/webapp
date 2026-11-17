@@ -1,0 +1,231 @@
+/* ─── Cards (mobile base) ──────────────────────────────────────────────────── */
+
+.scroll {
+  display: flex;
+  gap: var(--space-4);
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+}
+
+.scroll::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* Height follows the PDF page, so the whole page is visible.
+   Matches public/book/book-fragment-*.png (1224×1584, US Letter). */
+.card {
+  position: relative;
+  flex: 0 0 272px;
+  aspect-ratio: 1224 / 1584;
+  border-radius: var(--radius-lg);
+  border: var(--stroke-default) solid var(--color-border);
+  overflow: hidden;
+  background: var(--color-background);
+  display: block;
+  cursor: zoom-in;
+  transition: border-color 150ms ease;
+}
+
+.card:hover {
+  border-color: var(--color-primary-hover);
+}
+
+.card:focus-visible {
+  outline: var(--stroke-focus) solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.cardImage {
+  object-fit: contain;
+}
+
+/* ─── Lightbox (native <dialog>) ───────────────────────────────────────────── */
+
+.dialog {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-primary-foreground);
+  overscroll-behavior: contain;
+
+  opacity: 1;
+  transition: opacity 200ms ease;
+}
+
+.dialog::backdrop {
+  background: rgb(0 0 0 / 0.85);
+}
+
+/* Lock page scroll behind the open lightbox. */
+:global(html):has(.dialog[open]) {
+  overflow: hidden;
+}
+
+/* Fade in where supported; older browsers just show it. */
+@starting-style {
+  .dialog[open] {
+    opacity: 0;
+  }
+}
+
+.content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-2) var(--space-4);
+  pointer-events: none; /* clicks between controls reach the dialog = backdrop */
+}
+
+.content > * {
+  pointer-events: auto;
+}
+
+.close {
+  position: fixed;
+  top: var(--space-3);
+  right: var(--space-3);
+  composes: flex-center from global;
+  width: var(--size-control-default);
+  height: var(--size-control-default);
+  border: none;
+  border-radius: var(--radius-full);
+  background: rgb(255 255 255 / 0.12);
+  color: inherit;
+  cursor: pointer;
+  z-index: var(--z-index-raised);
+  transition: background-color 150ms ease;
+}
+
+.close:hover {
+  background: rgb(255 255 255 / 0.24);
+}
+
+.stage {
+  position: relative;
+  width: 100%;
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.stage > * {
+  pointer-events: auto;
+}
+
+.page {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: var(--radius-lg);
+  background: var(--color-background);
+  box-shadow: 0 8px 32px rgb(0 0 0 / 0.4);
+}
+
+/* On mobile the arrows sit over the page edges. */
+.nav {
+  position: absolute;
+  top: 50%;
+  composes: flex-center from global;
+  width: var(--size-control-default);
+  height: var(--size-control-default);
+  border: none;
+  border-radius: var(--radius-full);
+  background: rgb(0 0 0 / 0.5);
+  color: inherit;
+  cursor: pointer;
+  transform: translateY(-50%);
+  z-index: var(--z-index-raised);
+  transition: opacity 150ms ease, background-color 150ms ease;
+}
+
+.nav:hover:not(:disabled) {
+  background: rgb(0 0 0 / 0.7);
+}
+
+.nav:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.prev { left: var(--space-2); }
+.next { right: var(--space-2); }
+
+.close:focus-visible,
+.nav:focus-visible,
+.download:focus-visible {
+  outline: var(--stroke-focus) solid var(--color-primary-foreground);
+  outline-offset: 2px;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
+.download {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog,
+  .card,
+  .nav,
+  .close {
+    transition: none;
+  }
+}
+
+/* ─── Desktop (min-width: 1248px) ──────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .scroll {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    overflow-x: unset;
+  }
+
+  .card {
+    flex: none;
+  }
+
+  .content {
+    padding: var(--space-6) var(--space-10);
+  }
+
+  .stage {
+    gap: var(--space-6);
+  }
+
+  /* Arrows move beside the page. */
+  .nav {
+    position: static;
+    flex-shrink: 0;
+    transform: none;
+    background: rgb(255 255 255 / 0.12);
+  }
+
+  .nav:hover:not(:disabled) {
+    background: rgb(255 255 255 / 0.24);
+  }
+
+  .nav:disabled {
+    opacity: 0.3;
+  }
+}
