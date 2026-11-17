@@ -3,14 +3,18 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import ConfirmResetPage from '@/app/(site)/(auth)/8qfzgof9uev06a/reset-password/[token]/page'
 import { AUTH_ERRORS } from '@/lib/auth-errors'
 import { AUTH_LABELS } from '@/lib/auth-labels'
-import { HTTP_METHOD, JSON_HEADERS } from '@/lib/constants'
+import { ADMIN_2FA_PROVIDER_ID, HTTP_METHOD, JSON_HEADERS } from '@/lib/constants'
 import { API_ROUTES, ROUTES } from '@/utils/routes'
 
 const pushMock = vi.fn()
+const refreshMock = vi.fn()
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: pushMock }),
+  useRouter: () => ({ push: pushMock, refresh: refreshMock }),
   useParams: () => ({ token: 'valid-reset-token-123' }),
 }))
+
+const signInMock = vi.fn()
+vi.mock('next-auth/react', () => ({ signIn: (...args: unknown[]) => signInMock(...args) }))
 
 const L = AUTH_LABELS.resetConfirm
 const ASP = AUTH_LABELS.adminSetPassword
@@ -25,8 +29,18 @@ function fillAndSubmit(password = VALID_PASSWORD, confirm = password) {
   fireEvent.submit(screen.getByRole('button', { name: L.submit }))
 }
 
+const LOGIN_AFTER_RESET = '/login?passwordReset=1'
+const RESET_OK_BODY = { ok: true, email: 'admin@test.com', challengeToken: 'c'.repeat(64) }
+
+// fetch resolves like a successful reset that returned a sign-in challenge
+function resetSucceeds(body: object = RESET_OK_BODY) {
+  (fetch as Mock).mockResolvedValue({ ok: true, text: async () => JSON.stringify(body) })
+}
+
 beforeEach(() => {
   pushMock.mockReset()
+  refreshMock.mockReset()
+  signInMock.mockReset()
   vi.stubGlobal('fetch', vi.fn())
 })
 
@@ -77,14 +91,15 @@ describe('ConfirmResetPage — same fields and rules as the first password ("С�
   })
 })
 
-describe('ConfirmResetPage — success', () => {
-  it('sends token and new password to API and redirects to /login?passwordReset=1', async () => {
-    (fetch as Mock).mockResolvedValue({ ok: true })
+describe('ConfirmResetPage — success: signs the admin in right away', () => {
+  it('sends token and new password to the API', async () => {
+    resetSucceeds()
+    signInMock.mockResolvedValue({ error: undefined })
     render(<ConfirmResetPage />)
 
     fillAndSubmit('mySecretPassword99')
 
-    await waitFor(() => {
+    await waitFor(() =>
       expect(fetch).toHaveBeenCalledWith(API_ROUTES.resetPassword, {
         method: HTTP_METHOD.POST,
         headers: JSON_HEADERS,
@@ -93,8 +108,71 @@ describe('ConfirmResetPage — success', () => {
           newPassword: 'mySecretPassword99',
         }),
       })
-      expect(pushMock).toHaveBeenCalledWith('/login?passwordReset=1')
-    })
+    )
+  })
+
+  it('signs in with admin-2fa using the returned email, challenge token and the new password', async () => {
+    resetSucceeds()
+    signInMock.mockResolvedValue({ error: undefined })
+    render(<ConfirmResetPage />)
+
+    fillAndSubmit('mySecretPassword99')
+
+    await waitFor(() =>
+      expect(signInMock).toHaveBeenCalledWith(ADMIN_2FA_PROVIDER_ID, {
+        email: RESET_OK_BODY.email,
+        challengeToken: RESET_OK_BODY.challengeToken,
+        password: 'mySecretPassword99',
+        redirect: false,
+      })
+    )
+  })
+
+  it('after a successful sign-in goes to the home page, not to /login', async () => {
+    resetSucceeds()
+    signInMock.mockResolvedValue({ error: undefined })
+    render(<ConfirmResetPage />)
+
+    fillAndSubmit()
+
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith(ROUTES.home))
+    expect(refreshMock).toHaveBeenCalled()
+    expect(pushMock).not.toHaveBeenCalledWith(LOGIN_AFTER_RESET)
+  })
+})
+
+describe('ConfirmResetPage — password changed but automatic sign-in failed: falls back to /login', () => {
+  it('sign-in returns an error → /login?passwordReset=1', async () => {
+    resetSucceeds()
+    signInMock.mockResolvedValue({ error: 'CredentialsSignin', code: 'account_blocked' })
+    render(<ConfirmResetPage />)
+    fillAndSubmit()
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith(LOGIN_AFTER_RESET))
+  })
+
+  it('sign-in throws → /login?passwordReset=1, no error shown (the password is already changed)', async () => {
+    resetSucceeds()
+    signInMock.mockRejectedValue(new Error('Network failure'))
+    render(<ConfirmResetPage />)
+    fillAndSubmit()
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith(LOGIN_AFTER_RESET))
+    expect(screen.queryByRole('alert')).toBeNull()
+  })
+
+  it('API returned no challenge token → /login?passwordReset=1 without trying to sign in', async () => {
+    resetSucceeds({ ok: true })
+    render(<ConfirmResetPage />)
+    fillAndSubmit()
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith(LOGIN_AFTER_RESET))
+    expect(signInMock).not.toHaveBeenCalled()
+  })
+
+  it('API success body is not JSON → /login?passwordReset=1 without trying to sign in', async () => {
+    (fetch as Mock).mockResolvedValue({ ok: true, text: async () => '' })
+    render(<ConfirmResetPage />)
+    fillAndSubmit()
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith(LOGIN_AFTER_RESET))
+    expect(signInMock).not.toHaveBeenCalled()
   })
 })
 
