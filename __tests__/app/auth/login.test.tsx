@@ -360,6 +360,31 @@ async function advanceToSetPasswordStep(email = 'admin@test.com') {
   await waitFor(() => screen.getByLabelText(ASP.passwordField))
 }
 
+// Chrome / password managers need a username field next to a password field
+// to know which account the password belongs to.
+function usernameFieldIn(form: HTMLFormElement | null) {
+  return form?.querySelector<HTMLInputElement>('input[autocomplete="username"]') ?? null
+}
+
+describe('LoginPage — password forms carry a hidden username field', () => {
+  it('admin password step: hidden, read-only username field with the email', async () => {
+    await advanceToPasswordStep('admin@test.com')
+    const field = usernameFieldIn(screen.getByLabelText(C.passwordField).closest('form'))
+    expect(field).not.toBeNull()
+    expect(field).toHaveValue('admin@test.com')
+    expect(field).toHaveAttribute('hidden')
+    expect(field).toHaveAttribute('readonly')
+  })
+
+  it('set-password step: hidden, read-only username field with the email', async () => {
+    await advanceToSetPasswordStep('admin@test.com')
+    const field = usernameFieldIn(screen.getByLabelText(ASP.passwordField).closest('form'))
+    expect(field).not.toBeNull()
+    expect(field).toHaveValue('admin@test.com')
+    expect(field).toHaveAttribute('hidden')
+  })
+})
+
 describe('LoginPage — set-password step (admin first login)', () => {
   it('shows mismatch error when passwords do not match', async () => {
     await advanceToSetPasswordStep()
