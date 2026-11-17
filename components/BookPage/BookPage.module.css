@@ -1,0 +1,207 @@
+/* ─── Mobile (base) ────────────────────────────────────────────────────────── */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: var(--space-10);
+}
+
+/* ── Hero ── */
+
+.hero {
+  width: 100%;
+  padding-top: 64px;
+  padding-inline: var(--page-gutter);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/*
+ * .heroLeft is flattened so its children become direct flex children of .hero.
+ * Order: title(1) → image(2) → description(3)
+ */
+.heroLeft {
+  display: contents;
+}
+
+.heroTitle       { order: 1; }
+.heroImageWrapper { order: 2; }
+.heroDescription { order: 3; margin: 0; color: var(--color-muted-foreground); }
+
+.heroImageWrapper {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.heroImage {
+  object-fit: cover;
+}
+
+.infoIcon {
+  position: absolute;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  composes: flex-center from global;
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: var(--z-index-float);
+  transition: opacity 0.2s ease;
+}
+
+.caption {
+  position: absolute;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  max-width: 60%;
+  text-align: right;
+  text-transform: uppercase;
+  margin: 0;
+  padding: 0;
+  color: var(--color-primary-foreground);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: var(--z-index-raised);
+}
+
+.heroImageWrapper:has(.infoIcon:hover) .infoIcon { opacity: 0; }
+.heroImageWrapper:has(.infoIcon:hover) .caption  { opacity: 1; }
+
+/* ── Notice ── */
+
+.noticeSection {
+  padding-top: var(--space-8);
+  padding-inline: var(--page-gutter);
+  display: flex;
+  justify-content: center;
+}
+
+/* ── О книге + Автор ── */
+
+.contentSection {
+  padding-top: var(--space-8);
+  padding-inline: var(--page-gutter);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.aboutColumn,
+.authorColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.aboutText {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: var(--font-size-lg);
+  line-height: 28px;
+  color: var(--color-foreground);
+}
+
+/* Make the TeamMemberCard show photo + text side by side */
+.authorCard {
+  flex-direction: row;
+}
+
+/* ── Фрагменты из книги ── */
+
+.fragmentsSection {
+  padding-top: var(--space-8);
+  padding-inline: var(--page-gutter);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.fragmentsScroll {
+  display: flex;
+  gap: var(--space-4);
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+}
+
+.fragmentsScroll::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.fragmentCard {
+  position: relative;
+  flex: 0 0 272px;
+  height: 384px;
+  border-radius: var(--radius-lg);
+  border: var(--stroke-default) solid var(--color-border);
+  overflow: hidden;
+  background: var(--color-background);
+  display: block;
+}
+
+.fragmentImage {
+  object-fit: cover;
+  object-position: top;
+}
+
+/* ─── Desktop (min-width: 1248px) ──────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  /* Hero */
+  .hero {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-6);
+    padding-top: var(--space-10);
+  }
+
+  .heroLeft {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    flex: 1;
+  }
+
+  .heroTitle       { order: unset; }
+  .heroDescription { order: unset; }
+
+  .heroImageWrapper {
+    flex: 1;
+    order: unset;
+  }
+
+  /* О книге + Автор */
+  .contentSection {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--space-10);
+    padding-top: var(--space-10);
+  }
+
+  .aboutColumn  { flex: 1; }
+  .authorColumn { flex: 1; }
+
+  /* Fragments */
+  .fragmentsSection {
+    padding-top: var(--space-10);
+  }
+
+  .fragmentsScroll {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    overflow-x: unset;
+  }
+
+  .fragmentCard {
+    flex: none;
+    height: 480px;
+  }
+
+  .fragmentImage {
+    object-position: top;
+  }
+}
