@@ -118,7 +118,7 @@ export async function POST(req: Request): Promise<NextResponse> {
     return NextResponse.json({ error: 'Unauthorized' }, { status: HTTP_STATUS_UNAUTHORIZED })
   }
 
-  const rateLimit = await checkRateLimit(userId)
+  const rateLimit = await checkRateLimit(userId, 'checkout')
   if (!rateLimit.allowed) {
     return NextResponse.json(
       { error: 'Too many requests' },

@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     req.headers.get('x-real-ip') ??
     'unknown'
 
-  const rateLimit = await checkRateLimit(ip)
+  const rateLimit = await checkRateLimit(ip, 'sendCode')
   if (!rateLimit.allowed) {
     return NextResponse.json(
       { error: 'Too many requests' },
