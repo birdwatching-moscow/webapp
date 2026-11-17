@@ -61,4 +61,18 @@ describe('createAuthLogger — warn and debug', () => {
     authLogger.debug('session', { userId: 'u1' })
     expect(records[0]).toMatchObject({ level: 'debug', msg: 'session', metadata: { userId: 'u1' } })
   })
+
+  it('drops Auth.js debug messages when debug is disabled (they fire on every request)', () => {
+    const records: LogRecord[] = []
+    const log = createLogger('auth', { level: 'debug', format: 'json', sink: r => records.push(r) })
+    createAuthLogger(log, { debug: false }).debug('request', { url: '/api/auth/session' })
+    expect(records).toHaveLength(0)
+  })
+
+  it('still logs rejected sign-ins when Auth.js debug is disabled', () => {
+    const records: LogRecord[] = []
+    const log = createLogger('auth', { level: 'debug', format: 'json', sink: r => records.push(r) })
+    createAuthLogger(log, { debug: false }).error(new CredentialsSignin())
+    expect(records[0]).toMatchObject({ level: 'debug', msg: 'sign-in rejected' })
+  })
 })
