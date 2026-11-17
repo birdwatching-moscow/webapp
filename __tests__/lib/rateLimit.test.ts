@@ -1,11 +1,27 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { checkRateLimit, RATE_LIMITS, _resetStoreForTesting, type RateLimitScope } from '@/lib/rateLimit'
+
+const { logWarnMock } = vi.hoisted(() => ({ logWarnMock: vi.fn() }))
+vi.mock('@/lib/logger', () => ({
+  createLogger: () => ({ debug: vi.fn(), info: vi.fn(), warn: logWarnMock, error: vi.fn(), child: vi.fn() }),
+}))
+
+import {
+  checkRateLimit,
+  checkEmailCodeRateLimit,
+  EMAIL_CODE_LIMIT,
+  RATE_LIMITS,
+  _resetStoreForTesting,
+  type RateLimitScope,
+} from '@/lib/rateLimit'
+import { LOGIN_CODE_RESEND_WINDOW_MS } from '@/lib/constants'
 
 const IP = '1.2.3.4'
+const EMAIL = 'user@test.com'
 const ONE_MINUTE_MS = 60_000
 
 beforeEach(() => {
   _resetStoreForTesting()
+  logWarnMock.mockClear()
   vi.useRealTimers()
 })
 
@@ -101,5 +117,59 @@ describe('checkRateLimit — fixed window', () => {
 
     vi.setSystemTime(ONE_MINUTE_MS + 1)
     expect(exhaust('verifyCode').allowed).toBe(false)
+  })
+})
+
+describe('checkEmailCodeRateLimit — codes sent to one email', () => {
+  it('allows 3 codes per resend window (was 1, which blocked "back → send again")', () => {
+    expect(EMAIL_CODE_LIMIT).toEqual({ maxRequests: 3, windowMs: LOGIN_CODE_RESEND_WINDOW_MS })
+  })
+
+  it('going back and requesting the code again within a minute is allowed', () => {
+    expect(checkEmailCodeRateLimit(EMAIL).allowed).toBe(true)
+    expect(checkEmailCodeRateLimit(EMAIL).allowed).toBe(true)
+  })
+
+  it('blocks the 4th code within the window with a retry time', () => {
+    for (let i = 0; i < EMAIL_CODE_LIMIT.maxRequests; i++) {
+      expect(checkEmailCodeRateLimit(EMAIL).allowed).toBe(true)
+    }
+    const blocked = checkEmailCodeRateLimit(EMAIL)
+    expect(blocked.allowed).toBe(false)
+    expect(blocked.retryAfterSeconds).toBeGreaterThan(0)
+  })
+
+  it('different emails have independent budgets', () => {
+    for (let i = 0; i <= EMAIL_CODE_LIMIT.maxRequests; i++) checkEmailCodeRateLimit(EMAIL)
+    expect(checkEmailCodeRateLimit('other@test.com').allowed).toBe(true)
+  })
+})
+
+describe('rate limit rejections are logged (to see which limit fired)', () => {
+  it('logs the scope when a route limit blocks', () => {
+    exhaust('sendCode')
+    expect(logWarnMock).toHaveBeenCalledWith(
+      'rate limited',
+      expect.objectContaining({ scope: 'sendCode', retryAfterSeconds: expect.any(Number) })
+    )
+  })
+
+  it('logs the email-code scope when the per-email limit blocks', () => {
+    for (let i = 0; i <= EMAIL_CODE_LIMIT.maxRequests; i++) checkEmailCodeRateLimit(EMAIL)
+    expect(logWarnMock).toHaveBeenCalledWith('rate limited', expect.objectContaining({ scope: 'emailCode' }))
+  })
+
+  it('never writes the IP or email into the log', () => {
+    exhaust('sendCode')
+    for (let i = 0; i <= EMAIL_CODE_LIMIT.maxRequests; i++) checkEmailCodeRateLimit(EMAIL)
+    const logged = JSON.stringify(logWarnMock.mock.calls)
+    expect(logged).not.toContain(IP)
+    expect(logged).not.toContain(EMAIL)
+  })
+
+  it('does not log allowed requests', () => {
+    checkRateLimit(IP, 'checkEmail')
+    checkEmailCodeRateLimit(EMAIL)
+    expect(logWarnMock).not.toHaveBeenCalled()
   })
 })
