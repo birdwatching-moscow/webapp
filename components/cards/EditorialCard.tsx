@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { ImagePlaceholder } from '@/components/ui/image-placeholder/ImagePlaceholder'
+import { AspectRatioImage } from '@/components/ui/aspect-ratio-image/AspectRatioImage'
 import styles from './EditorialCard.module.css'
 
 const LOGO_WIDTH = 247
@@ -23,7 +23,7 @@ export const EditorialCard = ({ imageUrl, imageAlt, title, subtitle, href, class
         {imageUrl ? (
           <Image src={imageUrl} alt={imageAlt} fill sizes={`${LOGO_WIDTH}px`} className={styles.image} />
         ) : (
-          <ImagePlaceholder ratio="16-9" alt={imageAlt} />
+          <AspectRatioImage ratio="16-9" alt={imageAlt} />
         )}
       </div>
       <div className={styles.text}>

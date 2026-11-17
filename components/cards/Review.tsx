@@ -1,4 +1,4 @@
-import { ImagePlaceholder } from '@/components/ui/image-placeholder/ImagePlaceholder'
+import { AspectRatioImage } from '@/components/ui/aspect-ratio-image/AspectRatioImage'
 import styles from './Review.module.css'
 
 export type ReviewProps = {
@@ -18,7 +18,7 @@ export const Review = ({ authorImageUrl = DEFAULT_AUTHOR_IMAGE, authorName, body
     <>
       <div className={styles.header}>
         <div className={styles.photoWrapper}>
-          <ImagePlaceholder ratio="1-1" src={authorImageUrl} alt={authorName} />
+          <AspectRatioImage ratio="1-1" src={authorImageUrl} alt={authorName} />
         </div>
         <p className="text-h2">{authorName}</p>
       </div>
