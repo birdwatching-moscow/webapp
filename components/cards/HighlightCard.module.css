@@ -5,7 +5,8 @@
   width: 100%;
   height: 100%;
   padding: var(--space-4);
-  border: var(--stroke-default) solid var(--color-border);
+  /* Dashed, as the HighlightCard component in Figma (1697:334) */
+  border: var(--stroke-default) dashed var(--color-border);
   border-radius: var(--radius-lg);
 }
 

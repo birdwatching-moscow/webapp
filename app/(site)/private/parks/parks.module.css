@@ -1,0 +1,6 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  /* Swipe lists scroll inside their own box; the page itself never scrolls sideways */
+  overflow-x: clip;
+}

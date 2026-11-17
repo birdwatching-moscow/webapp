@@ -1,0 +1,58 @@
+/* ─── Mobile: horizontal swipe list ───────────────────────────────────────── */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-top: var(--space-8);
+}
+
+.title {
+  margin: 0;
+}
+
+.list {
+  display: flex;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.list::-webkit-scrollbar {
+  display: none;
+}
+
+.item {
+  flex: 0 0 var(--size-layout-input);
+  scroll-snap-align: start;
+}
+
+/* Design: outlined secondary button with dark text */
+.more {
+  --_secondary-color:        var(--color-foreground);
+  --_secondary-border-color: var(--color-primary);
+  --_secondary-bg:           var(--color-background);
+}
+
+/* ─── Desktop (min-width: 1248px): 3-column grid ──────────────────────────── */
+
+@media (min-width: 1248px) {
+  .section {
+    padding-top: var(--space-10);
+  }
+
+  .list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    overflow-x: visible;
+    scroll-snap-type: none;
+  }
+
+  .more {
+    max-width: var(--size-col-3);
+  }
+}
