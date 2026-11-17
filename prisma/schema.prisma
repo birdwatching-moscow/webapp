@@ -56,6 +56,8 @@ model User {
   role         Role      @default(USER)
   // NOTE: forces ADMIN/SUPERADMIN password rotation after PASSWORD_MIN_LENGTH was raised to 16
   passwordResetRequired Boolean @default(false)
+  // NOTE: bumped on password reset / block — every JWT carrying an older value is rejected
+  sessionVersion Int @default(0)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   deletedAt    DateTime?

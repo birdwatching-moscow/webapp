@@ -97,6 +97,31 @@ describe('blockUser', () => {
   })
 })
 
+describe('blockUser — revokes the blocked user’s sessions', () => {
+  it('bumps sessionVersion in the same update as blockedAt', async () => {
+    prismaMock.user.findFirst.mockResolvedValue({ id: 'target-1', role: 'ADMIN', deletedAt: null, blockedAt: null })
+    prismaMock.user.update.mockResolvedValue({})
+    await blockUser('target-1')
+    expect(prismaMock.user.update).toHaveBeenCalledTimes(1)
+    expect(prismaMock.user.update).toHaveBeenCalledWith({
+      where: { id: 'target-1' },
+      data: { blockedAt: expect.any(Date), sessionVersion: { increment: 1 } },
+    })
+  })
+
+  it('self-block is still rejected without any update', async () => {
+    await expect(blockUser('su-1')).rejects.toThrow()
+    expect(prismaMock.user.update).not.toHaveBeenCalled()
+  })
+
+  it('blocking the last active SUPERADMIN is still rejected without any update', async () => {
+    prismaMock.user.findFirst.mockResolvedValue({ id: 'target-1', role: 'SUPERADMIN', deletedAt: null, blockedAt: null })
+    prismaMock.user.count.mockResolvedValue(1)
+    await expect(blockUser('target-1')).rejects.toThrow()
+    expect(prismaMock.user.update).not.toHaveBeenCalled()
+  })
+})
+
 describe('unblockUser', () => {
   it('calls user.update with blockedAt: null', async () => {
     prismaMock.user.update.mockResolvedValue({})

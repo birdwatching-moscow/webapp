@@ -14,6 +14,19 @@ interface LoginCodeRow {
   attempts: number
 }
 
+type SignInUserRow = Pick<AuthorizedUser, 'id' | 'email' | 'name' | 'role' | 'sessionVersion'>
+
+/** What goes into the JWT — sessionVersion lets the guard revoke it later. */
+function toAuthorizedUser(user: SignInUserRow): AuthorizedUser {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    sessionVersion: user.sessionVersion,
+  }
+}
+
 /**
  * Defence in depth: the same conditions are already in the SQL where-clause,
  * re-checked here so a widened query can never authenticate a dead code.
@@ -78,7 +91,7 @@ export async function authorizeLoginCode(
     data: { usedAt: new Date() },
   })
 
-  return { id: user.id, email: user.email, name: user.name, role: user.role }
+  return toAuthorizedUser(user)
 }
 
 /**
@@ -119,7 +132,7 @@ export async function authorizeAdminTwoFactor(
     data: { usedAt: now },
   })
 
-  return { id: user.id, email: user.email, name: user.name, role: user.role }
+  return toAuthorizedUser(user)
 }
 
 /** Password sign-in — ADMIN/SUPERADMIN only, since USER rows carry no hash. */
@@ -143,5 +156,5 @@ export async function authorizeCredentials(
   const passwordMatch = await bcrypt.compare(password, user.passwordHash)
   if (!passwordMatch) return null
 
-  return { id: user.id, email: user.email, name: user.name, role: user.role }
+  return toAuthorizedUser(user)
 }

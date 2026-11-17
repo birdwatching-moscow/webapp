@@ -10,6 +10,7 @@ export default {
       if (user) {
         token.id = user.id as string
         token.role = user.role
+        token.sessionVersion = user.sessionVersion
       }
       return token
     },
