@@ -1,3 +1,5 @@
+/* eslint-disable security/detect-non-literal-fs-filename -- paths are built from
+   repo constants to check the app/ folder layout, never from user input */
 import { describe, it, expect } from 'vitest'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'

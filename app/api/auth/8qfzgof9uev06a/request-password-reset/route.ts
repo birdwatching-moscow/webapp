@@ -5,6 +5,10 @@ import { requestResetSchema } from '@/lib/validation/auth'
 import { sendMail } from '@/lib/mail'
 import { PASSWORD_RESET_TOKEN_TTL_MS } from '@/lib/constants'
 import { validateRequest } from '@/lib/api/validate'
+import { createLogger } from '@/lib/logger'
+import { ROUTES } from '@/utils/routes'
+
+const log = createLogger('auth:password-reset')
 
 const SAFE_RESPONSE = {
   ok: true,
@@ -65,7 +69,7 @@ export async function POST(req: Request) {
         process.env.NEXT_PUBLIC_APP_URL ??
         'http://localhost:3000'
 
-      const link = `${baseUrl}/reset-password/${rawToken}`
+      const link = `${baseUrl}${ROUTES.resetPassword}/${rawToken}`
 
       await sendMail({
         to: email,
@@ -76,7 +80,7 @@ export async function POST(req: Request) {
   } catch (err) {
     // Log but swallow — the safe response must be returned regardless to
     // prevent email enumeration via infrastructure error timing.
-    console.error('POST /api/auth/request-password-reset failed', err)
+    log.error('reset request failed', { err })
   }
 
   return NextResponse.json(SAFE_RESPONSE)

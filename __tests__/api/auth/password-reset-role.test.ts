@@ -58,7 +58,13 @@ describe('POST /api/auth/request-password-reset — role guard', () => {
     prismaMock.user.findFirst.mockResolvedValue(ADMIN)
     await POST(makeReq(ADMIN.email))
     const { link } = sendMailMock.mock.calls[0][0].data as { link: string }
-    expect(new URL(link).pathname).toMatch(new RegExp(`^${ROUTES.resetPassword}/[^/]+$`))
+    const { pathname } = new URL(link)
+    const prefix = `${ROUTES.resetPassword}/`
+    expect(pathname.startsWith(prefix)).toBe(true)
+    // exactly one non-empty segment (the token) after the reset path
+    const token = pathname.slice(prefix.length)
+    expect(token).not.toBe('')
+    expect(token).not.toContain('/')
   })
 
   it('SUPERADMIN email: creates one PasswordResetToken row and sends mail', async () => {
