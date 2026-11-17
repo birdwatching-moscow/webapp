@@ -38,7 +38,7 @@ const WALK_ID = '00000000-0000-4000-8000-000000000000'
 const WALK = { id: WALK_ID, title: 'Лесная прогулка', priceKopecks: 75000, capacity: 10 }
 const ORDER = { id: 'order-1', totalKopecks: 150000, status: 'PENDING', yooKassaPaymentId: null }
 
-function makeRequest(body: Record<string, unknown> = { walkId: WALK_ID, quantity: 2 }) {
+function makeRequest(body: Record<string, unknown> = { walkId: WALK_ID, quantity: 2, hasBinoculars: true }) {
   return new Request('http://localhost/api/checkout', {
     method: HTTP_METHOD.POST,
     headers: JSON_HEADERS,
@@ -74,22 +74,32 @@ describe('POST /api/checkout — auth', () => {
 
 describe('POST /api/checkout — request validation', () => {
   it('returns 400 when walkId is missing', async () => {
-    const res = await POST(makeRequest({ quantity: 1 }))
+    const res = await POST(makeRequest({ quantity: 1, hasBinoculars: true }))
     expect(res.status).toBe(HTTP_STATUS_BAD_REQUEST)
   })
 
   it('returns 400 when quantity is missing', async () => {
-    const res = await POST(makeRequest({ walkId: WALK_ID }))
+    const res = await POST(makeRequest({ walkId: WALK_ID, hasBinoculars: true }))
     expect(res.status).toBe(HTTP_STATUS_BAD_REQUEST)
   })
 
   it('returns 400 when quantity is 0', async () => {
-    const res = await POST(makeRequest({ walkId: WALK_ID, quantity: 0 }))
+    const res = await POST(makeRequest({ walkId: WALK_ID, quantity: 0, hasBinoculars: true }))
     expect(res.status).toBe(HTTP_STATUS_BAD_REQUEST)
   })
 
   it('returns 400 when walkId is not a valid uuid', async () => {
-    const res = await POST(makeRequest({ walkId: 'not-a-uuid', quantity: 1 }))
+    const res = await POST(makeRequest({ walkId: 'not-a-uuid', quantity: 1, hasBinoculars: true }))
+    expect(res.status).toBe(HTTP_STATUS_BAD_REQUEST)
+  })
+
+  it('returns 400 when hasBinoculars is missing', async () => {
+    const res = await POST(makeRequest({ walkId: WALK_ID, quantity: 1 }))
+    expect(res.status).toBe(HTTP_STATUS_BAD_REQUEST)
+  })
+
+  it('returns 400 when hasBinoculars is not a boolean', async () => {
+    const res = await POST(makeRequest({ walkId: WALK_ID, quantity: 1, hasBinoculars: 'yes' }))
     expect(res.status).toBe(HTTP_STATUS_BAD_REQUEST)
   })
 })
@@ -133,13 +143,21 @@ describe('POST /api/checkout — happy path', () => {
   })
 
   it('computes totalKopecks from DB walk price — not from request body', async () => {
-    const res = await POST(makeRequest({ walkId: WALK_ID, quantity: 2, totalKopecks: 0 }))
+    const res = await POST(makeRequest({ walkId: WALK_ID, quantity: 2, hasBinoculars: true, totalKopecks: 0 }))
     expect(res.status).toBe(200)
     const createCall = txMock.order.create.mock.calls[0][0] as {
       data: { totalKopecks: number }
     }
     // 2 seats × 75000 kopecks = 150000
     expect(createCall.data.totalKopecks).toBe(150000)
+  })
+
+  it('stores the hasBinoculars answer on the order item', async () => {
+    await POST(makeRequest({ walkId: WALK_ID, quantity: 1, hasBinoculars: false }))
+    const createCall = txMock.order.create.mock.calls[0][0] as {
+      data: { orderItems: { create: Array<{ hasBinoculars: boolean }> } }
+    }
+    expect(createCall.data.orderItems.create[0].hasBinoculars).toBe(false)
   })
 
   it('calls createPayment with idempotence key equal to order.id', async () => {
