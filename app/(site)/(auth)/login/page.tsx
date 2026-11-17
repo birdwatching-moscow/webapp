@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/buttons/Button'
 import { Input } from '@/components/ui/input/Input'
 import { FormError } from '@/components/ui/form-error/FormError'
 import { OtpStep } from '@/components/auth/OtpStep'
+import { HiddenUsernameField } from '@/components/auth/HiddenUsernameField'
 import { AUTH_LABELS } from '@/lib/auth-labels'
 import { mapOtpVerifyError } from '@/lib/auth/mapOtpVerifyError'
 import { validateEmail, validateName } from '@/utils/validateAuthFields'
@@ -459,6 +460,7 @@ function LoginCodeForm() {
           <FormError message={error} />
 
           <form onSubmit={handlePasswordSubmit} className={styles.form} noValidate>
+            <HiddenUsernameField email={email} />
             <Input
               id="password"
               name="password"
@@ -490,6 +492,7 @@ function LoginCodeForm() {
           <FormError message={error} />
 
           <form onSubmit={handleSetPasswordSubmit} className={styles.form} noValidate>
+            <HiddenUsernameField email={email} />
             <Input
               id="newPassword"
               name="newPassword"
