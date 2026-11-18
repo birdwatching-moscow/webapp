@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { isAdmin } from '@/lib/auth/permissions'
+import { EventStatus } from '@/generated/prisma/client'
 
 async function requireAdmin() {
   const session = await auth()
@@ -74,8 +75,8 @@ export async function reorderTeamMembers(orderedIds: number[]): Promise<void> {
 export async function deleteTeamMember(id: number): Promise<void> {
   await requireAdmin()
   const [walkCount, expeditionCount] = await Promise.all([
-    prisma.walk.count({ where: { guideId: id, status: 'ACTIVE' } }),
-    prisma.expedition.count({ where: { guides: { some: { id } }, status: 'ACTIVE' } }),
+    prisma.walk.count({ where: { guideId: id, status: EventStatus.ACTIVE } }),
+    prisma.expedition.count({ where: { guides: { some: { id } }, status: EventStatus.ACTIVE } }),
   ])
   const total = walkCount + expeditionCount
   if (total > 0) {

@@ -1,4 +1,4 @@
-import { Prisma } from '@/generated/prisma/client'
+import { Prisma, EventStatus } from '@/generated/prisma/client'
 
 type WalksFilterParams = {
   q?: string
@@ -26,10 +26,10 @@ export function buildWalksWhere({
   if (statuses.length > 0) {
     const statusOr: Prisma.WalkWhereInput[] = []
     for (const s of statuses) {
-      if (s === 'active')    statusOr.push({ status: 'ACTIVE', startsAt: { gte: now } })
-      if (s === 'past')      statusOr.push({ status: 'ACTIVE', startsAt: { lt:  now } })
-      if (s === 'draft')     statusOr.push({ status: 'DRAFT' })
-      if (s === 'cancelled') statusOr.push({ status: 'CANCELLED' })
+      if (s === 'active')    statusOr.push({ status: EventStatus.ACTIVE, startsAt: { gte: now } })
+      if (s === 'past')      statusOr.push({ status: EventStatus.ACTIVE, startsAt: { lt:  now } })
+      if (s === 'draft')     statusOr.push({ status: EventStatus.DRAFT })
+      if (s === 'cancelled') statusOr.push({ status: EventStatus.CANCELLED })
     }
     and.push({ OR: statusOr })
   } else {

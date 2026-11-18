@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { buildWalksWhere } from '@/lib/admin/walksWhere'
+import { EventStatus } from '@/generated/prisma/client'
 
 const NOW = new Date('2026-06-15T12:00:00Z')
 
@@ -64,7 +65,7 @@ describe('buildWalksWhere — status filter', () => {
     const result = buildWalksWhere({ statuses: ['active'], now: NOW })
     expect(result).toMatchObject({
       OR: expect.arrayContaining([
-        { status: 'ACTIVE', startsAt: { gte: NOW } },
+        { status: EventStatus.ACTIVE, startsAt: { gte: NOW } },
       ]),
     })
   })
@@ -73,19 +74,19 @@ describe('buildWalksWhere — status filter', () => {
     const result = buildWalksWhere({ statuses: ['past'], now: NOW })
     expect(result).toMatchObject({
       OR: expect.arrayContaining([
-        { status: 'ACTIVE', startsAt: { lt: NOW } },
+        { status: EventStatus.ACTIVE, startsAt: { lt: NOW } },
       ]),
     })
   })
 
   it('"draft" maps to status DRAFT', () => {
     const result = buildWalksWhere({ statuses: ['draft'], now: NOW })
-    expect(result).toMatchObject({ OR: expect.arrayContaining([{ status: 'DRAFT' }]) })
+    expect(result).toMatchObject({ OR: expect.arrayContaining([{ status: EventStatus.DRAFT }]) })
   })
 
   it('"cancelled" maps to status CANCELLED', () => {
     const result = buildWalksWhere({ statuses: ['cancelled'], now: NOW })
-    expect(result).toMatchObject({ OR: expect.arrayContaining([{ status: 'CANCELLED' }]) })
+    expect(result).toMatchObject({ OR: expect.arrayContaining([{ status: EventStatus.CANCELLED }]) })
   })
 
   it('combines multiple statuses in one OR', () => {

@@ -27,6 +27,7 @@ import {
   restoreExpedition,
   deleteExpedition,
 } from '@/app/admin/expeditions/_actions'
+import { EventStatus } from '@/generated/prisma/client'
 
 const ADMIN_SESSION = { user: { id: 'u1', role: 'ADMIN' as const, name: 'Admin' } }
 const FUTURE = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
@@ -82,14 +83,14 @@ describe('updateExpedition — gallery URLs', () => {
 
 const ACTIVE_EXPEDITION = {
   id: 'exp-1',
-  status: 'ACTIVE' as const,
+  status: EventStatus.ACTIVE,
   startsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   publishedAt: null,
   publishedBy: null,
 }
 
-const DRAFT_EXPEDITION = { ...ACTIVE_EXPEDITION, status: 'DRAFT' as const }
-const CANCELLED_EXPEDITION = { ...ACTIVE_EXPEDITION, status: 'CANCELLED' as const }
+const DRAFT_EXPEDITION = { ...ACTIVE_EXPEDITION, status: EventStatus.DRAFT }
+const CANCELLED_EXPEDITION = { ...ACTIVE_EXPEDITION, status: EventStatus.CANCELLED }
 const PAST_EXPEDITION = { ...CANCELLED_EXPEDITION, startsAt: new Date(Date.now() - 60 * 60 * 1000) }
 
 describe('publishExpedition', () => {
@@ -103,7 +104,7 @@ describe('publishExpedition', () => {
     expeditionMock.update.mockResolvedValue({})
     await publishExpedition('exp-1')
     expect(expeditionMock.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ status: 'ACTIVE' }) })
+      expect.objectContaining({ data: expect.objectContaining({ status: EventStatus.ACTIVE }) })
     )
   })
 })
@@ -119,7 +120,7 @@ describe('cancelExpedition', () => {
     expeditionMock.update.mockResolvedValue({})
     await cancelExpedition('exp-1')
     expect(expeditionMock.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ status: 'CANCELLED' }) })
+      expect.objectContaining({ data: expect.objectContaining({ status: EventStatus.CANCELLED }) })
     )
   })
 })
@@ -136,7 +137,7 @@ describe('restoreExpedition', () => {
     const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
     await restoreExpedition('exp-1', futureDate)
     expect(expeditionMock.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ status: 'DRAFT' }) })
+      expect.objectContaining({ data: expect.objectContaining({ status: EventStatus.DRAFT }) })
     )
   })
 })

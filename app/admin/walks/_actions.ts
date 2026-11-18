@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { isAdmin } from '@/lib/auth/permissions'
 import { ensureUniqueSlug } from '@/lib/admin/slug'
+import { EventStatus } from '@/generated/prisma/client'
 
 export type TicketTypeInput = {
   name: string
@@ -178,7 +179,7 @@ export async function publishWalk(id: string): Promise<void> {
   const session = await requireAdmin()
   const walk = await prisma.walk.findFirst({ where: { id } })
   if (!walk) throw new Error('Прогулка не найдена')
-  if (walk.status === 'ACTIVE') throw new Error('Прогулка уже опубликована')
+  if (walk.status === EventStatus.ACTIVE) throw new Error('Прогулка уже опубликована')
   let publishedBy = walk.publishedBy
   if (!publishedBy) {
     const userExists = await prisma.user.count({ where: { id: session.user.id } }) > 0
@@ -187,7 +188,7 @@ export async function publishWalk(id: string): Promise<void> {
   await prisma.walk.update({
     where: { id },
     data: {
-      status: 'ACTIVE',
+      status: EventStatus.ACTIVE,
       publishedAt: walk.publishedAt ?? new Date(),
       publishedBy,
     },
@@ -198,8 +199,8 @@ export async function cancelWalk(id: string): Promise<void> {
   await requireAdmin()
   const walk = await prisma.walk.findFirst({ where: { id } })
   if (!walk) throw new Error('Прогулка не найдена')
-  if (walk.status !== 'ACTIVE') throw new Error('Нельзя отменить: прогулка не активна')
-  await prisma.walk.update({ where: { id }, data: { status: 'CANCELLED' } })
+  if (walk.status !== EventStatus.ACTIVE) throw new Error('Нельзя отменить: прогулка не активна')
+  await prisma.walk.update({ where: { id }, data: { status: EventStatus.CANCELLED } })
 }
 
 export async function restoreWalk(id: string, newStartsAt?: string): Promise<void> {
@@ -216,7 +217,7 @@ export async function restoreWalk(id: string, newStartsAt?: string): Promise<voi
   }
   await prisma.walk.update({
     where: { id },
-    data: { status: 'DRAFT', startsAt: resolvedStartsAt },
+    data: { status: EventStatus.DRAFT, startsAt: resolvedStartsAt },
   })
 }
 
@@ -274,7 +275,7 @@ export async function copyWalk(id: string): Promise<string> {
       emailSubject: walk.emailSubject,
       emailBody: walk.emailBody,
       reminderDaysBefore: walk.reminderDaysBefore,
-      status: 'DRAFT',
+      status: EventStatus.DRAFT,
     },
   })
 

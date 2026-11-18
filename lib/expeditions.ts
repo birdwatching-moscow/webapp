@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { EventStatus } from '@/generated/prisma/client'
 
 export type ExpeditionCardRow = {
   id: string
@@ -13,7 +14,7 @@ export type ExpeditionCardRow = {
 
 export async function getExpeditionTitle(slug: string): Promise<string | null> {
   const row = await prisma.expedition.findFirst({
-    where: { slug, status: 'ACTIVE' },
+    where: { slug, status: EventStatus.ACTIVE },
     select: { title: true },
   })
   return row?.title ?? null
@@ -21,7 +22,7 @@ export async function getExpeditionTitle(slug: string): Promise<string | null> {
 
 export async function getActiveExpeditions(options?: { limit?: number }): Promise<ExpeditionCardRow[]> {
   const rows = await prisma.expedition.findMany({
-    where: { status: 'ACTIVE', startsAt: { gte: new Date() } },
+    where: { status: EventStatus.ACTIVE, startsAt: { gte: new Date() } },
     select: {
       id: true,
       slug: true,

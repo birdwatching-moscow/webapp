@@ -27,9 +27,10 @@ import {
   HTTP_STATUS_BAD_REQUEST,
   HTTP_STATUS_NOT_FOUND,
 } from '@/lib/constants'
+import { EventStatus } from '@/generated/prisma/client'
 
 const EXPEDITION_ID = '00000000-0000-4000-8000-000000000001'
-const ACTIVE_EXPEDITION = { id: EXPEDITION_ID, status: 'ACTIVE' }
+const ACTIVE_EXPEDITION = { id: EXPEDITION_ID, status: EventStatus.ACTIVE }
 const CREATED_REQUEST = { id: '00000000-0000-4000-8000-000000000002' }
 
 function makePost(body: unknown) {
@@ -179,7 +180,7 @@ describe('POST /api/requests — EXPEDITION validation', () => {
 
   // ─── SC5: expedition exists but status !== ACTIVE ─────────────────────────
   it('returns 404 when expedition status is DRAFT (not leaked)', async () => {
-    expeditionFindUniqueMock.mockResolvedValue({ id: EXPEDITION_ID, status: 'DRAFT' })
+    expeditionFindUniqueMock.mockResolvedValue({ id: EXPEDITION_ID, status: EventStatus.DRAFT })
     const res = await POST(makePost({
       type: 'EXPEDITION',
       expeditionId: EXPEDITION_ID,
@@ -190,7 +191,7 @@ describe('POST /api/requests — EXPEDITION validation', () => {
   })
 
   it('returns 404 when expedition status is CANCELLED (not leaked)', async () => {
-    expeditionFindUniqueMock.mockResolvedValue({ id: EXPEDITION_ID, status: 'CANCELLED' })
+    expeditionFindUniqueMock.mockResolvedValue({ id: EXPEDITION_ID, status: EventStatus.CANCELLED })
     const res = await POST(makePost({
       type: 'EXPEDITION',
       expeditionId: EXPEDITION_ID,

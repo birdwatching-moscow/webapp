@@ -17,6 +17,7 @@ import { WalkSectionTickets } from '@/app/admin/walks/_sections/WalkSectionTicke
 import { WalkEmailTab } from '@/app/admin/walks/_sections/WalkEmailTab'
 import { WalkTicketsTab } from '@/app/admin/walks/_sections/WalkTicketsTab'
 import styles from './walk-edit.module.css'
+import { EventStatus } from '@/generated/prisma/client'
 
 type WalkData = {
   id: string
@@ -51,9 +52,9 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 function statusBadgeClass(status: string) {
-  if (status === 'DRAFT')     return styles.badgeDRAFT
-  if (status === 'ACTIVE')    return styles.badgeACTIVE
-  if (status === 'CANCELLED') return styles.badgeCANCELLED
+  if (status === EventStatus.DRAFT)     return styles.badgeDRAFT
+  if (status === EventStatus.ACTIVE)    return styles.badgeACTIVE
+  if (status === EventStatus.CANCELLED) return styles.badgeCANCELLED
   return styles.badgePAST
 }
 
@@ -69,7 +70,7 @@ function initialTickets(types: WalkData['ticketTypes']): TicketTypeRow[] {
 
 export function WalkEditForm({ walk, guides }: Props) {
   const router = useRouter()
-  const isEditable = walk.status === 'ACTIVE' || walk.status === 'DRAFT'
+  const isEditable = walk.status === EventStatus.ACTIVE || walk.status === EventStatus.DRAFT
 
   const [title, setTitle]       = useState(walk.title)
   const [subtitle, setSubtitle] = useState(walk.subtitle ?? '')
@@ -99,7 +100,7 @@ export function WalkEditForm({ walk, guides }: Props) {
   const [danger, startDanger]   = useTransition()
 
   const titleId = useId()
-  const requireAll = walk.status === 'ACTIVE'
+  const requireAll = walk.status === EventStatus.ACTIVE
 
   function markDirty() { setIsDirty(true) }
 
@@ -127,8 +128,8 @@ export function WalkEditForm({ walk, guides }: Props) {
   }, [isDirty])
 
   function walksListHref() {
-    if (walk.status === 'DRAFT') return `${ROUTES.admin.walks}?tab=draft`
-    if (walk.status === 'ACTIVE') return ROUTES.admin.walks
+    if (walk.status === EventStatus.DRAFT) return `${ROUTES.admin.walks}?tab=draft`
+    if (walk.status === EventStatus.ACTIVE) return ROUTES.admin.walks
     return `${ROUTES.admin.walks}?tab=all`
   }
 
@@ -180,7 +181,7 @@ export function WalkEditForm({ walk, guides }: Props) {
     if (startsAt && endsAt && endsAt <= startsAt) { setError('Дата окончания не может быть раньше даты начала'); setFormTab('walk'); return }
     const emailErrors = getEmailPairErrors()
     if (emailErrors.length > 0) { setError(emailErrors[0]); setFormTab('email'); return }
-    if (walk.status === 'ACTIVE') {
+    if (walk.status === EventStatus.ACTIVE) {
       const errors = getPublishErrors()
       if (errors.length > 0) {
         setError(`Не заполнены обязательные поля: ${errors.join(', ')}`)
@@ -250,7 +251,7 @@ export function WalkEditForm({ walk, guides }: Props) {
           </span>
           {isDirty && <span className={styles.dirtyHint}>Несохранённые изменения</span>}
           <CopyWalkButton walkId={walk.id} disabled={saving} onError={setError} onSuccess={() => setCopied(true)} />
-          {walk.status === 'DRAFT' && (
+          {walk.status === EventStatus.DRAFT && (
             <Button
               size="sm"
               onClick={handlePublish}
@@ -302,7 +303,7 @@ export function WalkEditForm({ walk, guides }: Props) {
         >
           Email
         </button>
-        {walk.status !== 'DRAFT' && (
+        {walk.status !== EventStatus.DRAFT && (
           <button
             type="button"
             className={[styles.formTab, formTab === 'tickets' ? styles.formTabActive : ''].filter(Boolean).join(' ')}
@@ -355,7 +356,7 @@ export function WalkEditForm({ walk, guides }: Props) {
         </div>
       )}
 
-      {formTab === 'tickets' && walk.status !== 'DRAFT' && (
+      {formTab === 'tickets' && walk.status !== EventStatus.DRAFT && (
         <WalkTicketsTab walkId={walk.id} />
       )}
 
@@ -384,14 +385,14 @@ export function WalkEditForm({ walk, guides }: Props) {
         </div>
       )}
 
-      {(walk.status === 'ACTIVE' || walk.status === 'DRAFT') && (
+      {(walk.status === EventStatus.ACTIVE || walk.status === EventStatus.DRAFT) && (
         <div className={styles.dangerZone}>
-          {walk.status === 'ACTIVE' && (
+          {walk.status === EventStatus.ACTIVE && (
             <button type="button" className={styles.dangerBtn} onClick={() => setShowDangerConfirm('cancel')} disabled={danger}>
               Отменить прогулку
             </button>
           )}
-          {walk.status === 'DRAFT' && (
+          {walk.status === EventStatus.DRAFT && (
             <button type="button" className={styles.dangerBtn} onClick={() => setShowDangerConfirm('delete')} disabled={danger}>
               Удалить черновик
             </button>

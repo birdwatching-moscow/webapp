@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { validateRequest } from '@/lib/api/validate'
+import { EventStatus } from '@/generated/prisma/client'
 import { requestBodySchema } from '@/lib/validation/requests'
 import { sendMail } from '@/lib/mail'
 import { checkContactFormRateLimit } from '@/lib/rateLimit'
@@ -48,7 +49,7 @@ export async function POST(req: Request): Promise<NextResponse> {
         where: { id: data.expeditionId },
         select: { id: true, status: true },
       })
-      if (!expedition || expedition.status !== 'ACTIVE') {
+      if (!expedition || expedition.status !== EventStatus.ACTIVE) {
         return NextResponse.json({ error: 'Expedition not found' }, { status: HTTP_STATUS_NOT_FOUND })
       }
     }

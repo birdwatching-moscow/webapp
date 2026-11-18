@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
+import { EventStatus } from '@/generated/prisma/client'
 import { NoticeBanner } from '@/components/NoticeBanner/NoticeBanner'
 import { PrivateHighlights, type PrivateHighlight } from '@/components/private/PrivateHighlights'
 import { WalkHero } from '@/components/walk/WalkHero'
@@ -39,7 +40,7 @@ const WALK_HIGHLIGHTS: readonly PrivateHighlight[] = [
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const walk = await prisma.walk.findFirst({ where: { slug, status: 'ACTIVE' }, select: { title: true } })
+  const walk = await prisma.walk.findFirst({ where: { slug, status: EventStatus.ACTIVE }, select: { title: true } })
   return { title: walk ? `${walk.title} | Birdwatching Moscow` : 'Прогулка | Birdwatching Moscow' }
 }
 
@@ -47,7 +48,7 @@ export default async function WalkPage({ params }: Props) {
   const { slug } = await params
 
   const walk = await prisma.walk.findFirst({
-    where: { slug, status: 'ACTIVE' },
+    where: { slug, status: EventStatus.ACTIVE },
     select: {
       id: true,
       title: true,
@@ -90,7 +91,7 @@ export default async function WalkPage({ params }: Props) {
   return (
     <main className={`container ${styles.page}`}>
       {isSoldOut && (
-        <div style={{ paddingTop: 'var(--space-8)' }}>
+        <div>
           <NoticeBanner
             text={
               <>

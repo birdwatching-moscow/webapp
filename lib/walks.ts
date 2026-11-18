@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { EventStatus } from '@/generated/prisma/client'
 
 export type PastWalkRow = {
   id: string
@@ -41,7 +42,7 @@ export type WalkTableRow = {
 
 export async function getActiveWalks(options?: { limit?: number }): Promise<WalkTableRow[]> {
   const rows = await prisma.walk.findMany({
-    where: { status: 'ACTIVE', startsAt: { gte: new Date() } },
+    where: { status: EventStatus.ACTIVE, startsAt: { gte: new Date() } },
     select: {
       id: true,
       slug: true,
