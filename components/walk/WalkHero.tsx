@@ -51,7 +51,7 @@ export const WalkHero = ({
     <section className={styles.hero}>
       <div className={styles.content}>
         <div className={styles.text}>
-          <h1 className={`text-h1 ${styles.title}`}>{title}</h1>
+          <h1 className={`text-display ${styles.title}`}>{title}</h1>
           {subtitle && <p className={`text-body-l ${styles.subtitle}`}>{subtitle}</p>}
         </div>
 
