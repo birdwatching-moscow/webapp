@@ -145,25 +145,16 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
           <div className={styles.subtitle}>{config.subtitle}</div>
 
           <div className={styles.fields}>
-            <div className={styles.fieldWrapper}>
-              <Input
-                id="contact-name"
-                name="name"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="Имя"
-                required
-                autoComplete="name"
-                maxLength={MAX_REQUEST_NAME}
-              />
-              {name.length > 0 && (
-                <span className={[styles.charCount, name.length >= MAX_REQUEST_NAME ? styles.charCountError : ''].filter(Boolean).join(' ')}>
-                  {name.length >= MAX_REQUEST_NAME
-                    ? `Максимум ${MAX_REQUEST_NAME} символов`
-                    : `${name.length} / ${MAX_REQUEST_NAME}`}
-                </span>
-              )}
-            </div>
+            <Input
+              id="contact-name"
+              name="name"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="Имя"
+              required
+              autoComplete="name"
+              maxLength={MAX_REQUEST_NAME}
+            />
             <Input
               id="contact-email"
               name="email"
@@ -175,26 +166,17 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
               autoComplete="email"
               maxLength={MAX_EMAIL}
             />
-            <div className={styles.fieldWrapper}>
-              <textarea
-                id="contact-message"
-                name="message"
-                value={message}
-                onChange={e => setMessage(e.target.value)}
-                placeholder="Комментарий"
-                rows={4}
-                required
-                className={styles.textarea}
-                maxLength={MAX_REQUEST_MESSAGE}
-              />
-              {message.length > 0 && (
-                <span className={[styles.charCount, message.length >= MAX_REQUEST_MESSAGE ? styles.charCountError : ''].filter(Boolean).join(' ')}>
-                  {message.length >= MAX_REQUEST_MESSAGE
-                    ? `Максимум ${MAX_REQUEST_MESSAGE} символов`
-                    : `${message.length} / ${MAX_REQUEST_MESSAGE}`}
-                </span>
-              )}
-            </div>
+            <textarea
+              id="contact-message"
+              name="message"
+              value={message}
+              onChange={e => setMessage(e.target.value)}
+              placeholder="Комментарий"
+              rows={4}
+              required
+              className={styles.textarea}
+              maxLength={MAX_REQUEST_MESSAGE}
+            />
           </div>
 
           <label className={styles.consent}>
