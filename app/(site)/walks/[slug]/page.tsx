@@ -123,16 +123,15 @@ export default async function WalkPage({ params }: Props) {
         more={{ label: 'Подробнее', href: ROUTES.faq }}
       />
 
-      {!isSoldOut && (
-        <section id="payment" className={styles.paymentSection}>
-          <h2 className={`text-h1 ${styles.paymentTitle}`}>Оплата</h2>
-          <WalkCheckoutForm
-            walkId={walk.id}
-            priceKopecks={walk.priceKopecks}
-            ticketTypes={resolvedTicketTypes}
-          />
-        </section>
-      )}
+      <section id="payment" className={styles.paymentSection}>
+        <h2 className={`text-h1 ${styles.paymentTitle}`}>Оплата</h2>
+        <WalkCheckoutForm
+          walkId={walk.id}
+          priceKopecks={walk.priceKopecks}
+          ticketTypes={resolvedTicketTypes}
+          disabled={isSoldOut}
+        />
+      </section>
 
       <div className={styles.certificateBand}>
         <CertificateCTABand />

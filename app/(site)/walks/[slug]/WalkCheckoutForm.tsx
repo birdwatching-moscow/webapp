@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { formatKopecksShort } from '@/utils/formatMoney'
 import { FormError } from '@/components/ui/form-error/FormError'
+import { Dropdown, type DropdownOption } from '@/components/ui/dropdown/Dropdown'
 import { CHECKOUT_LABELS } from '@/lib/checkout-labels'
 import { CHECKOUT_ERROR_CODE } from '@/types/checkout'
 import { HTTP_METHOD, JSON_HEADERS } from '@/lib/constants'
@@ -21,9 +22,11 @@ interface Props {
   walkId: string
   priceKopecks: number
   ticketTypes: TicketTypeItem[]
+  disabled?: boolean
 }
 
-const QTY_OPTIONS = Array.from({ length: 11 }, (_, i) => i)
+const QTY_OPTIONS: DropdownOption[] = Array.from({ length: 11 }, (_, i) => ({ label: String(i), value: i }))
+const QTY_OPTIONS_NO_ZERO: DropdownOption[] = Array.from({ length: 10 }, (_, i) => ({ label: String(i + 1), value: i + 1 }))
 
 function ticketWord(n: number): string {
   if (n === 1) return 'билет'
@@ -31,7 +34,7 @@ function ticketWord(n: number): string {
   return 'билетов'
 }
 
-export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes }: Props) {
+export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes, disabled = false }: Props) {
   const hasTypes = ticketTypes.length > 0
 
   const [quantities, setQuantities] = useState<Record<number, number>>(() =>
@@ -39,7 +42,7 @@ export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes }: Props) {
       ? Object.fromEntries(ticketTypes.map((t) => [t.id, 0]))
       : {}
   )
-  const [simpleQty, setSimpleQty] = useState(1)
+  const [simpleQty, setSimpleQty] = useState(disabled ? 0 : 1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -104,18 +107,14 @@ export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes }: Props) {
             <div key={type.id} className={styles.row}>
               <span className={styles.mobileLabel}>Тип билета</span>
               <span className={styles.rowName}>{type.name}</span>
-              <select
-                className={styles.qtySelect}
+              <Dropdown
                 value={quantities[type.id] ?? 0}
-                onChange={(e) =>
-                  setQuantities((prev) => ({ ...prev, [type.id]: parseInt(e.target.value, 10) }))
-                }
-                aria-label={`Количество билетов «${type.name}»`}
-              >
-                {QTY_OPTIONS.map((n) => (
-                  <option key={n} value={n}>{n}</option>
-                ))}
-              </select>
+                onChange={(v) => setQuantities((prev) => ({ ...prev, [type.id]: v }))}
+                options={QTY_OPTIONS}
+                disabled={disabled}
+                className={styles.qtyDropdown}
+                triggerClassName={styles.qtyTrigger}
+              />
               <span className={styles.rowPrice}>{formatKopecksShort(type.priceKopecks)}</span>
             </div>
           ))
@@ -123,16 +122,14 @@ export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes }: Props) {
           <div className={styles.row}>
             <span className={styles.mobileLabel}>Тип билета</span>
             <span className={styles.rowName}>Стандартный</span>
-            <select
-              className={styles.qtySelect}
+            <Dropdown
               value={simpleQty}
-              onChange={(e) => setSimpleQty(parseInt(e.target.value, 10))}
-              aria-label="Количество билетов"
-            >
-              {QTY_OPTIONS.filter((n) => n > 0).map((n) => (
-                <option key={n} value={n}>{n}</option>
-              ))}
-            </select>
+              onChange={setSimpleQty}
+              options={QTY_OPTIONS_NO_ZERO}
+              disabled={disabled}
+              className={styles.qtyDropdown}
+              triggerClassName={styles.qtyTrigger}
+            />
             <span className={styles.rowPrice}>{formatKopecksShort(priceKopecks)}</span>
           </div>
         )}
@@ -150,7 +147,7 @@ export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes }: Props) {
 
       <FormError message={error} />
 
-      <button type="submit" className={styles.cta} disabled={loading}>
+      <button type="submit" className={styles.cta} disabled={loading || disabled}>
         {loading ? L.redirecting : L.buy}
       </button>
     </form>
