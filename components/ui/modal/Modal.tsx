@@ -17,6 +17,13 @@ export const Modal = ({ open, onClose, title, children, footer }: ModalProps) =>
 
   useEffect(() => {
     if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
     const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);

@@ -1,0 +1,94 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.media {
+  position: relative;
+}
+
+.image img {
+  object-fit: cover;
+}
+
+.client,
+.description {
+  margin: 0;
+}
+
+.description {
+  color: var(--color-muted-foreground);
+}
+
+/* ─── Info icon: same spot and behaviour as LectureVideoCard ──────────────── */
+
+.icon {
+  position: absolute;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  composes: flex-center from global;
+  list-style: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  z-index: var(--z-index-float);
+}
+
+.icon::-webkit-details-marker {
+  display: none;
+}
+
+.icon:focus-visible {
+  outline: var(--stroke-focus) solid var(--color-primary-foreground);
+  outline-offset: 2px;
+  border-radius: var(--radius-lg);
+}
+
+.caption {
+  position: absolute;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  max-width: 70%;
+  margin: 0;
+  text-align: right;
+  text-transform: uppercase;
+  color: var(--color-primary-foreground);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  text-shadow: 0 0 4px rgb(0 0 0 / 0.6);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s;
+  z-index: var(--z-index-raised);
+}
+
+/* Desktop: hover or keyboard focus on the icon — icon hides, info shows */
+@media (hover: hover) {
+  .info:is(:hover, :focus-within)::details-content {
+    content-visibility: visible;
+  }
+
+  .info:is(:hover, :focus-within) .caption {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .info:is(:hover, :focus-within) .icon {
+    opacity: 0;
+  }
+}
+
+/* Touch: a tap on the icon opens <details>; tap again (now full-cover summary) closes it */
+@media (hover: none) {
+  .info[open] .caption {
+    opacity: 1;
+    visibility: visible;
+    z-index: var(--z-index-float);
+  }
+
+  .info[open] .icon {
+    inset: 0;
+    opacity: 0;
+    z-index: var(--z-index-raised);
+  }
+}
