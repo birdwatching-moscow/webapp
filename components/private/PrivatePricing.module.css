@@ -1,7 +1,8 @@
 /* ─── Mobile ──────────────────────────────────────────────────────────────── */
 
 .section {
-  padding-block: var(--space-8);
+  /* Last section on the page: no bottom padding — the footer brings its own */
+  padding-top: var(--space-8);
 }
 
 .content {
@@ -66,7 +67,7 @@
 
 @media (min-width: 1248px) {
   .section {
-    padding-block: var(--space-10);
+    padding-top: var(--space-10);
   }
 
   .content {
