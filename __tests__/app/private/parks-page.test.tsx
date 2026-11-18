@@ -32,6 +32,7 @@ describe('/private-parks page', () => {
     expect(cards).toHaveLength(PRIVATE_PARKS.length)
     expect(within(cards[0]).getByText('Скверы МГУ')).toBeInTheDocument()
     expect(within(cards[0]).getByRole('img', { name: 'Скверы МГУ' })).toHaveAttribute('src', '/images/parks/mgu.jpg')
+    expect(within(cards[0]).getByTestId('photo-caption')).toHaveTextContent('Ivtorov, CC BY-SA 4.0')
   })
 
   it('«альбомы» opens the VK photo albums in a new tab', () => {

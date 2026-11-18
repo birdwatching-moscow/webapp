@@ -51,10 +51,17 @@ describe('LocationCard — image', () => {
     expect(screen.getByAltText(base.imageAlt)).toBeInTheDocument()
   })
 
-  it('photo has an info icon with a lorem ipsum caption revealed on hover, like InfoCard', () => {
-    render(<LocationCard {...base} imageUrl="/location.jpg" />)
+  it('photo with a caption has an info icon revealing that caption on hover, like InfoCard', () => {
+    render(<LocationCard {...base} imageUrl="/location.jpg" photoCaption="Ivtorov, CC BY-SA 4.0" />)
     expect(screen.getByTestId('photo-info-icon')).toBeInTheDocument()
-    expect(screen.getByTestId('photo-caption')).toHaveTextContent('Lorem ipsum dolor')
+    expect(screen.getByTestId('photo-caption')).toHaveTextContent('Ivtorov, CC BY-SA 4.0')
+  })
+
+  it('photo without a caption shows the image but no info icon', () => {
+    render(<LocationCard {...base} imageUrl="/location.jpg" />)
+    expect(screen.getByAltText(base.imageAlt)).toHaveAttribute('src', '/location.jpg')
+    expect(screen.queryByTestId('photo-info-icon')).toBeNull()
+    expect(screen.queryByText(/lorem ipsum/i)).toBeNull()
   })
 
   it('placeholder (no photo) has no info icon', () => {

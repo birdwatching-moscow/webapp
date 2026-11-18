@@ -38,4 +38,28 @@ describe('PRIVATE_PARKS data', () => {
   it('every park has a photo', () => {
     for (const park of PRIVATE_PARKS) expect(park.imageUrl, park.name).toBeDefined()
   })
+
+  it('photo captions credit the author and license (shown on info icon hover)', () => {
+    const captions = Object.fromEntries(PRIVATE_PARKS.map((p) => [p.name, p.photoCaption]))
+    expect(captions).toEqual({
+      'Скверы МГУ': 'Ivtorov, CC BY-SA 4.0',
+      'Измайловский парк': 'Kristy2906, CC BY-SA 4.0',
+      'Главный Ботанический сад': 'Andrey Korzun, CC BY-SA 4.0',
+      'Парк Царицыно': 'Юрий Артамонов, CC BY 4.0',
+      'Верхнеяузские болота (Лосиный остров)': 'Nikiforovvb, CC BY-SA 4.0',
+      'Серебряный бор': 'Семашко Сергей Игоревич, CC BY-SA 4.0',
+      'Парк Покровское-Стрешнево': 'Sunny365days, CC BY 4.0',
+      'Парк Кузьминки': 'Oleg Yu.Novikov, CC BY 3.0',
+      'Коломенское': 'Alexander Baranov, CC BY 2.0',
+      'Виноградовская пойма': 'Powakkattsi, CC BY-SA 4.0',
+      'Лотошинский рыбхоз': 'Дмитрий Мозжухин, CC BY 3.0',
+      'Битцевский лес': undefined,
+      'Нескучный сад': 'Valeri Pizhanski, CC BY-SA 2.0',
+      'Щукинский полуостров': 'MBH, CC BY 4.0',
+      'Яхромская пойма': 'Mike like0708, CC BY-SA 4.0',
+      'Лианозовский питомник': 'Gennady Grachev, CC BY 2.0',
+      'Константиново (Сергиево-Посадского района)': undefined,
+      'Хотьково (велобёрдинг)': undefined,
+    })
+  })
 })
