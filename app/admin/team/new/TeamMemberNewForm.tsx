@@ -9,7 +9,7 @@ import { TeamPhotoField } from '@/app/admin/team/[id]/TeamPhotoField'
 import { ROUTES } from '@/utils/routes'
 import styles from '@/app/admin/team/[id]/member-edit.module.css'
 
-export function TeamMemberNewForm() {
+export function TeamMemberNewForm({ nextSortOrder }: { nextSortOrder: number }) {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [pending, startCreate] = useTransition()
@@ -39,7 +39,7 @@ export function TeamMemberNewForm() {
           education:    education || undefined,
           achievements: achievements || undefined,
           profileLinks: link ? [link] : [],
-          sortOrder:    parseInt((data.get('sortOrder') as string) ?? '0', 10),
+          sortOrder:    nextSortOrder,
         })
         router.push(ROUTES.admin.team)
       } catch (e) {
@@ -102,17 +102,6 @@ export function TeamMemberNewForm() {
           <ProfileLinkField defaultValue="" />
         </div>
 
-        <div className={styles.field}>
-          <label htmlFor="sortOrder" className={styles.label}>Порядок сортировки</label>
-          <input
-            id="sortOrder"
-            name="sortOrder"
-            type="number"
-            className={styles.input}
-            defaultValue={0}
-            required
-          />
-        </div>
       </div>
 
       <div className={styles.formActions}>
