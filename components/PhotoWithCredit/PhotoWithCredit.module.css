@@ -51,22 +51,40 @@
   z-index: var(--z-index-raised);
 }
 
-/* Hover/focus on the icon: icon hides, credit shows (as PhotoCard). The caption is
-   inside .credit, so it stays up while the pointer moves onto its links. On touch,
-   tapping the icon gives it hover + focus; tapping elsewhere hides the credit.
-   ::details-content renders the closed <details> body; the [open] state is unused. */
-.credit:is(:hover, :focus-within)::details-content {
-  content-visibility: visible;
+/* Desktop: hover or keyboard focus on the icon — icon hides, credit shows (as PhotoCard).
+   The caption is inside .credit, so it stays up while the pointer moves onto its links.
+   ::details-content renders the closed <details> body. The hidden icon keeps catching
+   the pointer, so the cursor stays a pointer over its spot. */
+@media (hover: hover) {
+  .credit:is(:hover, :focus-within)::details-content {
+    content-visibility: visible;
+  }
+
+  .credit:is(:hover, :focus-within) .caption {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .credit:is(:hover, :focus-within) .icon {
+    opacity: 0;
+  }
 }
 
-.credit:is(:hover, :focus-within) .caption {
-  opacity: 1;
-  visibility: visible;
-}
+/* Touch: a tap on the icon opens <details> (a tap gives sticky :hover, so hover rules
+   are desktop-only). While open, the invisible summary covers the photo under the
+   caption: a tap on the photo closes the credit, the links above it stay tappable. */
+@media (hover: none) {
+  .credit[open] .caption {
+    opacity: 1;
+    visibility: visible;
+    z-index: var(--z-index-float);
+  }
 
-.credit:is(:hover, :focus-within) .icon {
-  opacity: 0;
-  pointer-events: none;
+  .credit[open] .icon {
+    inset: 0;
+    opacity: 0;
+    z-index: var(--z-index-raised);
+  }
 }
 
 .link {
