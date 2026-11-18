@@ -69,7 +69,7 @@ export function TeamMemberNewForm() {
             id="education"
             name="education"
             className={styles.textarea}
-            placeholder="организатор бёрдвотчинг-туров"
+
             maxLength={75}
             rows={2}
           />
