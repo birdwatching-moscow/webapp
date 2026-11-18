@@ -74,6 +74,7 @@
   justify-content: center;
   align-items: center;
   gap: var(--space-2);
+  width: 100%;
   aspect-ratio: 4 / 3;
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -116,8 +117,6 @@
   }
 
   .photo {
-    flex: 1 0 0;
-    max-width: 616px;
-    max-height: 462px;
+    width: 100%;
   }
 }
