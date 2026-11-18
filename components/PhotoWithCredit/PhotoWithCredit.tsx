@@ -18,9 +18,9 @@ const EXTERNAL = { target: '_blank', rel: 'noopener noreferrer' } as const
 const MODIFIED_MARK = ', изменено'
 
 /**
- * Photo whose info icon reveals the author/license credit on hover, like PhotoCard,
- * and also toggles it on click/tap. Unlike PhotoCard, the caption stays up while
- * the pointer moves onto it, so the links are clickable.
+ * Photo whose info icon gives way to the author/license credit on hover, tap or focus,
+ * like PhotoCard. Unlike PhotoCard, the credit stays up while the pointer is on it,
+ * so its links are clickable.
  */
 export const PhotoWithCredit = ({ src, alt, credit, sizes = IMAGE_SIZES.cardThird }: PhotoWithCreditProps) => (
   <div className={styles.card}>
