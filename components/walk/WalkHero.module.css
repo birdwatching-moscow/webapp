@@ -63,6 +63,10 @@
 
 /* ─── Photo ──────────────────────────────────────────── */
 
+.photoCol {
+  /* mobile: col takes full width, photo inside is full width too */
+}
+
 .photo {
   position: relative;
   display: flex;
@@ -73,7 +77,6 @@
   aspect-ratio: 4 / 3;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  flex-shrink: 0;
 }
 
 .photoImg {
@@ -104,10 +107,17 @@
     max-width: var(--size-col-3);
   }
 
+  .photoCol {
+    flex: 1 0 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-right: var(--page-gutter);
+  }
+
   .photo {
     flex: 1 0 0;
     max-width: 616px;
     max-height: 462px;
-    margin-right: var(--page-gutter);
   }
 }

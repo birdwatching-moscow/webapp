@@ -77,6 +77,7 @@ export const WalkHero = ({
         )}
       </div>
 
+      <div className={styles.photoCol}>
       <div className={styles.photo}>
         {coverPhotoCredit ? (
           <PhotoWithTextCredit
@@ -96,6 +97,7 @@ export const WalkHero = ({
             sizes="(min-width: 1248px) 50vw, 100vw"
           />
         )}
+      </div>
       </div>
     </section>
   )
