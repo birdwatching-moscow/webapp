@@ -147,7 +147,7 @@ export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes }: Props) {
 
       {error && <p className={styles.checkoutError}>{error}</p>}
 
-      <button type="submit" className={styles.cta} disabled={loading || totalQty === 0}>
+      <button type="submit" className={styles.cta} disabled={loading}>
         {loading ? 'Перенаправление…' : 'Купить'}
       </button>
     </form>
