@@ -108,7 +108,7 @@ export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes, disabled =
               <span className={styles.mobileLabel}>Тип билета</span>
               <span className={styles.rowName}>{type.name}</span>
               <Dropdown
-                value={quantities[type.id] ?? 0}
+                value={disabled ? -1 : (quantities[type.id] ?? 0)}
                 onChange={(v) => setQuantities((prev) => ({ ...prev, [type.id]: v }))}
                 options={QTY_OPTIONS}
                 disabled={disabled}
