@@ -85,8 +85,9 @@ model Walk {
   capacity      Int
   guideId       Int
   status        EventStatus @default(DRAFT)
-  coverPhotoUrl String      @db.VarChar(2048)
-  galleryUrl    String?     @db.VarChar(2048)
+  coverPhotoUrl    String      @db.VarChar(2048)
+  coverPhotoCredit String?     @db.VarChar(500)
+  galleryUrl       String?     @db.VarChar(2048)
   emailSubject          String?  @db.VarChar(255)
   emailBody             String?  @db.Text
   reminderDaysBefore    Int?

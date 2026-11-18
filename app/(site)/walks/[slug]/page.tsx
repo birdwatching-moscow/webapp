@@ -58,6 +58,7 @@ export default async function WalkPage({ params }: Props) {
       priceKopecks: true,
       capacity: true,
       coverPhotoUrl: true,
+      coverPhotoCredit: true,
       guide: {
         select: {
           name: true,
@@ -108,6 +109,7 @@ export default async function WalkPage({ params }: Props) {
         endsAt={walk.endsAt}
         spotsLeft={spotsLeft}
         coverPhotoUrl={walk.coverPhotoUrl}
+        coverPhotoCredit={walk.coverPhotoCredit}
         isSoldOut={isSoldOut}
       />
 

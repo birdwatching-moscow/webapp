@@ -18,6 +18,7 @@ export type UpdateWalkFullData = {
   endsAt?: string
   location: string
   coverPhotoUrl: string
+  coverPhotoCredit?: string
   guideId: number
   ticketTypes: TicketTypeInput[]
   purchaseEmailSubject?: string
@@ -42,6 +43,7 @@ export async function updateWalkFull(id: string, data: UpdateWalkFullData): Prom
         endsAt: data.endsAt ? new Date(data.endsAt) : null,
         location: data.location,
         coverPhotoUrl: data.coverPhotoUrl,
+        coverPhotoCredit: data.coverPhotoCredit ?? null,
         guide:  { connect: { id: data.guideId } },
         priceKopecks,
         capacity,
@@ -104,6 +106,7 @@ export async function createWalkFull(data: UpdateWalkFullData): Promise<string> 
       endsAt: data.endsAt ? new Date(data.endsAt) : null,
       location: data.location,
       coverPhotoUrl: data.coverPhotoUrl,
+      coverPhotoCredit: data.coverPhotoCredit ?? null,
       priceKopecks,
       capacity,
       guideId: data.guideId,

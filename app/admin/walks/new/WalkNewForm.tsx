@@ -29,6 +29,7 @@ export function WalkNewForm({ guides }: Props) {
   const [endsAt, setEndsAt]     = useState('')
   const [location, setLocation] = useState('')
   const [coverUrl, setCoverUrl]         = useState('')
+  const [coverCredit, setCoverCredit]   = useState('')
   const [guideId, setGuideId]           = useState('')
   const [tickets, setTickets]           = useState<TicketTypeRow[]>([
     { key: makeKey(), name: 'Стандартный', priceRub: '', capacity: '' },
@@ -54,6 +55,7 @@ export function WalkNewForm({ guides }: Props) {
       endsAt: endsAt || undefined,
       location: location.trim(),
       coverPhotoUrl: coverUrl.trim(),
+      coverPhotoCredit: coverCredit.trim() || undefined,
       guideId: Number(guideId),
       purchaseEmailSubject: purchaseEmailSubject.trim() || undefined,
       purchaseEmailBody: purchaseEmailBody.trim() || undefined,
@@ -153,6 +155,8 @@ export function WalkNewForm({ guides }: Props) {
           <WalkSectionCover
             coverUrl={coverUrl}
             onCoverUrl={setCoverUrl}
+            coverCredit={coverCredit}
+            onCoverCredit={setCoverCredit}
           />
           <WalkSectionTickets
             tickets={tickets}

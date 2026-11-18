@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import { Button } from '@/components/ui/buttons/Button'
+import { PhotoWithTextCredit } from '@/components/PhotoWithTextCredit/PhotoWithTextCredit'
 import { formatDurationRange } from '@/utils/formatDurationRange'
 import styles from './WalkHero.module.css'
 
@@ -28,6 +29,7 @@ type Props = {
   endsAt: Date | null
   spotsLeft: number
   coverPhotoUrl?: string | null
+  coverPhotoCredit?: string | null
   isSoldOut: boolean
 }
 
@@ -38,6 +40,7 @@ export const WalkHero = ({
   endsAt,
   spotsLeft,
   coverPhotoUrl,
+  coverPhotoCredit,
   isSoldOut,
 }: Props) => {
   const { day, month } = getDateParts(startsAt)
@@ -75,15 +78,24 @@ export const WalkHero = ({
       </div>
 
       <div className={styles.photo}>
-        <Image
-          src={coverPhotoUrl ?? '/placeholders/image-placeholder.png'}
-          alt={title}
-          fill
-          className={styles.photoImg}
-          priority
-          sizes="(min-width: 1248px) 50vw, 100vw"
-        />
-        <p className={styles.photoCredit}>ФОТО: ЛИЧНЫЙ АРХИВ</p>
+        {coverPhotoCredit ? (
+          <PhotoWithTextCredit
+            src={coverPhotoUrl ?? '/placeholders/image-placeholder.png'}
+            alt={title}
+            credit={coverPhotoCredit}
+            sizes="(min-width: 1248px) 50vw, 100vw"
+            priority
+          />
+        ) : (
+          <Image
+            src={coverPhotoUrl ?? '/placeholders/image-placeholder.png'}
+            alt={title}
+            fill
+            className={styles.photoImg}
+            priority
+            sizes="(min-width: 1248px) 50vw, 100vw"
+          />
+        )}
       </div>
     </section>
   )
