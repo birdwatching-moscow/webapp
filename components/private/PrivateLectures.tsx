@@ -19,6 +19,7 @@ export const PrivateLectures = ({ lectures }: PrivateLecturesProps) => (
           <LectureVideoCard
             title={lecture.title}
             subtitle={lecture.subtitle}
+            videoUrl={lecture.videoUrl}
             imageSizes={lecture.featured ? FEATURED_IMAGE_SIZES : undefined}
           />
         </li>

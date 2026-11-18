@@ -2,6 +2,8 @@ export type PrivateLecture = {
   title: string
   /** Format and venue */
   subtitle: string
+  /** Recording page, opened in a new tab; no URL — the card shows a placeholder */
+  videoUrl?: string
   /** Shown larger than the rest — desktop only */
   featured?: boolean
 }
