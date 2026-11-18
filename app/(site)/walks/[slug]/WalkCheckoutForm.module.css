@@ -9,7 +9,7 @@
 /* ─── Bordered card ──────────────────────────────────── */
 
 .card {
-  border: 1px solid var(--color-border);
+  border: var(--stroke-default) solid var(--color-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
@@ -45,7 +45,7 @@
   grid-template-columns: 1fr auto;
   row-gap: var(--space-1);
   padding: var(--space-4);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: var(--stroke-default) solid var(--color-border);
 }
 
 .row:last-child {
@@ -186,7 +186,7 @@
     grid-template-columns: 1fr auto auto;
     gap: var(--space-6);
     padding-bottom: var(--space-3);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: var(--stroke-default) solid var(--color-border);
   }
 
   /* Row as 3-column grid: "name price qty" */
