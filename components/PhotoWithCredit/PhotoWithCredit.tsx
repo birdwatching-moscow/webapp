@@ -14,6 +14,9 @@ type PhotoWithCreditProps = {
 
 const EXTERNAL = { target: '_blank', rel: 'noopener noreferrer' } as const
 
+// The photo is always cropped to 16:9 here; CC BY 4.0 §3(a)(1)(B) asks to indicate modifications.
+const MODIFIED_MARK = ', изменено'
+
 /**
  * Photo whose info icon toggles the author/license credit on click.
  * Unlike PhotoCard's hover caption, the links stay reachable (and work on touch).
@@ -30,6 +33,7 @@ export const PhotoWithCredit = ({ src, alt, credit, sizes = IMAGE_SIZES.cardThir
         <a href={credit.sourceUrl} {...EXTERNAL} className={styles.link}>{credit.author}</a>
         {', '}
         <a href={credit.licenseUrl} {...EXTERNAL} className={styles.link}>{credit.license}</a>
+        {MODIFIED_MARK}
       </p>
     </details>
   </div>
