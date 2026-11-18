@@ -2,6 +2,9 @@ import { LectureVideoCard } from '@/components/private/LectureVideoCard'
 import type { PrivateLecture } from '@/lib/private/lectures'
 import styles from './PrivateLectures.module.css'
 
+// .featured is capped at --size-text-max (720px) on desktop
+const FEATURED_IMAGE_SIZES = '(min-width: 1248px) 720px, calc(100vw - 32px)'
+
 type PrivateLecturesProps = {
   lectures: readonly PrivateLecture[]
 }
@@ -13,7 +16,11 @@ export const PrivateLectures = ({ lectures }: PrivateLecturesProps) => (
       {lectures.map((lecture, index) => (
         // Titles repeat in the design content, so the index is part of the key
         <li key={`${index}-${lecture.title}`} className={lecture.featured ? styles.featured : undefined}>
-          <LectureVideoCard title={lecture.title} subtitle={lecture.subtitle} />
+          <LectureVideoCard
+            title={lecture.title}
+            subtitle={lecture.subtitle}
+            imageSizes={lecture.featured ? FEATURED_IMAGE_SIZES : undefined}
+          />
         </li>
       ))}
     </ul>

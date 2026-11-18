@@ -6,6 +6,11 @@
   gap: var(--space-2);
 }
 
+/* The placeholder picture is 4:3 — crop it to the 16:9 slot instead of stretching */
+.preview img {
+  object-fit: cover;
+}
+
 .title,
 .subtitle {
   margin: 0;
