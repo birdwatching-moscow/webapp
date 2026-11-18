@@ -6,8 +6,8 @@ import { PRIVATE_PARKS } from '@/lib/private/parks'
 const PARKS_DIR = path.join(process.cwd(), 'public', 'images', 'parks')
 
 describe('PRIVATE_PARKS data', () => {
-  it('has the 19 locations from the design, in design order', () => {
-    expect(PRIVATE_PARKS).toHaveLength(19)
+  it('has 18 locations in design order', () => {
+    expect(PRIVATE_PARKS).toHaveLength(18)
     expect(PRIVATE_PARKS[0].name).toBe('Скверы МГУ')
     expect(PRIVATE_PARKS.at(-1)?.name).toBe('Хотьково (велобёрдинг)')
   })
@@ -35,7 +35,11 @@ describe('PRIVATE_PARKS data', () => {
     expect([...used].sort()).toEqual(readdirSync(PARKS_DIR).filter((f) => f.endsWith('.jpg')).sort())
   })
 
-  it('Бисерово has no photo yet (placeholder)', () => {
-    expect(PRIVATE_PARKS.find((p) => p.name === 'Бисерово')?.imageUrl).toBeUndefined()
+  it('Бисерово is not listed', () => {
+    expect(PRIVATE_PARKS.map((p) => p.name)).not.toContain('Бисерово')
+  })
+
+  it('every park has a photo', () => {
+    for (const park of PRIVATE_PARKS) expect(park.imageUrl, park.name).toBeDefined()
   })
 })
