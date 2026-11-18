@@ -7,10 +7,10 @@ vi.mock('next/image', () => ({
 }))
 vi.mock('@/components/ContactModal/ContactModal', () => ({ ContactModal: () => null }))
 
-import ParksPage, { metadata } from '@/app/(site)/private/parks/page'
+import ParksPage, { metadata } from '@/app/(site)/private-parks/page'
 import { PRIVATE_PARKS } from '@/lib/private/parks'
 
-describe('/private/parks page', () => {
+describe('/private-parks page', () => {
   it('sets the page title', () => {
     expect(metadata.title).toBe('Парки Москвы и окрестностей | Birdwatching Moscow')
   })

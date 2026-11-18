@@ -4,9 +4,9 @@ import PrivatePage, { metadata } from '@/app/(site)/private/page'
 
 describe('/private page — temporary links to the three private sections', () => {
   it.each([
-    ['Парки', '/private/parks'],
-    ['Лекции', '/private/lectures'],
-    ['Консультации', '/private/consultations'],
+    ['Парки', '/private-parks'],
+    ['Лекции', '/private-lectures'],
+    ['Консультации', '/private-consultations'],
   ])('has a «%s» button linking to %s', (label, href) => {
     render(<PrivatePage />)
     expect(screen.getByRole('link', { name: label })).toHaveAttribute('href', href)

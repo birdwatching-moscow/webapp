@@ -6,4 +6,9 @@ describe('next.config redirects', () => {
     const redirects = await nextConfig.redirects?.()
     expect(redirects).toContainEqual({ source: '/private-events', destination: '/private', permanent: true })
   })
+
+  it('/private-walks permanently redirects to /private-parks (pages were merged)', async () => {
+    const redirects = await nextConfig.redirects?.()
+    expect(redirects).toContainEqual({ source: '/private-walks', destination: '/private-parks', permanent: true })
+  })
 })

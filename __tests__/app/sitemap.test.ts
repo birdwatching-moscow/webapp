@@ -15,4 +15,10 @@ describe('sitemap — private page', () => {
     expect(urls).toContain('https://birdwatching.moscow/private')
     expect(urls).not.toContain('https://birdwatching.moscow/private-events')
   })
+
+  it('lists /private-parks instead of the merged /private-walks', async () => {
+    const urls = (await sitemap()).map((entry) => entry.url)
+    expect(urls).toContain('https://birdwatching.moscow/private-parks')
+    expect(urls).not.toContain('https://birdwatching.moscow/private-walks')
+  })
 })
