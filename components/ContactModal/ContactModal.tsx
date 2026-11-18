@@ -9,7 +9,13 @@ import { submitContactRequest } from '@/lib/api/requests'
 import { MAX_REQUEST_NAME, MAX_REQUEST_MESSAGE } from '@/lib/validation/requests'
 import { MAX_EMAIL } from '@/lib/constants'
 import { ROUTES } from '@/utils/routes'
+import { pluralRu } from '@/utils/pluralRu'
 import styles from './ContactModal.module.css'
+
+const MINUTE_FORMS: [string, string, string] = ['минуту', 'минуты', 'минут']
+const SECONDS_PER_MINUTE = 60
+/** The contact form limit window (lib/rateLimit) — used if Retry-After is missing */
+const DEFAULT_RETRY_MINUTES = 10
 
 export type ContactRequestType = 'EXPEDITION' | 'CERTIFICATE' | 'QUESTION' | 'PRIVATE_EVENT'
 
@@ -68,7 +74,7 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [rateLimited, setRateLimited] = useState(false)
-  const [retryMinutes, setRetryMinutes] = useState(10)
+  const [retryMinutes, setRetryMinutes] = useState(DEFAULT_RETRY_MINUTES)
   const [serverError, setServerError] = useState<string | null>(null)
 
   const config = TYPE_CONFIG[defaultType]
@@ -97,8 +103,8 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
       setSubmitted(true)
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 429) {
-        const retryAfterSec = Number(err.response.headers['retry-after']) || 600
-        setRetryMinutes(Math.ceil(retryAfterSec / 60))
+        const retryAfterSec = Number(err.response.headers['retry-after'])
+        setRetryMinutes(retryAfterSec > 0 ? Math.ceil(retryAfterSec / SECONDS_PER_MINUTE) : DEFAULT_RETRY_MINUTES)
         setRateLimited(true)
       } else {
         setServerError('Не удалось отправить заявку. Попробуйте ещё раз.')
@@ -125,7 +131,7 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
         <div className={styles.rateLimitBox}>
           <p className={`text-h3 ${styles.rateLimitTitle}`}>Нужно немного передохнуть</p>
           <p className={`text-body ${styles.rateLimitText}`}>
-            Вы исчерпали лимит обращений на данный момент. Мы сможем принять ваш следующий запрос через {retryMinutes} минут.
+            Вы исчерпали лимит обращений на данный момент. Мы сможем принять ваш следующий запрос через {pluralRu(retryMinutes, MINUTE_FORMS)}.
           </p>
         </div>
       ) : submitted ? (
