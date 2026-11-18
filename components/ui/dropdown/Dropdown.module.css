@@ -60,14 +60,15 @@
 
 .list {
   position: absolute;
-  top: calc(100% + var(--space-1));
+  top: 100%;
   left: 0;
   right: 0;
   z-index: var(--z-index-dropdown);
   list-style: none;
   padding: var(--space-1) 0;
   border: var(--stroke-default) solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-top: none;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   background: var(--color-background);
   max-height: 240px;
   overflow-y: auto;
