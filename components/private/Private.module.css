@@ -1,18 +1,117 @@
-.wrap {
+/* ─── Page ─────────────────────────────────────────────────────────────────── */
+
+.page {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Hero ─────────────────────────────────────────────────────────────────── */
+
+.hero {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  padding: var(--space-6) var(--space-4);
+  padding-top: var(--space-8);
 }
 
+.heroTitle {
+  margin: 0;
+}
+
+.heroDescription {
+  margin: 0;
+  color: var(--color-muted-foreground);
+}
+
+/* ─── Section ──────────────────────────────────────────────────────────────── */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding-top: var(--space-8);
+}
+
+/* ─── Swipe grid: horizontal scroll on mobile ──────────────────────────────── */
+
+.swipeGrid {
+  --_peek: var(--space-6);
+
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.swipeGrid::-webkit-scrollbar {
+  display: none;
+}
+
+.swipeItem {
+  flex: 0 0 calc(100% - var(--_peek));
+  scroll-snap-align: start;
+}
+
+/* ─── Stack grid: single column on mobile ──────────────────────────────────── */
+
+.stackGrid {
+  display: grid;
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ─── Notice ───────────────────────────────────────────────────────────────── */
+
+.notice {
+  padding-top: var(--space-8);
+}
+
+/* ─── Desktop (min-width: 1248px) ──────────────────────────────────────────── */
+
 @media (min-width: 1248px) {
-  .wrap {
-    flex-direction: row;
-    justify-content: center;
+  .hero {
+    gap: var(--space-3);
+    max-width: var(--size-text-max);
+    padding-top: var(--space-10);
   }
 
-  /* Width cap only on desktop; on mobile the buttons span the full width */
-  .button {
-    width: auto;
+  .section {
+    gap: var(--space-8);
+    padding-top: var(--space-10);
+  }
+
+  /* 3-column grid for parks and consultations */
+  .swipeGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6);
+    overflow-x: visible;
+    scroll-snap-type: none;
+  }
+
+  .swipeItem {
+    flex: none;
+  }
+
+  /* 2-column grid for lectures */
+  .stackGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-6);
+  }
+
+  /* Cap the CTA button width on desktop */
+  .cta {
+    max-width: var(--size-col-3);
+  }
+
+  .notice {
+    padding-top: var(--space-10);
   }
 }
