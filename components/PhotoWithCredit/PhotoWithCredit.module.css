@@ -1,0 +1,60 @@
+.card {
+  --_icon-size: 24px; /* InfoIcon */
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.image {
+  object-fit: cover;
+}
+
+/* Info icon — bottom-right corner, same spot as PhotoCard */
+.icon {
+  position: absolute;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  composes: flex-center from global;
+  list-style: none;
+  cursor: pointer;
+  z-index: var(--z-index-float);
+}
+
+.icon::-webkit-details-marker {
+  display: none;
+}
+
+.icon:focus-visible {
+  outline: var(--stroke-focus) solid var(--color-primary-foreground);
+  outline-offset: 2px;
+  border-radius: var(--radius-lg);
+}
+
+/* Credit — left of the icon, so the icon stays clickable to collapse it */
+.caption {
+  position: absolute;
+  bottom: var(--space-4);
+  right: calc(var(--space-4) + var(--_icon-size) + var(--space-2));
+  max-width: 70%;
+  margin: 0;
+  text-align: right;
+  text-transform: uppercase;
+  color: var(--color-primary-foreground);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  text-shadow: 0 0 4px rgb(0 0 0 / 0.6);
+  z-index: var(--z-index-raised);
+}
+
+.link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.link:focus-visible {
+  outline: var(--stroke-focus) solid var(--color-primary-foreground);
+  outline-offset: 2px;
+}

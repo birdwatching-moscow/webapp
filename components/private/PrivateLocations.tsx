@@ -21,7 +21,7 @@ export const PrivateLocations = ({ title, description, locations }: PrivateLocat
             description={location.description}
             species={location.species}
             imageUrl={location.imageUrl}
-            photoCaption={location.photoCaption}
+            photoCredit={location.photoCredit}
             imageAlt={location.name}
           />
         </li>
