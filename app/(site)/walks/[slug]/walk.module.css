@@ -166,6 +166,12 @@
   margin: 0;
 }
 
+/* ─── Certificate band ───────────────────────────────── */
+
+.certificateBand {
+  margin-top: var(--space-10);
+}
+
 /* ─── Desktop ────────────────────────────────────────── */
 
 @media (min-width: 1248px) {

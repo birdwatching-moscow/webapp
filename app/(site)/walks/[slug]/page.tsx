@@ -132,7 +132,9 @@ export default async function WalkPage({ params }: Props) {
         </section>
       )}
 
-      <CertificateCTABand />
+      <div className={styles.certificateBand}>
+        <CertificateCTABand />
+      </div>
     </main>
   )
 }
