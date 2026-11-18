@@ -18,6 +18,11 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "storage.yandexcloud.net",
       },
+      // Dev/seed placeholder data
+      {
+        protocol: "https",
+        hostname: "placeholder.example.com",
+      },
     ],
   },
   async redirects() {
