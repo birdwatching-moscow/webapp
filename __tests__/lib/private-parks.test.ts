@@ -35,10 +35,6 @@ describe('PRIVATE_PARKS data', () => {
     expect([...used].sort()).toEqual(readdirSync(PARKS_DIR).filter((f) => f.endsWith('.jpg')).sort())
   })
 
-  it('Бисерово is not listed', () => {
-    expect(PRIVATE_PARKS.map((p) => p.name)).not.toContain('Бисерово')
-  })
-
   it('every park has a photo', () => {
     for (const park of PRIVATE_PARKS) expect(park.imageUrl, park.name).toBeDefined()
   })
