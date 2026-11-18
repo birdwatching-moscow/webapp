@@ -1,14 +1,41 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
-import { formatWalkDateShort } from '@/utils/formatWalkDate'
-import { formatDurationRange } from '@/utils/formatDurationRange'
+import { NoticeBanner } from '@/components/NoticeBanner/NoticeBanner'
+import { PrivateHighlights, type PrivateHighlight } from '@/components/private/PrivateHighlights'
+import { WalkHero } from '@/components/walk/WalkHero'
+import { WalkAbout } from '@/components/walk/WalkAbout'
+import { WalkCertificateBanner } from '@/components/walk/WalkCertificateBanner'
 import { WalkCheckoutForm } from './WalkCheckoutForm'
+import { ROUTES } from '@/utils/routes'
 import styles from './walk.module.css'
 
 interface Props {
   params: Promise<{ slug: string }>
 }
+
+const WALK_HIGHLIGHTS: readonly PrivateHighlight[] = [
+  {
+    title: 'Что взять с собой',
+    description: 'Бинокль или фотоаппарат для наблюдений, воду и удобную обувь. Если у вас нет бинокля — мы можем одолжить.',
+  },
+  {
+    title: 'Одежда по погоде',
+    description: 'Прогулки проходят на открытом воздухе в любую погоду, поэтому оденьтесь по сезону.',
+  },
+  {
+    title: 'Сложность маршрута',
+    description: '2–3 часа пешей прогулки по ровной поверхности. Доступно для детей от 5 лет.',
+  },
+  {
+    title: 'Место встречи',
+    description: 'Точная точка встречи будет указана в письме после покупки билета.',
+  },
+  {
+    title: 'Птицы не гарантированы',
+    description: 'Мы не можем гарантировать встречу с конкретными видами — поведение птиц зависит от погоды и сезона.',
+  },
+] as const
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
@@ -28,9 +55,22 @@ export default async function WalkPage({ params }: Props) {
       description: true,
       startsAt: true,
       endsAt: true,
-      location: true,
       priceKopecks: true,
       capacity: true,
+      coverPhotoUrl: true,
+      guide: {
+        select: {
+          name: true,
+          photoUrl: true,
+          education: true,
+          achievements: true,
+          profileLinks: true,
+        },
+      },
+      ticketTypes: {
+        select: { id: true, name: true, priceKopecks: true, capacity: true, sortOrder: true },
+        orderBy: { sortOrder: 'asc' },
+      },
       _count: { select: { tickets: true } },
     },
   })
@@ -39,29 +79,58 @@ export default async function WalkPage({ params }: Props) {
 
   const spotsLeft = walk.capacity - walk._count.tickets
   const isSoldOut = spotsLeft <= 0
-  const dateLabel = formatWalkDateShort(walk.startsAt, walk.endsAt)
-  const durationLabel = walk.endsAt ? formatDurationRange(walk.startsAt, walk.endsAt) : null
+
+  const resolvedTicketTypes = walk.ticketTypes.map((t) => ({
+    id: t.id,
+    name: t.name,
+    priceKopecks: t.priceKopecks ?? walk.priceKopecks,
+  }))
 
   return (
-    <main className={styles.page}>
-      <div>
-        <h1 className="text-h1">{walk.title}</h1>
-        {walk.subtitle && <p className="text-body">{walk.subtitle}</p>}
-      </div>
-
-      <dl className="text-body">
-        <div><dt style={{ display: 'inline', fontWeight: 600 }}>Дата:&nbsp;</dt><dd style={{ display: 'inline' }}>{dateLabel}</dd></div>
-        {durationLabel && <div><dt style={{ display: 'inline', fontWeight: 600 }}>Длительность:&nbsp;</dt><dd style={{ display: 'inline' }}>{durationLabel}</dd></div>}
-        <div><dt style={{ display: 'inline', fontWeight: 600 }}>Место:&nbsp;</dt><dd style={{ display: 'inline' }}>{walk.location}</dd></div>
-      </dl>
-
-      <p className="text-body">{walk.description}</p>
-
-      {isSoldOut ? (
-        <p className="text-body" style={{ color: 'var(--color-error)' }}>Места закончились</p>
-      ) : (
-        <WalkCheckoutForm walkId={walk.id} priceKopecks={walk.priceKopecks} />
+    <main className={`container ${styles.page}`}>
+      {isSoldOut && (
+        <div style={{ paddingTop: 'var(--space-8)' }}>
+          <NoticeBanner
+            text={
+              <>
+                Стая укомплектована — мы улетаем в экспедицию!{' '}
+                Оставьте свои контакты, и мы сразу оповестим вас о новой экспедиции.
+              </>
+            }
+          />
+        </div>
       )}
+
+      <WalkHero
+        title={walk.title}
+        subtitle={walk.subtitle}
+        startsAt={walk.startsAt}
+        endsAt={walk.endsAt}
+        spotsLeft={spotsLeft}
+        coverPhotoUrl={walk.coverPhotoUrl}
+        isSoldOut={isSoldOut}
+      />
+
+      <WalkAbout description={walk.description} guide={walk.guide} />
+
+      <PrivateHighlights
+        title="Важно знать"
+        highlights={WALK_HIGHLIGHTS}
+        more={{ label: 'Подробнее', href: ROUTES.faq }}
+      />
+
+      {!isSoldOut && (
+        <section id="payment" className={styles.paymentSection}>
+          <h2 className={`text-h1 ${styles.paymentTitle}`}>Оплата</h2>
+          <WalkCheckoutForm
+            walkId={walk.id}
+            priceKopecks={walk.priceKopecks}
+            ticketTypes={resolvedTicketTypes}
+          />
+        </section>
+      )}
+
+      <WalkCertificateBanner />
     </main>
   )
 }
