@@ -48,6 +48,13 @@
   line-height: 1;
 }
 
+/* Day number and tickets-remaining counter */
+.statNum {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: var(--font-size-2xl); /* 24px mobile */
+}
+
 .statLabel {
   color: var(--color-muted-foreground);
   margin-top: var(--space-1);
@@ -80,6 +87,10 @@
   .content {
     flex: 0 0 50%;
     gap: var(--space-8);
+  }
+
+  .statNum {
+    font-size: var(--font-size-3xl); /* 28px desktop */
   }
 
   .cta {

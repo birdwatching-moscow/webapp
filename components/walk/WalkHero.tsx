@@ -57,7 +57,7 @@ export const WalkHero = ({
 
         <div className={styles.stats}>
           <div className={styles.stat}>
-            <span className={`text-display ${styles.statValue}`}>{day}</span>
+            <span className={`${styles.statValue} ${styles.statNum}`}>{day}</span>
             <span className={`text-body ${styles.statLabel}`}>{month}</span>
           </div>
           <div className={styles.stat}>
@@ -65,7 +65,7 @@ export const WalkHero = ({
             {duration && <span className={`text-body ${styles.statLabel}`}>{duration}</span>}
           </div>
           <div className={styles.stat}>
-            <span className={`text-display ${styles.statValue}`}>{spotsLeft}</span>
+            <span className={`${styles.statValue} ${styles.statNum}`}>{spotsLeft}</span>
             <span className={`text-body ${styles.statLabel}`}>Билетов осталось</span>
           </div>
         </div>
