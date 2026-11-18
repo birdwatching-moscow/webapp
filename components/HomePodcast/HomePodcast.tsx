@@ -1,3 +1,4 @@
+import { PodcastPlayer } from './PodcastPlayer'
 import styles from './HomePodcast.module.css'
 
 const TITLE = 'Подкаст'
@@ -6,7 +7,6 @@ const DESCRIPTION =
 
 const YANDEX_MUSIC_URL = 'https://music.yandex.ru/album/17448287'
 const APPLE_PODCAST_URL = 'https://podcasts.apple.com/ru/podcast/id1580414020'
-const WIDGET_SRC = 'https://music.yandex.ru/iframe/#album/17448287'
 
 export const HomePodcast = () => (
   <section data-testid="home-podcast" className={styles.section}>
@@ -33,16 +33,7 @@ export const HomePodcast = () => (
       </div>
     </div>
     <div className={styles.widget}>
-      <iframe
-        src={WIDGET_SRC}
-        // The player is a whole Yandex Music app (~300 requests, several MB) —
-        // load it only when the user scrolls near this section.
-        loading="lazy"
-        width="100%"
-        height="450"
-        frameBorder="0"
-        title="Подкаст «Витю видел?» на Яндекс.Музыке"
-      />
+      <PodcastPlayer appleClassName={styles.apple} />
     </div>
   </section>
 )
