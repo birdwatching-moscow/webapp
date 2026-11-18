@@ -1,0 +1,15 @@
+.ctaBands {
+  width: 100%;
+  padding-top: 64px;
+  padding-inline: var(--page-gutter);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (min-width: 1248px) {
+  .ctaBands {
+    padding-top: 96px;
+    gap: 48px;
+  }
+}
