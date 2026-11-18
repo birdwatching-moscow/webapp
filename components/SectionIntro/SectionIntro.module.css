@@ -6,7 +6,14 @@
   gap: var(--space-2);
 }
 
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
 .description {
+  margin: 0;
   font-family: 'Manrope', sans-serif;
   font-weight: 500;
   font-size: var(--font-size-lg);
@@ -29,8 +36,11 @@
     line-height: 44px;
   }
 
-  .description {
+  .body {
     flex: 0 0 50%;
+  }
+
+  .description {
     font-weight: 600;
     font-size: var(--font-size-xl);
   }
