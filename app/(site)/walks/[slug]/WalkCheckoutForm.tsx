@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useId } from 'react'
+import { useState } from 'react'
 import { formatKopecksShort } from '@/utils/formatMoney'
 import styles from './WalkCheckoutForm.module.css'
 
@@ -25,7 +25,6 @@ function ticketWord(n: number): string {
 }
 
 export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes }: Props) {
-  const radioName = useId()
   const hasTypes = ticketTypes.length > 0
 
   const [quantities, setQuantities] = useState<Record<number, number>>(() =>
@@ -34,7 +33,6 @@ export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes }: Props) {
       : {}
   )
   const [simpleQty, setSimpleQty] = useState(1)
-  const [hasBinoculars, setHasBinoculars] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -48,10 +46,6 @@ export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (hasBinoculars === null) {
-      setError('Пожалуйста, ответьте на вопрос про бинокль')
-      return
-    }
     if (totalQty === 0) {
       setError('Выберите хотя бы один билет')
       return
@@ -65,9 +59,8 @@ export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes }: Props) {
             lineItems: ticketTypes
               .filter((t) => (quantities[t.id] ?? 0) > 0)
               .map((t) => ({ ticketTypeId: t.id, quantity: quantities[t.id] })),
-            hasBinoculars,
           }
-        : { walkId, quantity: simpleQty, hasBinoculars }
+        : { walkId, quantity: simpleQty }
 
       const res = await fetch('/api/checkout', {
         method: 'POST',
@@ -151,34 +144,6 @@ export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes }: Props) {
           </span>
         </div>
       </div>
-
-      <fieldset className={styles.binocularsField}>
-        <legend className={styles.binocularsLegend}>Есть ли у вас бинокль?</legend>
-        <div className={styles.radioGroup}>
-          <label className={styles.radioLabel}>
-            <input
-              type="radio"
-              name={radioName}
-              value="yes"
-              className={styles.radioInput}
-              checked={hasBinoculars === true}
-              onChange={() => setHasBinoculars(true)}
-            />
-            Да
-          </label>
-          <label className={styles.radioLabel}>
-            <input
-              type="radio"
-              name={radioName}
-              value="no"
-              className={styles.radioInput}
-              checked={hasBinoculars === false}
-              onChange={() => setHasBinoculars(false)}
-            />
-            Нет
-          </label>
-        </div>
-      </fieldset>
 
       {error && <p className={styles.checkoutError}>{error}</p>}
 
