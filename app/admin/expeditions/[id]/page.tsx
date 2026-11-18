@@ -43,19 +43,19 @@ export default async function EditExpeditionPage({ params }: { params: Promise<{
         description: d.description,
       })),
     })
-    redirect(`/admin/expeditions/${id}`)
+    redirect('/admin/expeditions')
   }
 
   async function handlePublish() {
     'use server'
     await publishExpedition(id)
-    redirect(`/admin/expeditions/${id}`)
+    redirect('/admin/expeditions')
   }
 
   async function handleCancel() {
     'use server'
     await cancelExpedition(id)
-    redirect(`/admin/expeditions/${id}`)
+    redirect('/admin/expeditions')
   }
 
   async function handleDelete() {

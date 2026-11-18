@@ -1,4 +1,5 @@
 'use server'
+import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { isAdmin } from '@/lib/auth/permissions'
@@ -51,7 +52,7 @@ export async function saveTeamMemberForm(
         sortOrder,
       },
     })
-    return { success: true }
+    redirect('/admin/team')
   } catch (e) {
     return { success: false, error: e instanceof Error ? e.message : 'Ошибка при сохранении' }
   }
