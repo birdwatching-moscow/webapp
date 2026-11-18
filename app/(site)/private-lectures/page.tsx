@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 export default function PrivateLecturesPage() {
   return (
     <main className="container">
-      <PageHero title={TITLE} description={INTRO} action={<PrivateRequestButton />} />
+      <PageHero title={TITLE} description={INTRO} action={<PrivateRequestButton formType="PRIVATE_LECTURE" />} />
       <PrivateLectures lectures={PRIVATE_LECTURES} />
     </main>
   )
