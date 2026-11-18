@@ -32,20 +32,36 @@
   border-radius: var(--radius-lg);
 }
 
-/* Credit — left of the icon, so the icon stays clickable to collapse it */
+/* Credit — left of the icon, so the icon stays clickable to collapse it.
+   Padding (not a gap) bridges icon → caption, so hover survives the move to the links. */
 .caption {
   position: absolute;
   bottom: var(--space-4);
-  right: calc(var(--space-4) + var(--_icon-size) + var(--space-2));
+  right: calc(var(--space-4) + var(--_icon-size));
   max-width: 70%;
   margin: 0;
+  padding-right: var(--space-2);
   text-align: right;
   text-transform: uppercase;
   color: var(--color-primary-foreground);
   font-size: var(--font-size-sm);
   line-height: 1.4;
   text-shadow: 0 0 4px rgb(0 0 0 / 0.6);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s;
   z-index: var(--z-index-raised);
+}
+
+/* Shown on hover (desktop, as PhotoCard) or after a click/tap on the icon (touch, keyboard) */
+.credit:hover::details-content {
+  content-visibility: visible;
+}
+
+.credit:hover .caption,
+.credit[open] .caption {
+  opacity: 1;
+  visibility: visible;
 }
 
 .link {
