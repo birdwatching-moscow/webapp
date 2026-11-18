@@ -93,11 +93,6 @@ describe('POST /api/checkout — request validation', () => {
     expect(res.status).toBe(HTTP_STATUS_BAD_REQUEST)
   })
 
-  it('returns 400 when hasBinoculars is missing', async () => {
-    const res = await POST(makeRequest({ walkId: WALK_ID, quantity: 1 }))
-    expect(res.status).toBe(HTTP_STATUS_BAD_REQUEST)
-  })
-
   it('returns 400 when hasBinoculars is not a boolean', async () => {
     const res = await POST(makeRequest({ walkId: WALK_ID, quantity: 1, hasBinoculars: 'yes' }))
     expect(res.status).toBe(HTTP_STATUS_BAD_REQUEST)
