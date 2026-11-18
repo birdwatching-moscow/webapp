@@ -8,6 +8,15 @@ export const CHECKOUT_LABELS = {
     backHome: 'На главную',
   },
 
+  form: {
+    noTickets: 'Выберите хотя бы один билет',
+    capacityExceeded: 'К сожалению, места закончились.',
+    createOrderFailed: 'Не удалось создать заказ. Попробуйте позже.',
+    networkError: 'Ошибка соединения. Попробуйте ещё раз.',
+    redirecting: 'Перенаправление…',
+    buy: 'Купить',
+  },
+
   devStub: {
     title: 'Тестовая страница оплаты ЮKassa',
     description: 'Эта страница доступна только в режиме YOOKASSA_MODE=stub.',

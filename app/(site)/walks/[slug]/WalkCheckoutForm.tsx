@@ -3,7 +3,10 @@
 import { useState } from 'react'
 import { formatKopecksShort } from '@/utils/formatMoney'
 import { FormError } from '@/components/ui/form-error/FormError'
+import { CHECKOUT_LABELS } from '@/lib/checkout-labels'
 import styles from './WalkCheckoutForm.module.css'
+
+const L = CHECKOUT_LABELS.form
 
 type TicketTypeItem = {
   id: number
@@ -48,7 +51,7 @@ export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (totalQty === 0) {
-      setError('Выберите хотя бы один билет')
+      setError(L.noTickets)
       return
     }
     setError(null)
@@ -71,16 +74,12 @@ export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes }: Props) {
       if (res.status === 401) { window.location.href = '/login'; return }
       const data = await res.json() as { confirmationUrl?: string; code?: string }
       if (!res.ok || !data.confirmationUrl) {
-        setError(
-          data.code === 'CAPACITY_EXCEEDED'
-            ? 'К сожалению, места закончились.'
-            : 'Не удалось создать заказ. Попробуйте позже.'
-        )
+        setError(data.code === 'CAPACITY_EXCEEDED' ? L.capacityExceeded : L.createOrderFailed)
         return
       }
       window.location.href = data.confirmationUrl
     } catch {
-      setError('Ошибка соединения. Попробуйте ещё раз.')
+      setError(L.networkError)
     } finally {
       setLoading(false)
     }
@@ -149,7 +148,7 @@ export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes }: Props) {
       <FormError message={error} />
 
       <button type="submit" className={styles.cta} disabled={loading}>
-        {loading ? 'Перенаправление…' : 'Купить'}
+        {loading ? L.redirecting : L.buy}
       </button>
     </form>
   )
