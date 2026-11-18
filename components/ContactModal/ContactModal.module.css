@@ -57,6 +57,24 @@
   color: var(--color-muted-foreground);
 }
 
+/* Under the form card: optional note, then «Закрыть» (Figma 2088:8554) */
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.footer .formNote {
+  align-self: stretch;
+}
+
+@media (min-width: 1248px) {
+  .closeBtn {
+    max-width: var(--size-col-3); /* 406px, as the submit button */
+  }
+}
+
 .subtitle ul {
   margin: 0;
   padding-left: var(--space-5);

@@ -109,9 +109,15 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
   }
 
   const isFormOpen = !rateLimited && !submitted
-  const footer = isFormOpen
-    ? config.formNote && <p className={styles.formNote}>{config.formNote}</p>
-    : <Button onClick={handleClose} variant="outline" size="lg" fullWidth>Закрыть</Button>
+  // Figma 2088:8554: the note (form only) and «Закрыть» under the form card, in every state
+  const footer = (
+    <div className={styles.footer}>
+      {isFormOpen && config.formNote && <p className={styles.formNote}>{config.formNote}</p>}
+      <Button onClick={handleClose} variant="outline" size="lg" fullWidth className={styles.closeBtn}>
+        Закрыть
+      </Button>
+    </div>
+  )
 
   return (
     <Modal open={open} onClose={handleClose} title="Оставить заявку" footer={footer}>
