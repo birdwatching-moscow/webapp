@@ -13,6 +13,7 @@ import { useAuthForm } from '@/hooks/useAuthForm'
 import { useOtpInput } from '@/hooks/useOtpInput'
 import { AUTH_ERRORS } from '@/lib/auth-errors'
 import { AUTH_LABELS } from '@/lib/auth-labels'
+import { ROUTES, API_ROUTES } from '@/utils/routes'
 import { Button } from '@/components/ui/buttons/Button'
 import { Input } from '@/components/ui/input/Input'
 import { OtpStep } from '@/components/auth/OtpStep'
@@ -58,7 +59,7 @@ export default function RegisterPage() {
     const trimmedEmail = emailInput.trim()
 
     await run(async () => {
-      const res = await fetch('/api/auth/register', {
+      const res = await fetch(API_ROUTES.auth.register, {
         method: HTTP_METHOD.POST,
         headers: JSON_HEADERS,
         body: JSON.stringify({ email: trimmedEmail, name: trimmedName }),
@@ -97,7 +98,7 @@ export default function RegisterPage() {
   async function submitCode(code: string) {
     setNotice(null)
     await run(async () => {
-      const verifyRes = await fetch('/api/auth/verify-registration-code', {
+      const verifyRes = await fetch(API_ROUTES.auth.verifyRegistrationCode, {
         method: HTTP_METHOD.POST,
         headers: { ...JSON_HEADERS, 'x-csrf-token': csrfToken },
         body: JSON.stringify({ email, code, name }),
@@ -114,7 +115,7 @@ export default function RegisterPage() {
       if (result?.error) {
         rejectCode(AUTH_ERRORS.invalidCode)
       } else {
-        router.push('/profile')
+        router.push(ROUTES.profile)
         router.refresh()
       }
     })
@@ -123,7 +124,7 @@ export default function RegisterPage() {
   async function resendCode() {
     setNotice(null)
     await run(async () => {
-      const res = await fetch('/api/auth/register', {
+      const res = await fetch(API_ROUTES.auth.register, {
         method: HTTP_METHOD.POST,
         headers: JSON_HEADERS,
         body: JSON.stringify({ email, name }),

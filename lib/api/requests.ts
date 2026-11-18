@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { API_ROUTES } from '@/utils/routes'
 
 const client = axios.create()
 
@@ -11,4 +12,4 @@ type ContactRequestPayload = {
 }
 
 export const submitContactRequest = (data: ContactRequestPayload): Promise<{ id: string }> =>
-  client.post<{ id: string }>('/api/requests', data).then(r => r.data)
+  client.post<{ id: string }>(API_ROUTES.requests, data).then(r => r.data)

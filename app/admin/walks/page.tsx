@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Prisma } from '@/generated/prisma/client'
 import { prisma } from '@/lib/prisma'
-import { ROUTES } from '@/utils/routes'
+import { ROUTES, API_ROUTES } from '@/utils/routes'
 import { Button } from '@/components/ui/buttons/Button'
 import { buildWalksWhere } from '@/lib/admin/walksWhere'
 import { WalksFilters } from './WalksFilters'
@@ -208,7 +208,7 @@ export default async function WalksPage({
           />
           <div className={styles.allTabActions}>
             <ExportButton
-              href={`/api/admin/walks/export?${filtersToSearchParams(filters).toString()}`}
+              href={`${API_ROUTES.admin.walksExport}?${filtersToSearchParams(filters).toString()}`}
               className={styles.exportBtn}
             />
           </div>

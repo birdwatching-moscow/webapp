@@ -23,7 +23,7 @@ export default function RequestResetPage() {
     e.preventDefault()
 
     await run(async () => {
-      const res = await fetch(API_ROUTES.requestPasswordReset, {
+      const res = await fetch(API_ROUTES.auth.requestPasswordReset, {
         method: HTTP_METHOD.POST,
         headers: JSON_HEADERS,
         body: JSON.stringify({ email: emailInput }),

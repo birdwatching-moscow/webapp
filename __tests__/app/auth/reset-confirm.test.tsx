@@ -100,7 +100,7 @@ describe('ConfirmResetPage — success: signs the admin in right away', () => {
     fillAndSubmit('mySecretPassword99')
 
     await waitFor(() =>
-      expect(fetch).toHaveBeenCalledWith(API_ROUTES.resetPassword, {
+      expect(fetch).toHaveBeenCalledWith(API_ROUTES.auth.resetPassword, {
         method: HTTP_METHOD.POST,
         headers: JSON_HEADERS,
         body: JSON.stringify({

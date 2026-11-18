@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { ORDER_STATUS_POLL_INTERVAL_MS } from '@/lib/constants';
+import { API_ROUTES } from '@/utils/routes';
 import type { OrderStatus } from '@/generated/prisma/client';
 
 export type { OrderStatus };
@@ -31,7 +32,7 @@ export function useOrderStatus(orderId: string | null): UseOrderStatusResult {
 
     async function poll() {
       try {
-        const res = await fetch(`/api/orders/${orderId}`);
+        const res = await fetch(API_ROUTES.orders(orderId!));
         if (!res.ok) throw new Error('order status request failed');
 
         const data = (await res.json()) as OrderStatusResponse;

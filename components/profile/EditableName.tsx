@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { API_ROUTES } from '@/utils/routes'
 import { Input } from '@/components/ui/input/Input'
 import { Button } from '@/components/ui/buttons/Button'
 import styles from './profile.module.css'
@@ -30,7 +31,7 @@ export const EditableName = ({ initialName }: { initialName: string }) => {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/user/update-name', {
+      const res = await fetch(API_ROUTES.user.updateName, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: nameInput.trim() }),

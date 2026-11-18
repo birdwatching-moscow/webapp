@@ -67,7 +67,7 @@ export default function ConfirmResetPage() {
     if (!fields.validate()) return
 
     await run(async () => {
-      const res = await fetch(API_ROUTES.resetPassword, {
+      const res = await fetch(API_ROUTES.auth.resetPassword, {
         method: HTTP_METHOD.POST,
         headers: JSON_HEADERS,
         body: JSON.stringify({

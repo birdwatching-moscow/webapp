@@ -49,6 +49,32 @@ export const ROUTES = {
 } as const
 
 export const API_ROUTES = {
-  requestPasswordReset: `/api/auth/${PASSWORD_RESET_SEGMENT}/request-password-reset`,
-  resetPassword:        `/api/auth/${PASSWORD_RESET_SEGMENT}/reset-password`,
+  checkout:  '/api/checkout',
+  requests:  '/api/requests',
+  orders:    (id: string) => `/api/orders/${id}`,
+
+  user: {
+    updateName: '/api/user/update-name',
+  },
+
+  admin: {
+    upload:         (folder: string) => `/api/admin/upload?folder=${folder}`,
+    walksExport:    '/api/admin/walks/export',
+    requestsExport: '/api/admin/requests/export',
+  },
+
+  auth: {
+    checkEmail:              '/api/auth/check-email',
+    requestLoginCode:        '/api/auth/request-login-code',
+    register:                '/api/auth/register',
+    verifyRegistrationCode:  '/api/auth/verify-registration-code',
+    verifyLoginCode:         '/api/auth/verify-login-code',
+    setInitialPassword:      '/api/auth/set-initial-password',
+    requestPasswordReset:    `/api/auth/${PASSWORD_RESET_SEGMENT}/request-password-reset`,
+    resetPassword:           `/api/auth/${PASSWORD_RESET_SEGMENT}/reset-password`,
+  },
+
+  payments: {
+    yookassaWebhook: '/api/payments/yookassa/webhook',
+  },
 } as const

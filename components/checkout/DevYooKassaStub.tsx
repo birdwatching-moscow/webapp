@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/buttons/Button';
 import { CHECKOUT_LABELS } from '@/lib/checkout-labels';
+import { API_ROUTES } from '@/utils/routes';
 import type { YooKassaNotificationEvent } from '@/lib/payments/yookassa/types';
 import { HTTP_METHOD, JSON_HEADERS } from '@/lib/constants';
 import styles from './DevYooKassaStub.module.css';
@@ -26,7 +27,7 @@ export const DevYooKassaStub = ({ paymentId }: DevYooKassaStubProps) => {
     setPending(event);
     setMessage(null);
     try {
-      const res = await fetch('/api/payments/yookassa/webhook', {
+      const res = await fetch(API_ROUTES.payments.yookassaWebhook, {
         method: HTTP_METHOD.POST,
         headers: JSON_HEADERS,
         body: JSON.stringify({

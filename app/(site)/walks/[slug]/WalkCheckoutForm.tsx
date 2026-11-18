@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { formatKopecksShort } from '@/utils/formatMoney'
 import { FormError } from '@/components/ui/form-error/FormError'
 import { CHECKOUT_LABELS } from '@/lib/checkout-labels'
+import { ROUTES, API_ROUTES } from '@/utils/routes'
 import styles from './WalkCheckoutForm.module.css'
 
 const L = CHECKOUT_LABELS.form
@@ -66,12 +67,12 @@ export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes }: Props) {
           }
         : { walkId, quantity: simpleQty }
 
-      const res = await fetch('/api/checkout', {
+      const res = await fetch(API_ROUTES.checkout, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
-      if (res.status === 401) { window.location.href = '/login'; return }
+      if (res.status === 401) { window.location.href = ROUTES.login; return }
       const data = await res.json() as { confirmationUrl?: string; code?: string }
       if (!res.ok || !data.confirmationUrl) {
         setError(data.code === 'CAPACITY_EXCEEDED' ? L.capacityExceeded : L.createOrderFailed)

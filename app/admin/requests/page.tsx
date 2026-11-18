@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { RequestStatus } from '@/generated/prisma/client'
 import { prisma } from '@/lib/prisma'
-import { ROUTES } from '@/utils/routes'
+import { ROUTES, API_ROUTES } from '@/utils/routes'
 import { ExportButton } from '../walks/ExportButton'
 import { RequestsFilters } from './RequestsFilters'
 import { RequestsTable } from './RequestsTable'
@@ -53,7 +53,7 @@ function exportHref(q: string, statuses: string[]) {
   if (q) params.set('q', q)
   statuses.forEach(s => params.append('status', s))
   const qs = params.toString()
-  return qs ? `/api/admin/requests/export?${qs}` : '/api/admin/requests/export'
+  return qs ? `${API_ROUTES.admin.requestsExport}?${qs}` : API_ROUTES.admin.requestsExport
 }
 
 function plural(n: number) {
