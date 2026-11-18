@@ -48,7 +48,7 @@ describe('LectureVideoCard', () => {
 
     it('the card is a link to the video, named by the lecture title', () => {
       render(<LectureVideoCard {...lecture} videoUrl={videoUrl} />)
-      expect(screen.getByRole('link', { name: new RegExp(lecture.title) })).toHaveAttribute('href', videoUrl)
+      expect(screen.getByRole('link', { name: /Как стать бердвотчером/ })).toHaveAttribute('href', videoUrl)
     })
 
     it('opens the video in a new tab', () => {
