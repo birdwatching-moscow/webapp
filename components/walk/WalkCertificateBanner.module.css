@@ -6,7 +6,6 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   margin-top: var(--space-8);
-  margin-bottom: var(--space-8);
 }
 
 .text {
@@ -30,7 +29,6 @@
     align-items: center;
     justify-content: space-between;
     margin-top: var(--space-10);
-    margin-bottom: var(--space-10);
   }
 
   .text {
