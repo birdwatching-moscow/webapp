@@ -56,12 +56,12 @@ export function TeamMemberEditForm({
         </div>
 
         <div className={styles.field}>
-          <span className={styles.label}>Фото</span>
+          <span className={styles.label}>Фото <span className={styles.required}>*</span></span>
           <TeamPhotoField defaultValue={defaultPhotoUrl} />
         </div>
 
         <div className={styles.field}>
-          <label htmlFor="education" className={styles.label}>Образование</label>
+          <label htmlFor="education" className={styles.label}>Образование <span className={styles.required}>*</span></label>
           <textarea
             id="education"
             name="education"
@@ -75,7 +75,7 @@ export function TeamMemberEditForm({
         </div>
 
         <div className={styles.field}>
-          <label htmlFor="achievements" className={styles.label}>Достижения</label>
+          <label htmlFor="achievements" className={styles.label}>Достижения <span className={styles.required}>*</span></label>
           <textarea
             id="achievements"
             name="achievements"
@@ -88,7 +88,7 @@ export function TeamMemberEditForm({
         </div>
 
         <div className={styles.field}>
-          <span className={styles.label}>Профиль</span>
+          <span className={styles.label}>Профиль <span className={styles.required}>*</span></span>
           <ProfileLinkField defaultValue={defaultProfileLink} />
         </div>
       </div>
