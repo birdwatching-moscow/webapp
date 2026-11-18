@@ -22,7 +22,11 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     // The private events page was renamed; keep old links and search results working
-    return [{ source: "/private-events", destination: "/private", permanent: true }];
+    return [
+      { source: "/private-events", destination: "/private", permanent: true },
+      // Personal walks page became the parks page
+      { source: "/private-walks", destination: "/private-parks", permanent: true },
+    ];
   },
   async headers() {
     return [{ source: "/:path*", headers: SECURITY_HEADERS }];

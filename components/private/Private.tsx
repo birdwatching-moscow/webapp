@@ -4,9 +4,9 @@ import styles from './Private.module.css'
 
 // Temporary navigation until the page design is ready
 const SECTIONS = [
-  { label: 'Парки', href: ROUTES.privateSections.parks },
-  { label: 'Лекции', href: ROUTES.privateSections.lectures },
-  { label: 'Консультации', href: ROUTES.privateSections.consultations },
+  { label: 'Парки', href: ROUTES.privateParks },
+  { label: 'Лекции', href: ROUTES.privateLectures },
+  { label: 'Консультации', href: ROUTES.privateConsultations },
 ] as const
 
 export const Private = () => {

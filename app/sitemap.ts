@@ -12,7 +12,7 @@ const staticRoutes: MetadataRoute.Sitemap = [
   { url: `${BASE_URL}/partners`,                     priority: 0.6,  changeFrequency: 'monthly' },
   { url: `${BASE_URL}/media`,                        priority: 0.6,  changeFrequency: 'monthly' },
   { url: `${BASE_URL}/faq`,                          priority: 0.5,  changeFrequency: 'monthly' },
-  { url: `${BASE_URL}/private-walks`,                priority: 0.7,  changeFrequency: 'monthly' },
+  { url: `${BASE_URL}/private-parks`,                priority: 0.7,  changeFrequency: 'monthly' },
   { url: `${BASE_URL}/private-consultations`,        priority: 0.6,  changeFrequency: 'monthly' },
   { url: `${BASE_URL}/private-lectures`,             priority: 0.6,  changeFrequency: 'monthly' },
   { url: `${BASE_URL}/private`,                      priority: 0.6,  changeFrequency: 'monthly' },

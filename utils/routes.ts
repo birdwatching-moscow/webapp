@@ -17,12 +17,7 @@ export const ROUTES = {
   expeditions:   '/expeditions',
   expedition:    (slug: string) => `/expeditions/${slug}` as const,
   private:       '/private',
-  privateSections: {
-    parks:         '/private/parks',
-    lectures:      '/private/lectures',
-    consultations: '/private/consultations',
-  },
-  privateWalks:         '/private-walks',
+  privateParks:         '/private-parks',
   privateLectures:      '/private-lectures',
   privateConsultations: '/private-consultations',
   media:         '/media',
