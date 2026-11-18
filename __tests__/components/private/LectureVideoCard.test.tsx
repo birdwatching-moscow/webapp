@@ -37,4 +37,31 @@ describe('LectureVideoCard', () => {
       '/placeholders/image-placeholder.png',
     )
   })
+
+  it('is not a link while there is no video', () => {
+    render(<LectureVideoCard {...lecture} />)
+    expect(screen.queryByRole('link')).toBeNull()
+  })
+
+  describe('with a video', () => {
+    const videoUrl = 'https://vk.com/video-81135982_456239017'
+
+    it('the card is a link to the video, named by the lecture title', () => {
+      render(<LectureVideoCard {...lecture} videoUrl={videoUrl} />)
+      expect(screen.getByRole('link', { name: new RegExp(lecture.title) })).toHaveAttribute('href', videoUrl)
+    })
+
+    it('opens the video in a new tab', () => {
+      render(<LectureVideoCard {...lecture} videoUrl={videoUrl} />)
+      const link = screen.getByRole('link')
+      expect(link).toHaveAttribute('target', '_blank')
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+    })
+
+    it('no longer says the video is coming soon', () => {
+      render(<LectureVideoCard {...lecture} videoUrl={videoUrl} />)
+      expect(screen.queryByText(/скоро появится/)).toBeNull()
+      expect(screen.queryByRole('img', { name: /скоро появится/ })).toBeNull()
+    })
+  })
 })
