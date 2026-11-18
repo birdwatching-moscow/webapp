@@ -80,7 +80,7 @@ export const WalkHero = ({
       <div className={styles.photo}>
         {coverPhotoCredit ? (
           <PhotoWithTextCredit
-            src={coverPhotoUrl ?? '/placeholders/image-placeholder.png'}
+            src={coverPhotoUrl ?? '/placeholders/image-placeholder-ratio4-3.png'}
             alt={title}
             credit={coverPhotoCredit}
             sizes="(min-width: 1248px) 50vw, 100vw"
@@ -88,7 +88,7 @@ export const WalkHero = ({
           />
         ) : (
           <Image
-            src={coverPhotoUrl ?? '/placeholders/image-placeholder.png'}
+            src={coverPhotoUrl ?? '/placeholders/image-placeholder-ratio4-3.png'}
             alt={title}
             fill
             className={styles.photoImg}
