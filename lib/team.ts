@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { SORT_ASC } from '@/lib/constants'
 
 export type TeamMemberRow = {
   id: number
@@ -33,6 +34,6 @@ export async function getTeamMembers(): Promise<TeamMemberRow[]> {
       achievements: true,
       profileLinks: true,
     },
-    orderBy: { sortOrder: 'asc' },
+    orderBy: SORT_ASC,
   })
 }

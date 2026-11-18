@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
 import { EventStatus } from '@/generated/prisma/client'
+import { SORT_ASC } from '@/lib/constants'
 import { NoticeBanner } from '@/components/NoticeBanner/NoticeBanner'
 import { PrivateHighlights, type PrivateHighlight } from '@/components/private/PrivateHighlights'
 import { WalkHero } from '@/components/walk/WalkHero'
@@ -71,7 +72,7 @@ export default async function WalkPage({ params }: Props) {
       },
       ticketTypes: {
         select: { id: true, name: true, priceKopecks: true, capacity: true, sortOrder: true },
-        orderBy: { sortOrder: 'asc' },
+        orderBy: SORT_ASC,
       },
       _count: { select: { tickets: true } },
     },
@@ -91,7 +92,7 @@ export default async function WalkPage({ params }: Props) {
   return (
     <main className={`container ${styles.page}`}>
       {isSoldOut && (
-        <div>
+        <div className={styles.noticeBanner}>
           <NoticeBanner
             text={
               <>

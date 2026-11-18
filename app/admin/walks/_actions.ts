@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { isAdmin } from '@/lib/auth/permissions'
 import { ensureUniqueSlug } from '@/lib/admin/slug'
 import { EventStatus } from '@/generated/prisma/client'
+import { SORT_ASC } from '@/lib/constants'
 
 export type TicketTypeInput = {
   name: string
@@ -238,7 +239,7 @@ export async function copyWalk(id: string): Promise<string> {
   await requireAdmin()
   const walk = await prisma.walk.findFirst({
     where: { id },
-    include: { ticketTypes: { orderBy: { sortOrder: 'asc' } } },
+    include: { ticketTypes: { orderBy: SORT_ASC } },
   })
   if (!walk) throw new Error('Прогулка не найдена')
 

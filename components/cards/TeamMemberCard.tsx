@@ -21,7 +21,7 @@ export const TeamMemberCard = ({ name, role, details, imageUrl, imageAlt, ebirdH
         <AspectRatioImage ratio="1-1" src={imageUrl} alt={imageAlt} />
       </div>
       <div className={styles.info}>
-        <p className={`text-h2 ${styles.name}`}>{name}</p>
+        <p className={styles.name}>{name}</p>
         <p className={styles.role}>{role}</p>
         <p className={styles.details}>{details}</p>
         {ebirdHref !== undefined && (

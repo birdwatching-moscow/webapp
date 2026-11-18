@@ -66,6 +66,8 @@ export const SESSION_UPDATE_AGE_SECONDS = 24 * 60 * 60 // extend at most once pe
 
 export const PAYMENT_HOLD_MINUTES = 20
 
+export const SORT_ASC = { sortOrder: 'asc' } as const
+
 // ЮKassa: `description` and receipt `items[].description` are both capped at 128 chars [verify limit]
 export const YOOKASSA_DESCRIPTION_MAX_LENGTH = 128
 

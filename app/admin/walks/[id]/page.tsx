@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import { SORT_ASC } from '@/lib/constants'
 import { WalkEditForm } from './WalkEditForm'
 
 export default async function EditWalkPage({ params }: { params: Promise<{ id: string }> }) {
@@ -10,10 +11,10 @@ export default async function EditWalkPage({ params }: { params: Promise<{ id: s
       where: { id, status: { not: 'DELETED' } },
       include: {
         guide:       { select: { id: true, name: true } },
-        ticketTypes: { orderBy: { sortOrder: 'asc' } },
+        ticketTypes: { orderBy: SORT_ASC },
       },
     }),
-    prisma.teamMember.findMany({ select: { id: true, name: true }, orderBy: { sortOrder: 'asc' } }),
+    prisma.teamMember.findMany({ select: { id: true, name: true }, orderBy: SORT_ASC }),
   ])
 
   if (!walk) notFound()

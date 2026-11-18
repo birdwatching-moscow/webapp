@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Prisma, EventStatus } from '@/generated/prisma/client'
 import { prisma } from '@/lib/prisma'
+import { SORT_ASC } from '@/lib/constants'
 import { ROUTES, API_ROUTES } from '@/utils/routes'
 import { Button } from '@/components/ui/buttons/Button'
 import { buildWalksWhere } from '@/lib/admin/walksWhere'
@@ -142,7 +143,7 @@ export default async function WalksPage({
     prisma.walk.count({ where: whereClause }),
     prisma.walk.count({ where: { status: EventStatus.DRAFT } }),
     prisma.walk.count({ where: { status: EventStatus.ACTIVE, startsAt: { gte: now } } }),
-    prisma.teamMember.findMany({ select: { id: true, name: true }, orderBy: { sortOrder: 'asc' } }),
+    prisma.teamMember.findMany({ select: { id: true, name: true }, orderBy: SORT_ASC }),
   ])
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
