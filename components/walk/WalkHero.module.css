@@ -103,5 +103,8 @@
 
   .photo {
     flex: 1;
+    max-width: 616px;
+    max-height: 462px;
+    margin-right: var(--page-gutter);
   }
 }
