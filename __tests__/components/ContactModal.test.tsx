@@ -5,6 +5,7 @@ import { MAX_REQUEST_NAME, MAX_REQUEST_MESSAGE } from '@/lib/validation/requests
 vi.mock('@/lib/api/requests', () => ({ submitContactRequest: vi.fn() }))
 
 import { ContactModal } from '@/components/ContactModal/ContactModal'
+import { submitContactRequest } from '@/lib/api/requests'
 
 const LEAD_TIME_NOTE =
   'Желательно дать нам вводные данные для вашей прогулки за неделю до нужной даты, а в апреле - июне - за 2-3 недели, так как график у гидов плотный.'
@@ -79,5 +80,34 @@ describe('ContactModal — private event title (Figma 2088:8554)', () => {
   it('reads «Заявка на частное событие»', () => {
     render(<ContactModal open onClose={vi.fn()} defaultType="PRIVATE_EVENT" />)
     expect(screen.getByText('Заявка на частное событие')).toBeInTheDocument()
+  })
+})
+
+describe('ContactModal — rate limit message', () => {
+  const rateLimited = (retryAfterSeconds: string) =>
+    Object.assign(new Error('Too many requests'), {
+      isAxiosError: true,
+      response: { status: 429, headers: { 'retry-after': retryAfterSeconds } },
+    })
+
+  const submitForm = () => {
+    fireEvent.change(screen.getByPlaceholderText('Имя'), { target: { value: 'Анна' } })
+    fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'anna@example.com' } })
+    fireEvent.change(screen.getByPlaceholderText('Комментарий'), { target: { value: 'Вопрос' } })
+    fireEvent.click(screen.getByRole('checkbox'))
+    fireEvent.submit(screen.getByPlaceholderText('Имя').closest('form') as HTMLFormElement)
+  }
+
+  it.each([
+    ['30', '1 минуту'],
+    ['60', '1 минуту'],
+    ['180', '3 минуты'],
+    ['300', '5 минут'],
+    ['600', '10 минут'],
+  ])('Retry-After %ss → «через %s»', async (seconds, minutes) => {
+    vi.mocked(submitContactRequest).mockRejectedValueOnce(rateLimited(seconds))
+    render(<ContactModal open onClose={vi.fn()} defaultType="QUESTION" />)
+    submitForm()
+    expect(await screen.findByText(`Вы исчерпали лимит обращений на данный момент. Мы сможем принять ваш следующий запрос через ${minutes}.`)).toBeInTheDocument()
   })
 })
