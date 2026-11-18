@@ -173,6 +173,27 @@
   padding: var(--space-5);
 }
 
+.dangerBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: opacity 0.15s;
+}
+
+.dangerBtn:hover {
+  opacity: 0.75;
+}
+
+.dangerBtn:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
 .dangerZoneTitle {
   font-size: var(--font-size-xs);
   font-weight: 700;
