@@ -11,7 +11,6 @@
 .card {
   border: var(--stroke-default) solid var(--color-border);
   border-radius: var(--radius-lg);
-  overflow: hidden;
 }
 
 /* Desktop table header — hidden on mobile */
