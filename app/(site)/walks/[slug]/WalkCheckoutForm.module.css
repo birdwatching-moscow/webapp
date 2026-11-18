@@ -102,6 +102,10 @@
   border-color: var(--color-border);
 }
 
+.qtyTrigger svg {
+  color: var(--color-primary);
+}
+
 .qtyList {
   max-height: none;
 }
