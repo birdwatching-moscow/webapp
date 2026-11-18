@@ -14,11 +14,12 @@ export type DropdownProps = {
   options:          DropdownOption[];
   disabled?:        boolean;
   label?:           string;
-  className?:       string;
+  className?:        string;
   triggerClassName?: string;
+  listClassName?:    string;
 };
 
-export const Dropdown = ({ value, onChange, options, disabled, label, className, triggerClassName }: DropdownProps) => {
+export const Dropdown = ({ value, onChange, options, disabled, label, className, triggerClassName, listClassName }: DropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef   = useRef<HTMLButtonElement>(null);
@@ -91,7 +92,7 @@ export const Dropdown = ({ value, onChange, options, disabled, label, className,
       </button>
 
       {isOpen && (
-        <ul role="listbox" className={styles.list}>
+        <ul role="listbox" className={[styles.list, listClassName].filter(Boolean).join(' ')}>
           {options.map(opt => (
             <li
               key={opt.value}

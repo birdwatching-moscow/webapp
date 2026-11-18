@@ -114,6 +114,7 @@ export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes, disabled =
                 disabled={disabled}
                 className={styles.qtyDropdown}
                 triggerClassName={styles.qtyTrigger}
+                listClassName={styles.qtyList}
               />
               <span className={styles.rowPrice}>{formatKopecksShort(type.priceKopecks)}</span>
             </div>
@@ -129,6 +130,7 @@ export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes, disabled =
               disabled={disabled}
               className={styles.qtyDropdown}
               triggerClassName={styles.qtyTrigger}
+              listClassName={styles.qtyList}
             />
             <span className={styles.rowPrice}>{formatKopecksShort(priceKopecks)}</span>
           </div>
