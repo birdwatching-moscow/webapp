@@ -111,3 +111,34 @@ describe('ContactModal — rate limit message', () => {
     expect(await screen.findByText(`Вы исчерпали лимит обращений на данный момент. Мы сможем принять ваш следующий запрос через ${minutes}.`)).toBeInTheDocument()
   })
 })
+
+describe('ContactModal — lecture request form', () => {
+  const fillAndSubmit = () => {
+    fireEvent.change(screen.getByPlaceholderText('Имя'), { target: { value: 'Анна' } })
+    fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'anna@example.com' } })
+    fireEvent.change(screen.getByPlaceholderText('Комментарий'), { target: { value: 'Лекция для школы' } })
+    fireEvent.click(screen.getByRole('checkbox'))
+    fireEvent.submit(screen.getByPlaceholderText('Имя').closest('form') as HTMLFormElement)
+  }
+
+  it('reads «Заявка на лекцию»', () => {
+    render(<ContactModal open onClose={vi.fn()} defaultType="PRIVATE_LECTURE" />)
+    expect(screen.getByText('Заявка на лекцию')).toBeInTheDocument()
+    expect(screen.queryByText('Заявка на частное событие')).toBeNull()
+  })
+
+  it('asks for lecture details, not walk details', () => {
+    render(<ContactModal open onClose={vi.fn()} defaultType="PRIVATE_LECTURE" />)
+    expect(screen.getByText('тему лекции или задачу, которую она должна решить.')).toBeInTheDocument()
+    expect(screen.queryByText(/натуралистика/)).toBeNull()
+    expect(screen.queryByText(LEAD_TIME_NOTE)).toBeNull()
+  })
+
+  it('is submitted as a private event request', async () => {
+    vi.mocked(submitContactRequest).mockResolvedValueOnce(undefined as never)
+    render(<ContactModal open onClose={vi.fn()} defaultType="PRIVATE_LECTURE" />)
+    fillAndSubmit()
+    expect(await screen.findByText('Заявка отправлена')).toBeInTheDocument()
+    expect(submitContactRequest).toHaveBeenCalledWith(expect.objectContaining({ type: 'PRIVATE_EVENT' }))
+  })
+})

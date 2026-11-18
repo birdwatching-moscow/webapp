@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 
-vi.mock('@/components/ContactModal/ContactModal', () => ({ ContactModal: () => null }))
+vi.mock('@/components/ContactModal/ContactModal', () => ({
+  ContactModal: ({ defaultType }: { defaultType?: string }) => <div data-testid="contact-modal">{defaultType}</div>,
+}))
 
 import LecturesPage, { metadata } from '@/app/(site)/private-lectures/page'
 import { PRIVATE_LECTURES } from '@/lib/private/lectures'
@@ -25,6 +27,11 @@ describe('/private-lectures page', () => {
       ),
     ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Оставить заявку' })).toBeInTheDocument()
+  })
+
+  it('«Оставить заявку» uses the lecture request form', () => {
+    render(<LecturesPage />)
+    expect(screen.getByTestId('contact-modal')).toHaveTextContent('PRIVATE_LECTURE')
   })
 
   it('«Записи лекций»: one card per lecture with title, subtitle and a video placeholder', () => {
