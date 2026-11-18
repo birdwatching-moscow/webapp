@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
 import { Button } from '@/components/ui/buttons/Button'
 import { saveTeamMemberForm } from '@/app/admin/team/_actions'
 import { ProfileLinkField } from './ProfileLinkField'
@@ -22,6 +22,10 @@ export function TeamMemberEditForm({
   defaultName, defaultPhotoUrl, defaultEducation, defaultAchievements, defaultProfileLink,
 }: Props) {
   const [state, action, pending] = useActionState(saveTeamMemberForm, null)
+
+  useEffect(() => {
+    if (state?.success === false) window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [state])
 
   return (
     <form action={action}>
