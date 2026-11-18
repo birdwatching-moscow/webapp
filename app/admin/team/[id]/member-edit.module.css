@@ -171,8 +171,6 @@
   flex-direction: column;
   gap: var(--space-3);
   padding: var(--space-5);
-  border: 1px solid color-mix(in srgb, var(--color-error) 30%, transparent);
-  border-radius: var(--radius-lg);
 }
 
 .dangerZoneTitle {
