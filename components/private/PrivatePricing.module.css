@@ -1,0 +1,82 @@
+/* ─── Mobile ──────────────────────────────────────────────────────────────── */
+
+.section {
+  /* Last section on the page: no bottom padding — the footer brings its own */
+  padding-top: var(--space-8);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.title,
+.description,
+.note,
+.terms,
+.priceLabel,
+.priceValue {
+  margin: 0;
+}
+
+.description,
+.terms {
+  color: var(--color-muted-foreground);
+}
+
+.terms,
+.note {
+  font-weight: 500;
+}
+
+.prices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.priceCard {
+  display: flex;
+  flex: 1 1 var(--size-layout-input);
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border: var(--stroke-default) dashed var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.priceLabel {
+  color: var(--color-muted-foreground);
+  text-transform: uppercase;
+}
+
+.note {
+  padding: var(--space-4) var(--space-5);
+  border: var(--stroke-default) solid var(--color-error);
+  border-radius: var(--radius-lg);
+}
+
+/* ─── Desktop (min-width: 1248px): one centred column, two cards per row ──── */
+
+@media (min-width: 1248px) {
+  .section {
+    padding-top: var(--space-10);
+  }
+
+  .content {
+    /* Two price cards side by side: 2 × 320px + 16px gap */
+    max-width: calc(2 * var(--size-layout-input) + var(--space-4));
+    margin-inline: auto;
+  }
+
+  .cta {
+    max-width: var(--size-col-3);
+  }
+}

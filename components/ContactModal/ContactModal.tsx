@@ -9,7 +9,13 @@ import { submitContactRequest } from '@/lib/api/requests'
 import { MAX_REQUEST_NAME, MAX_REQUEST_MESSAGE } from '@/lib/validation/requests'
 import { MAX_EMAIL } from '@/lib/constants'
 import { ROUTES } from '@/utils/routes'
+import { pluralRu } from '@/utils/pluralRu'
 import styles from './ContactModal.module.css'
+
+const MINUTE_FORMS: [string, string, string] = ['минуту', 'минуты', 'минут']
+const SECONDS_PER_MINUTE = 60
+/** The contact form limit window (lib/rateLimit) — used if Retry-After is missing */
+const DEFAULT_RETRY_MINUTES = 10
 
 export type ContactRequestType = 'EXPEDITION' | 'CERTIFICATE' | 'QUESTION' | 'PRIVATE_EVENT'
 
@@ -17,6 +23,8 @@ type TypeConfig = {
   label: string
   subtitle: React.ReactNode
   successText: string
+  /** Shown under the form card while the form is open */
+  formNote?: string
 }
 
 const TYPE_CONFIG: Record<ContactRequestType, TypeConfig> = {
@@ -36,7 +44,7 @@ const TYPE_CONFIG: Record<ContactRequestType, TypeConfig> = {
     successText: 'Спасибо, что написали. Мы ответим в течение 24 часов.',
   },
   PRIVATE_EVENT: {
-    label: 'Заявка на частное мероприятие',
+    label: 'Заявка на частное событие',
     subtitle: (
       <ul>
         <li>желаемый диапазон дат для прогулки,</li>
@@ -47,6 +55,7 @@ const TYPE_CONFIG: Record<ContactRequestType, TypeConfig> = {
       </ul>
     ),
     successText: 'Спасибо, что написали. Мы отвечаем обычно в течение дня после предоставления данных и отвечаем в зависимости от: есть ли свободный гид для ваших критериев или что мы можем предложить, если нет.',
+    formNote: 'Желательно дать нам вводные данные для вашей прогулки за неделю до нужной даты, а в апреле - июне - за 2-3 недели, так как график у гидов плотный.',
   },
 }
 
@@ -65,7 +74,7 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [rateLimited, setRateLimited] = useState(false)
-  const [retryMinutes, setRetryMinutes] = useState(10)
+  const [retryMinutes, setRetryMinutes] = useState(DEFAULT_RETRY_MINUTES)
   const [serverError, setServerError] = useState<string | null>(null)
 
   const config = TYPE_CONFIG[defaultType]
@@ -94,8 +103,8 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
       setSubmitted(true)
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 429) {
-        const retryAfterSec = Number(err.response.headers['retry-after']) || 600
-        setRetryMinutes(Math.ceil(retryAfterSec / 60))
+        const retryAfterSec = Number(err.response.headers['retry-after'])
+        setRetryMinutes(retryAfterSec > 0 ? Math.ceil(retryAfterSec / SECONDS_PER_MINUTE) : DEFAULT_RETRY_MINUTES)
         setRateLimited(true)
       } else {
         setServerError('Не удалось отправить заявку. Попробуйте ещё раз.')
@@ -105,17 +114,24 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
     }
   }
 
-  const closeFooter = (rateLimited || submitted)
-    ? <Button onClick={handleClose} variant="outline" size="lg" fullWidth>Закрыть</Button>
-    : undefined
+  const isFormOpen = !rateLimited && !submitted
+  // Figma 2088:8554: the note (form only) and «Закрыть» under the form card, in every state
+  const footer = (
+    <div className={styles.footer}>
+      {isFormOpen && config.formNote && <p className={styles.formNote}>{config.formNote}</p>}
+      <Button onClick={handleClose} variant="outline" size="lg" fullWidth className={styles.closeBtn}>
+        Закрыть
+      </Button>
+    </div>
+  )
 
   return (
-    <Modal open={open} onClose={handleClose} title="Оставить заявку" footer={closeFooter}>
+    <Modal open={open} onClose={handleClose} title="Оставить заявку" footer={footer}>
       {rateLimited ? (
         <div className={styles.rateLimitBox}>
           <p className={`text-h3 ${styles.rateLimitTitle}`}>Нужно немного передохнуть</p>
           <p className={`text-body ${styles.rateLimitText}`}>
-            Вы исчерпали лимит обращений на данный момент. Мы сможем принять ваш следующий запрос через {retryMinutes} минут.
+            Вы исчерпали лимит обращений на данный момент. Мы сможем принять ваш следующий запрос через {pluralRu(retryMinutes, MINUTE_FORMS)}.
           </p>
         </div>
       ) : submitted ? (
@@ -141,25 +157,16 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
           <div className={styles.subtitle}>{config.subtitle}</div>
 
           <div className={styles.fields}>
-            <div className={styles.fieldWrapper}>
-              <Input
-                id="contact-name"
-                name="name"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="Имя"
-                required
-                autoComplete="name"
-                maxLength={MAX_REQUEST_NAME}
-              />
-              {name.length > 0 && (
-                <span className={[styles.charCount, name.length >= MAX_REQUEST_NAME ? styles.charCountError : ''].filter(Boolean).join(' ')}>
-                  {name.length >= MAX_REQUEST_NAME
-                    ? `Максимум ${MAX_REQUEST_NAME} символов`
-                    : `${name.length} / ${MAX_REQUEST_NAME}`}
-                </span>
-              )}
-            </div>
+            <Input
+              id="contact-name"
+              name="name"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="Имя"
+              required
+              autoComplete="name"
+              maxLength={MAX_REQUEST_NAME}
+            />
             <Input
               id="contact-email"
               name="email"
@@ -171,26 +178,17 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
               autoComplete="email"
               maxLength={MAX_EMAIL}
             />
-            <div className={styles.fieldWrapper}>
-              <textarea
-                id="contact-message"
-                name="message"
-                value={message}
-                onChange={e => setMessage(e.target.value)}
-                placeholder="Комментарий"
-                rows={4}
-                required
-                className={styles.textarea}
-                maxLength={MAX_REQUEST_MESSAGE}
-              />
-              {message.length > 0 && (
-                <span className={[styles.charCount, message.length >= MAX_REQUEST_MESSAGE ? styles.charCountError : ''].filter(Boolean).join(' ')}>
-                  {message.length >= MAX_REQUEST_MESSAGE
-                    ? `Максимум ${MAX_REQUEST_MESSAGE} символов`
-                    : `${message.length} / ${MAX_REQUEST_MESSAGE}`}
-                </span>
-              )}
-            </div>
+            <textarea
+              id="contact-message"
+              name="message"
+              value={message}
+              onChange={e => setMessage(e.target.value)}
+              placeholder="Комментарий"
+              rows={4}
+              required
+              className={styles.textarea}
+              maxLength={MAX_REQUEST_MESSAGE}
+            />
           </div>
 
           <label className={styles.consent}>

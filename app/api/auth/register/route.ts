@@ -7,12 +7,10 @@ import { generateLoginCode, hashLoginCode } from '@/lib/login-code'
 import { generateLoginCsrfToken } from '@/lib/auth/csrf'
 import { checkRateLimit, checkEmailCodeRateLimit } from '@/lib/rateLimit'
 import { LOGIN_CODE_TTL_MS, HTTP_STATUS_INTERNAL_SERVER_ERROR, HTTP_STATUS_TOO_MANY_REQUESTS } from '@/lib/constants'
+import { getClientIp } from '@/lib/clientIp'
 
 export async function POST(req: Request) {
-  const ip =
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    req.headers.get('x-real-ip') ??
-    'unknown'
+  const ip = getClientIp(req)
 
   const rateLimit = await checkRateLimit(ip, 'sendCode')
   if (!rateLimit.allowed) {

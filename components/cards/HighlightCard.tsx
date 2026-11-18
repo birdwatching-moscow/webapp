@@ -2,7 +2,7 @@ import styles from './HighlightCard.module.css'
 
 export type HighlightCardProps = {
   title: string
-  description: string
+  description: React.ReactNode
   className?: string
 }
 

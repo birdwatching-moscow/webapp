@@ -8,16 +8,14 @@ import { validateRequest } from '@/lib/api/validate'
 import { checkRateLimit, checkEmailCodeRateLimit } from '@/lib/rateLimit'
 import { generateLoginCsrfToken } from '@/lib/auth/csrf'
 import { trackEmailRequestPerIp } from '@/lib/monitoring'
+import { getClientIp } from '@/lib/clientIp'
 
 // Byte-identical for unknown, privileged, blocked and soft-deleted accounts —
 // anything else would turn this endpoint into an email-enumeration oracle.
 const SAFE_RESPONSE = { ok: true }
 
 export async function POST(req: Request) {
-  const ip =
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    req.headers.get('x-real-ip') ??
-    'unknown'
+  const ip = getClientIp(req)
 
   const rateLimit = await checkRateLimit(ip, 'sendCode')
   if (!rateLimit.allowed) {

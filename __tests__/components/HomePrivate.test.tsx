@@ -45,7 +45,7 @@ describe('HomePrivate — cards', () => {
 
   it('each card links to its private event page', () => {
     render(<HomePrivate />)
-    expect(screen.getByRole('link', { name: /Персональная прогулка/ })).toHaveAttribute('href', '/private-walks')
+    expect(screen.getByRole('link', { name: /Персональная прогулка/ })).toHaveAttribute('href', '/private-parks')
     expect(screen.getByRole('link', { name: /Лекции/ })).toHaveAttribute('href', '/private-lectures')
     expect(screen.getByRole('link', { name: /Персональные консультации/ })).toHaveAttribute('href', '/private-consultations')
   })
@@ -54,6 +54,6 @@ describe('HomePrivate — cards', () => {
 describe('HomePrivate — Подробнее button', () => {
   it('links to the private events page', () => {
     render(<HomePrivate />)
-    expect(screen.getByRole('link', { name: 'Подробнее' })).toHaveAttribute('href', '/private-events')
+    expect(screen.getByRole('link', { name: 'Подробнее' })).toHaveAttribute('href', '/private')
   })
 })

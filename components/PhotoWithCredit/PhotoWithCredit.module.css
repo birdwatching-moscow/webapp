@@ -1,0 +1,99 @@
+.card {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.image {
+  object-fit: cover;
+}
+
+/* Info icon — bottom-right corner, same spot as PhotoCard */
+.icon {
+  position: absolute;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  composes: flex-center from global;
+  list-style: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  z-index: var(--z-index-float);
+}
+
+.icon::-webkit-details-marker {
+  display: none;
+}
+
+.icon:focus-visible {
+  outline: var(--stroke-focus) solid var(--color-primary-foreground);
+  outline-offset: 2px;
+  border-radius: var(--radius-lg);
+}
+
+/* Credit — takes the icon's place, as in PhotoCard */
+.caption {
+  position: absolute;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  max-width: 70%;
+  margin: 0;
+  text-align: right;
+  text-transform: uppercase;
+  color: var(--color-primary-foreground);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  text-shadow: 0 0 4px rgb(0 0 0 / 0.6);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s;
+  z-index: var(--z-index-raised);
+}
+
+/* Desktop: hover or keyboard focus on the icon — icon hides, credit shows (as PhotoCard).
+   The caption is inside .credit, so it stays up while the pointer moves onto its links.
+   ::details-content renders the closed <details> body. The hidden icon keeps catching
+   the pointer, so the cursor stays a pointer over its spot. */
+@media (hover: hover) {
+  .credit:is(:hover, :focus-within)::details-content {
+    content-visibility: visible;
+  }
+
+  .credit:is(:hover, :focus-within) .caption {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .credit:is(:hover, :focus-within) .icon {
+    opacity: 0;
+  }
+}
+
+/* Touch: a tap on the icon opens <details> (a tap gives sticky :hover, so hover rules
+   are desktop-only). While open, the invisible summary covers the photo under the
+   caption: a tap on the photo closes the credit, the links above it stay tappable. */
+@media (hover: none) {
+  .credit[open] .caption {
+    opacity: 1;
+    visibility: visible;
+    z-index: var(--z-index-float);
+  }
+
+  .credit[open] .icon {
+    inset: 0;
+    opacity: 0;
+    z-index: var(--z-index-raised);
+  }
+}
+
+.link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.link:focus-visible {
+  outline: var(--stroke-focus) solid var(--color-primary-foreground);
+  outline-offset: 2px;
+}

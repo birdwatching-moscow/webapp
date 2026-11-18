@@ -8,7 +8,7 @@ import styles from './Footer.module.css'
 const EVENTS_LINKS = [
   { label: 'Прогулки',    href: ROUTES.walks },
   { label: 'Экспедиции',  href: ROUTES.expeditions },
-  { label: 'Частные',     href: ROUTES.privateEvents },
+  { label: 'Частные',     href: ROUTES.private },
 ]
 
 const OTHER_LINKS = [

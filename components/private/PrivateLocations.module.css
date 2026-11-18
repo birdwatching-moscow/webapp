@@ -1,0 +1,49 @@
+/* ─── Mobile: horizontal swipe list ───────────────────────────────────────── */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding-top: var(--space-8);
+}
+
+.list {
+  /* How much of the next card stays visible, hinting that the list scrolls */
+  --_peek: var(--space-6);
+
+  display: flex;
+  /* Each card keeps its own height — no empty space under short cards */
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.list::-webkit-scrollbar {
+  display: none;
+}
+
+.item {
+  flex: 0 0 calc(100% - var(--_peek));
+  scroll-snap-align: start;
+}
+
+/* ─── Desktop (min-width: 1248px): 3-column grid ──────────────────────────── */
+
+@media (min-width: 1248px) {
+  .section {
+    padding-top: var(--space-10);
+  }
+
+  .list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6);
+    overflow-x: visible;
+    scroll-snap-type: none;
+  }
+}

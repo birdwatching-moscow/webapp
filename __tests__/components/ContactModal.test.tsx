@@ -1,0 +1,113 @@
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen, fireEvent } from '@testing-library/react'
+import { MAX_REQUEST_NAME, MAX_REQUEST_MESSAGE } from '@/lib/validation/requests'
+
+vi.mock('@/lib/api/requests', () => ({ submitContactRequest: vi.fn() }))
+
+import { ContactModal } from '@/components/ContactModal/ContactModal'
+import { submitContactRequest } from '@/lib/api/requests'
+
+const LEAD_TIME_NOTE =
+  'Желательно дать нам вводные данные для вашей прогулки за неделю до нужной даты, а в апреле - июне - за 2-3 недели, так как график у гидов плотный.'
+
+describe('ContactModal — private event lead-time note', () => {
+  it('private event form shows the note below the form', () => {
+    render(<ContactModal open onClose={vi.fn()} defaultType="PRIVATE_EVENT" />)
+    const note = screen.getByText(LEAD_TIME_NOTE)
+    // Outside the bordered form card, as in Figma 2088:8554
+    expect(note.closest('form')).toBeNull()
+    expect(screen.getByRole('dialog')).toContainElement(note)
+  })
+
+  it.each(['QUESTION', 'EXPEDITION', 'CERTIFICATE'] as const)('%s form has no such note', (type) => {
+    render(<ContactModal open onClose={vi.fn()} defaultType={type} />)
+    expect(screen.queryByText(LEAD_TIME_NOTE)).toBeNull()
+  })
+})
+
+describe('ContactModal — no character counters', () => {
+  const COUNTER = /\d+ \/ \d+|Максимум \d+ символов/
+
+  it.each(['QUESTION', 'EXPEDITION', 'CERTIFICATE', 'PRIVATE_EVENT'] as const)(
+    '%s form shows no counter while typing, even at the limit',
+    (type) => {
+      render(<ContactModal open onClose={vi.fn()} defaultType={type} />)
+      fireEvent.change(screen.getByPlaceholderText('Имя'), { target: { value: 'Анна' } })
+      fireEvent.change(screen.getByPlaceholderText('Комментарий'), { target: { value: 'Вопрос' } })
+      expect(screen.queryByText(COUNTER)).toBeNull()
+
+      fireEvent.change(screen.getByPlaceholderText('Имя'), { target: { value: 'а'.repeat(MAX_REQUEST_NAME) } })
+      fireEvent.change(screen.getByPlaceholderText('Комментарий'), { target: { value: 'а'.repeat(MAX_REQUEST_MESSAGE) } })
+      expect(screen.queryByText(COUNTER)).toBeNull()
+    },
+  )
+
+  it('fields still cap input length', () => {
+    render(<ContactModal open onClose={vi.fn()} defaultType="QUESTION" />)
+    expect(screen.getByPlaceholderText('Имя')).toHaveAttribute('maxlength', String(MAX_REQUEST_NAME))
+    expect(screen.getByPlaceholderText('Комментарий')).toHaveAttribute('maxlength', String(MAX_REQUEST_MESSAGE))
+  })
+})
+
+describe('ContactModal — «Закрыть» button (Figma 2088:8554)', () => {
+  // The header ✕ is labelled «Закрыть» too but has no text — match the visible label only
+  const closeButton = () => screen.getByText('Закрыть', { selector: 'button' })
+
+  it.each(['QUESTION', 'EXPEDITION', 'CERTIFICATE', 'PRIVATE_EVENT'] as const)(
+    '%s form shows «Закрыть» under the open form, outside it',
+    (type) => {
+      render(<ContactModal open onClose={vi.fn()} defaultType={type} />)
+      expect(closeButton().closest('form')).toBeNull()
+      expect(screen.getByRole('dialog')).toContainElement(closeButton())
+    },
+  )
+
+  it('clicking «Закрыть» closes the modal', () => {
+    const onClose = vi.fn()
+    render(<ContactModal open onClose={onClose} defaultType="QUESTION" />)
+    fireEvent.click(closeButton())
+    expect(onClose).toHaveBeenCalledOnce()
+  })
+
+  it('private event: the lead-time note comes before «Закрыть»', () => {
+    render(<ContactModal open onClose={vi.fn()} defaultType="PRIVATE_EVENT" />)
+    const note = screen.getByText(LEAD_TIME_NOTE)
+    expect(note.compareDocumentPosition(closeButton()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+})
+
+describe('ContactModal — private event title (Figma 2088:8554)', () => {
+  it('reads «Заявка на частное событие»', () => {
+    render(<ContactModal open onClose={vi.fn()} defaultType="PRIVATE_EVENT" />)
+    expect(screen.getByText('Заявка на частное событие')).toBeInTheDocument()
+  })
+})
+
+describe('ContactModal — rate limit message', () => {
+  const rateLimited = (retryAfterSeconds: string) =>
+    Object.assign(new Error('Too many requests'), {
+      isAxiosError: true,
+      response: { status: 429, headers: { 'retry-after': retryAfterSeconds } },
+    })
+
+  const submitForm = () => {
+    fireEvent.change(screen.getByPlaceholderText('Имя'), { target: { value: 'Анна' } })
+    fireEvent.change(screen.getByPlaceholderText('Email'), { target: { value: 'anna@example.com' } })
+    fireEvent.change(screen.getByPlaceholderText('Комментарий'), { target: { value: 'Вопрос' } })
+    fireEvent.click(screen.getByRole('checkbox'))
+    fireEvent.submit(screen.getByPlaceholderText('Имя').closest('form') as HTMLFormElement)
+  }
+
+  it.each([
+    ['30', '1 минуту'],
+    ['60', '1 минуту'],
+    ['180', '3 минуты'],
+    ['300', '5 минут'],
+    ['600', '10 минут'],
+  ])('Retry-After %ss → «через %s»', async (seconds, minutes) => {
+    vi.mocked(submitContactRequest).mockRejectedValueOnce(rateLimited(seconds))
+    render(<ContactModal open onClose={vi.fn()} defaultType="QUESTION" />)
+    submitForm()
+    expect(await screen.findByText(`Вы исчерпали лимит обращений на данный момент. Мы сможем принять ваш следующий запрос через ${minutes}.`)).toBeInTheDocument()
+  })
+})

@@ -1,0 +1,31 @@
+/** IANA time zones of Russia (tzdata, zone1970.tab, country code RU). */
+const RUSSIAN_TIME_ZONES: ReadonlySet<string> = new Set([
+  'Europe/Kaliningrad',
+  'Europe/Moscow',
+  'Europe/Kirov',
+  'Europe/Volgograd',
+  'Europe/Astrakhan',
+  'Europe/Saratov',
+  'Europe/Ulyanovsk',
+  'Europe/Samara',
+  'Asia/Yekaterinburg',
+  'Asia/Omsk',
+  'Asia/Novosibirsk',
+  'Asia/Barnaul',
+  'Asia/Tomsk',
+  'Asia/Novokuznetsk',
+  'Asia/Krasnoyarsk',
+  'Asia/Irkutsk',
+  'Asia/Chita',
+  'Asia/Yakutsk',
+  'Asia/Khandyga',
+  'Asia/Vladivostok',
+  'Asia/Ust-Nera',
+  'Asia/Magadan',
+  'Asia/Sakhalin',
+  'Asia/Srednekolymsk',
+  'Asia/Kamchatka',
+  'Asia/Anadyr',
+])
+
+export const isRussianTimeZone = (timeZone: string): boolean => RUSSIAN_TIME_ZONES.has(timeZone)

@@ -251,6 +251,20 @@ async function advanceToPasswordStep(email = 'admin@test.com', challengeToken = 
   await waitFor(() => screen.getByLabelText(C.passwordField))
 }
 
+describe('LoginPage — step 3 (admin password) layout', () => {
+  it('«Войти» is the same size as the submit buttons on the other login steps', async () => {
+    stubFetchForAdmin('tok123')
+    render(<LoginPage />)
+    const emailStepSubmitClass = screen.getByRole('button', { name: LC.requestCode }).className
+    fireEvent.change(screen.getByLabelText(C.emailField), { target: { value: 'admin@test.com' } })
+    fireEvent.submit(screen.getByRole('button', { name: LC.requestCode }))
+    await waitFor(() => screen.getByLabelText(`Цифра 1 из ${LOGIN_CODE_LENGTH}`))
+    fillOtpCode(TEST_CODE)
+    await waitFor(() => screen.getByLabelText(C.passwordField))
+    expect(screen.getByRole('button', { name: LA.submit }).className).toBe(emailStepSubmitClass)
+  })
+})
+
 describe('LoginPage — step 3 (admin password) validation', () => {
   const PASSWORD_REQUIRED = 'Введите пароль, чтобы продолжить'
 

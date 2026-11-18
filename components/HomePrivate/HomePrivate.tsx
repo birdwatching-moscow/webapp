@@ -13,7 +13,7 @@ const PLACEHOLDER_IMAGE = '/images/home-walks.jpg'
 
 const EVENT_TYPES = [
   {
-    href: ROUTES.privateWalks,
+    href: ROUTES.privateParks,
     title: 'Персональная прогулка в Москве и окрестностях',
     description:
       'Подберём место, дату и маршрут с учётом сезона, вашего опыта и того, каких птиц вам хотелось бы увидеть. Можно выбрать одну из наших проверенных локаций или обсудить другой маршрут.',
@@ -49,7 +49,7 @@ export const HomePrivate = () => (
       ))}
     </div>
 
-    <Button as="a" size="lg" fullWidth href={ROUTES.privateEvents} className={styles.moreButton}>
+    <Button as="a" size="lg" fullWidth href={ROUTES.private} className={styles.moreButton}>
       Подробнее
     </Button>
   </section>

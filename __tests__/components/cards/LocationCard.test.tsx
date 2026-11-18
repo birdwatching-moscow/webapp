@@ -16,6 +16,13 @@ const base = {
   imageAlt: 'Фото локации',
 }
 
+const credit = {
+  author: 'Ivtorov',
+  sourceUrl: 'https://commons.wikimedia.org/wiki/File:2016-MSU.jpg',
+  license: 'CC BY-SA 4.0',
+  licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+}
+
 describe('LocationCard — content', () => {
   it('renders name', () => {
     render(<LocationCard {...base} />)
@@ -49,6 +56,25 @@ describe('LocationCard — image', () => {
   it('renders img element when imageUrl is provided', () => {
     render(<LocationCard {...base} imageUrl="/location.jpg" />)
     expect(screen.getByAltText(base.imageAlt)).toBeInTheDocument()
+  })
+
+  it('photo with a credit has an info icon revealing the author and license links', () => {
+    render(<LocationCard {...base} imageUrl="/location.jpg" photoCredit={credit} />)
+    expect(screen.getByTestId('photo-info-icon')).toBeInTheDocument()
+    expect(screen.getByTestId('photo-caption')).toHaveTextContent('Ivtorov, CC BY-SA 4.0')
+    expect(screen.getByRole('link', { name: 'Ivtorov' })).toHaveAttribute('href', credit.sourceUrl)
+  })
+
+  it('photo without a credit shows the image but no info icon', () => {
+    render(<LocationCard {...base} imageUrl="/location.jpg" />)
+    expect(screen.getByAltText(base.imageAlt)).toHaveAttribute('src', '/location.jpg')
+    expect(screen.queryByTestId('photo-info-icon')).toBeNull()
+    expect(screen.queryByText(/lorem ipsum/i)).toBeNull()
+  })
+
+  it('placeholder (no photo) has no info icon', () => {
+    render(<LocationCard {...base} />)
+    expect(screen.queryByTestId('photo-info-icon')).toBeNull()
   })
 })
 

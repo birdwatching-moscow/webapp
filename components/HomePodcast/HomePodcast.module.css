@@ -49,6 +49,14 @@
   border-radius: var(--radius-lg);
 }
 
+/* Apple Podcasts episode player: fixed size from Apple's embed code */
+.widget .apple {
+  --_apple-player-height: 175px;
+  --_apple-player-max-width: 640px;
+  height: var(--_apple-player-height);
+  max-width: var(--_apple-player-max-width);
+}
+
 /* ─── Desktop (min-width: 1248px) ─────────────────────────────────────────── */
 
 @media (min-width: 1248px) {
@@ -67,7 +75,7 @@
     flex: 1;
   }
 
-  .widget iframe {
+  .widget iframe:not(.apple) {
     height: 450px;
   }
 }
