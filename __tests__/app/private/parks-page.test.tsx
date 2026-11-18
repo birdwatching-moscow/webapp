@@ -34,13 +34,20 @@ describe('/private-parks page', () => {
     expect(within(cards[0]).getByRole('img', { name: 'Скверы МГУ' })).toHaveAttribute('src', '/images/parks/mgu.jpg')
   })
 
-  it('«Важно знать»: five cards, «альбомы» links to media, «Подробнее» to FAQ', () => {
+  it('«альбомы» opens the VK photo albums in a new tab', () => {
+    render(<ParksPage />)
+    const link = screen.getByRole('link', { name: 'альбомы' })
+    expect(link).toHaveAttribute('href', 'https://vk.ru/albums-81135982')
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+  })
+
+  it('«Важно знать»: five cards, «Подробнее» links to FAQ', () => {
     render(<ParksPage />)
     const section = screen.getByRole('region', { name: 'Важно знать' })
     for (const title of ['Птицы не гарантированы', 'Прошлые прогулки', 'Что взять с собой', 'Одежда по погоде', 'Место встречи']) {
       expect(within(section).getByText(title)).toBeInTheDocument()
     }
-    expect(within(section).getByRole('link', { name: 'альбомы' })).toHaveAttribute('href', '/media')
     expect(within(section).getByRole('link', { name: 'Подробнее' })).toHaveAttribute('href', '/faq')
   })
 
