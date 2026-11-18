@@ -20,16 +20,24 @@ export function TeamMemberNewForm() {
     const form = e.currentTarget
     const data = new FormData(form)
     const name = (data.get('name') as string).trim()
-    if (!name) { setError('Имя обязательно'); return }
-
+    const photoUrl = (data.get('photoUrl') as string).trim()
+    const education = (data.get('education') as string).trim()
+    const achievements = (data.get('achievements') as string).trim()
     const link = ((data.get('profileLink') as string) ?? '').trim()
+
+    if (!name)         { setError('Укажите имя'); return }
+    if (!photoUrl)     { setError('Загрузите фото'); return }
+    if (!education)    { setError('Заполните поле «Образование»'); return }
+    if (!achievements) { setError('Заполните поле «Достижения»'); return }
+    if (!link)         { setError('Заполните поле «Профиль»'); return }
+
     startCreate(async () => {
       try {
         await createTeamMember({
           name,
-          photoUrl:     (data.get('photoUrl') as string) ?? '',
-          education:    (data.get('education') as string) || undefined,
-          achievements: (data.get('achievements') as string) || undefined,
+          photoUrl:     photoUrl,
+          education:    education || undefined,
+          achievements: achievements || undefined,
           profileLinks: link ? [link] : [],
           sortOrder:    parseInt((data.get('sortOrder') as string) ?? '0', 10),
         })
@@ -55,7 +63,7 @@ export function TeamMemberNewForm() {
           <label htmlFor="name" className={styles.label}>
             Имя <span className={styles.required}>*</span>
           </label>
-          <input id="name" name="name" className={styles.input} required autoFocus />
+          <input id="name" name="name" className={styles.input} required autoFocus aria-required="true" />
         </div>
 
         <div className={styles.field}>
@@ -69,7 +77,7 @@ export function TeamMemberNewForm() {
             id="education"
             name="education"
             className={styles.textarea}
-
+            required
             maxLength={75}
             rows={2}
           />
@@ -82,6 +90,7 @@ export function TeamMemberNewForm() {
             id="achievements"
             name="achievements"
             className={styles.textarea}
+            required
             maxLength={190}
             rows={3}
           />
