@@ -7,14 +7,12 @@ import { LOGIN_CODE_MAX_ATTEMPTS, ADMIN_CHALLENGE_TTL_MS, HTTP_STATUS_FORBIDDEN,
 import { validateRequest } from '@/lib/api/validate'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { verifyLoginCsrfToken } from '@/lib/auth/csrf'
+import { getClientIp } from '@/lib/clientIp'
 
 const sessionResponse = () => NextResponse.json({ next: 'session' })
 
 export async function POST(req: Request) {
-  const ip =
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    req.headers.get('x-real-ip') ??
-    'unknown'
+  const ip = getClientIp(req)
 
   const rateLimit = await checkRateLimit(ip, 'verifyCode')
   if (!rateLimit.allowed) {

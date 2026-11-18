@@ -13,12 +13,10 @@ import {
   HTTP_STATUS_TOO_MANY_REQUESTS,
   HTTP_STATUS_UNAUTHORIZED,
 } from '@/lib/constants'
+import { getClientIp } from '@/lib/clientIp'
 
 export async function POST(req: Request) {
-  const ip =
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    req.headers.get('x-real-ip') ??
-    'unknown'
+  const ip = getClientIp(req)
 
   const rateLimit = await checkRateLimit(ip, 'verifyCode')
   if (!rateLimit.allowed) {

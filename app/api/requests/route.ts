@@ -11,6 +11,7 @@ import {
   HTTP_STATUS_TOO_MANY_REQUESTS,
   HTTP_STATUS_INTERNAL_SERVER_ERROR,
 } from '@/lib/constants'
+import { getClientIp } from '@/lib/clientIp'
 
 const REQUEST_TYPE_LABEL: Record<string, string> = {
   EXPEDITION:    'Заявка на экспедицию',
@@ -21,7 +22,7 @@ const REQUEST_TYPE_LABEL: Record<string, string> = {
 }
 
 export async function POST(req: Request): Promise<NextResponse> {
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
+  const ip = getClientIp(req)
   const rateLimit = checkContactFormRateLimit(ip)
   if (!rateLimit.allowed) {
     return NextResponse.json(

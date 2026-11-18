@@ -6,12 +6,10 @@ import { generateChallengeToken, hashChallengeToken } from '@/lib/auth/challenge
 import { BCRYPT_COST, ADMIN_CHALLENGE_TTL_MS, HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_UNAUTHORIZED, HTTP_STATUS_TOO_MANY_REQUESTS } from '@/lib/constants'
 import { validateRequest } from '@/lib/api/validate'
 import { checkRateLimit } from '@/lib/rateLimit'
+import { getClientIp } from '@/lib/clientIp'
 
 export async function POST(req: Request) {
-  const ip =
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    req.headers.get('x-real-ip') ??
-    'unknown'
+  const ip = getClientIp(req)
 
   const rateLimit = await checkRateLimit(ip, 'setInitialPassword')
   if (!rateLimit.allowed) {

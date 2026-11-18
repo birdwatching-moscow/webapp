@@ -4,14 +4,12 @@ import { prisma } from '@/lib/prisma'
 import { validateRequest } from '@/lib/api/validate'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { HTTP_STATUS_TOO_MANY_REQUESTS } from '@/lib/constants'
+import { getClientIp } from '@/lib/clientIp'
 
 const checkEmailSchema = z.object({ email: z.string().email() })
 
 export async function POST(req: Request) {
-  const ip =
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    req.headers.get('x-real-ip') ??
-    'unknown'
+  const ip = getClientIp(req)
 
   const rateLimit = await checkRateLimit(ip, 'checkEmail')
   if (!rateLimit.allowed) {
