@@ -86,9 +86,8 @@
   -webkit-appearance: none;
   height: var(--size-control-input);
   padding: 0 24px 0 var(--space-2);
-  border: none;
-  border-bottom: var(--stroke-default) solid var(--color-border);
-  border-radius: 0;
+  border: var(--stroke-default) solid var(--color-border);
+  border-radius: var(--radius-lg);
   background-color: var(--color-background);
   color: var(--color-foreground);
   font-family: 'Manrope', sans-serif;
