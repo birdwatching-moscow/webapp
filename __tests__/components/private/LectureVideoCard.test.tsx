@@ -58,10 +58,44 @@ describe('LectureVideoCard', () => {
       expect(link).toHaveAttribute('rel', 'noopener noreferrer')
     })
 
+    it('shows the video cover when there is one', () => {
+      const { container } = render(
+        <LectureVideoCard {...lecture} videoUrl={videoUrl} previewUrl="/images/lectures/birdwatcher.jpg" />,
+      )
+      expect(container.querySelector('img')).toHaveAttribute('src', '/images/lectures/birdwatcher.jpg')
+    })
+
+    it('falls back to the placeholder picture without a cover', () => {
+      const { container } = render(<LectureVideoCard {...lecture} videoUrl={videoUrl} />)
+      expect(container.querySelector('img')).toHaveAttribute('src', '/placeholders/image-placeholder.png')
+    })
+
     it('no longer says the video is coming soon', () => {
       render(<LectureVideoCard {...lecture} videoUrl={videoUrl} />)
       expect(screen.queryByText(/скоро появится/)).toBeNull()
       expect(screen.queryByRole('img', { name: /скоро появится/ })).toBeNull()
+    })
+  })
+
+  describe('info icon', () => {
+    const info = 'Запись: Garage MCA, 2024'
+
+    it('has an info icon that reveals the video info', () => {
+      render(<LectureVideoCard {...lecture} info={info} />)
+      const icon = screen.getByLabelText('Информация о видео')
+      expect(icon.closest('details')).toContainElement(screen.getByText(info))
+    })
+
+    it('sits outside the video link, so clicking it does not open the video', () => {
+      render(<LectureVideoCard {...lecture} videoUrl="https://vk.com/video1" info={info} />)
+      const link = screen.getByRole('link')
+      expect(link).not.toContainElement(screen.getByLabelText('Информация о видео'))
+      expect(link).not.toContainElement(screen.getByText(info))
+    })
+
+    it('is absent when the video has no info', () => {
+      render(<LectureVideoCard {...lecture} videoUrl="https://vk.com/video1" />)
+      expect(screen.queryByLabelText('Информация о видео')).toBeNull()
     })
   })
 })
