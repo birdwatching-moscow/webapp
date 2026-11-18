@@ -17,6 +17,8 @@ type TypeConfig = {
   label: string
   subtitle: React.ReactNode
   successText: string
+  /** Shown under the form card while the form is open */
+  formNote?: string
 }
 
 const TYPE_CONFIG: Record<ContactRequestType, TypeConfig> = {
@@ -47,6 +49,7 @@ const TYPE_CONFIG: Record<ContactRequestType, TypeConfig> = {
       </ul>
     ),
     successText: 'Спасибо, что написали. Мы отвечаем обычно в течение дня после предоставления данных и отвечаем в зависимости от: есть ли свободный гид для ваших критериев или что мы можем предложить, если нет.',
+    formNote: 'Желательно дать нам вводные данные для вашей прогулки за неделю до нужной даты, а в апреле - июне - за 2-3 недели, так как график у гидов плотный.',
   },
 }
 
@@ -105,12 +108,13 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
     }
   }
 
-  const closeFooter = (rateLimited || submitted)
-    ? <Button onClick={handleClose} variant="outline" size="lg" fullWidth>Закрыть</Button>
-    : undefined
+  const isFormOpen = !rateLimited && !submitted
+  const footer = isFormOpen
+    ? config.formNote && <p className={styles.formNote}>{config.formNote}</p>
+    : <Button onClick={handleClose} variant="outline" size="lg" fullWidth>Закрыть</Button>
 
   return (
-    <Modal open={open} onClose={handleClose} title="Оставить заявку" footer={closeFooter}>
+    <Modal open={open} onClose={handleClose} title="Оставить заявку" footer={footer}>
       {rateLimited ? (
         <div className={styles.rateLimitBox}>
           <p className={`text-h3 ${styles.rateLimitTitle}`}>Нужно немного передохнуть</p>

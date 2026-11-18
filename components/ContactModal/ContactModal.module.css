@@ -47,6 +47,16 @@
   color: var(--color-muted-foreground);
 }
 
+/* Under the form card (Figma 2088:8554), same type as the subtitle */
+.formNote {
+  margin: 0;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: var(--font-size-lg);  /* 18px */
+  line-height: 24px;
+  color: var(--color-muted-foreground);
+}
+
 .subtitle ul {
   margin: 0;
   padding-left: var(--space-5);
