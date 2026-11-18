@@ -32,6 +32,7 @@ export const WalkAbout = ({ description, guide }: Props) => (
           imageUrl={validPhotoUrl(guide.photoUrl ?? '') ?? '/placeholders/photo-placeholder.png'}
           imageAlt={guide.name}
           ebirdHref={guide.profileLinks[0]}
+          layout="horizontal"
         />
       </div>
     )}

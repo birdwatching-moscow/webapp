@@ -9,11 +9,12 @@ export type TeamMemberCardProps = {
   imageUrl?: string
   imageAlt: string
   ebirdHref?: string
+  layout?: 'vertical' | 'horizontal'
   className?: string
 }
 
-export const TeamMemberCard = ({ name, role, details, imageUrl, imageAlt, ebirdHref, className }: TeamMemberCardProps) => {
-  const cls = [styles.root, className].filter(Boolean).join(' ')
+export const TeamMemberCard = ({ name, role, details, imageUrl, imageAlt, ebirdHref, layout = 'vertical', className }: TeamMemberCardProps) => {
+  const cls = [styles.root, layout === 'horizontal' && styles.horizontal, className].filter(Boolean).join(' ')
   return (
     <article className={cls}>
       <div className={styles.photo}>
