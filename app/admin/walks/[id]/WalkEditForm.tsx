@@ -250,11 +250,6 @@ export function WalkEditForm({ walk, guides }: Props) {
           </span>
           {isDirty && <span className={styles.dirtyHint}>Несохранённые изменения</span>}
           <CopyWalkButton walkId={walk.id} disabled={saving} onError={setError} onSuccess={() => setCopied(true)} />
-          {isEditable && (
-            <Button size="sm" variant="outline" onClick={handleSave} disabled={saving || !isDirty}>
-              {saving ? 'Сохранение…' : 'Сохранить'}
-            </Button>
-          )}
           {walk.status === 'DRAFT' && (
             <Button
               size="sm"
