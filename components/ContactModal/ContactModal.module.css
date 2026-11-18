@@ -185,8 +185,7 @@
 /* ─── Submit button ─────────────────────────────────────────────────────────── */
 
 .submitBtn {
-  min-width: 260px;
-  max-width: 406px;
+  max-width: var(--size-col-3); /* 406px */
   align-self: stretch;
 }
 
