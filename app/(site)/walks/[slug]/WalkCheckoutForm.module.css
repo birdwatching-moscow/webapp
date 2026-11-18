@@ -1,0 +1,271 @@
+/* ─── Form wrapper ───────────────────────────────────── */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* ─── Bordered card ──────────────────────────────────── */
+
+.card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* Desktop table header — hidden on mobile */
+.tableHead {
+  display: none;
+}
+
+.tableHeadCell {
+  font-family: 'Manrope', sans-serif;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ─── Row (mobile default) ───────────────────────────── */
+/*
+  Mobile grid areas:
+    "label  label"
+    "name   qty"
+    "price  ."
+*/
+
+.row {
+  display: grid;
+  grid-template-areas:
+    "label label"
+    "name  qty"
+    "price .";
+  grid-template-columns: 1fr auto;
+  row-gap: var(--space-1);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.mobileLabel {
+  grid-area: label;
+  font-family: 'Manrope', sans-serif;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.rowName {
+  grid-area: name;
+  font-size: var(--font-size-lg);
+  font-weight: 500;
+  margin: 0;
+  align-self: center;
+}
+
+.rowPrice {
+  grid-area: price;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  margin: 0;
+  color: var(--color-muted-foreground);
+}
+
+/* ─── Quantity select ────────────────────────────────── */
+
+.qtySelect {
+  grid-area: qty;
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-primary);
+  border-radius: 0;
+  padding: 2px 20px 2px var(--space-1);
+  font-family: 'Manrope', sans-serif;
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  color: var(--color-primary);
+  cursor: pointer;
+  min-width: 48px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%233F4FA7' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 2px center;
+  background-size: 10px 6px;
+}
+
+.qtySelect:focus {
+  outline: none;
+}
+
+/* ─── Total row ──────────────────────────────────────── */
+/*
+  Mobile:
+    "label label"
+    "price  qty"
+*/
+
+.totalRow {
+  grid-template-areas:
+    "label label"
+    "price qty";
+}
+
+.totalRow .rowName {
+  display: none;
+}
+
+.totalRow .rowPrice {
+  font-size: var(--font-size-md);
+  color: var(--color-foreground);
+}
+
+.totalQty {
+  grid-area: qty;
+  font-size: var(--font-size-md);
+  font-weight: 500;
+  margin: 0;
+  color: var(--color-muted-foreground);
+  align-self: center;
+}
+
+/* ─── Binoculars question ────────────────────────────── */
+
+.binocularsField {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.binocularsLegend {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-foreground);
+  padding: 0;
+}
+
+.radioGroup {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-md);
+  color: var(--color-foreground);
+  cursor: pointer;
+}
+
+.radioInput {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.checkoutError {
+  font-size: var(--font-size-sm);
+  color: var(--color-error);
+  margin: 0;
+}
+
+/* ─── CTA button ─────────────────────────────────────── */
+
+.cta {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 64px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  font-family: 'Manrope', sans-serif;
+  font-size: var(--font-size-lg);
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.cta:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.cta:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+/* ─── Desktop ────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .form {
+    max-width: var(--size-col-2);
+  }
+
+  .card {
+    padding: var(--space-6) var(--space-6) var(--space-4);
+  }
+
+  /* Show table header */
+  .tableHead {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: var(--space-6);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  /* Row as 3-column grid: "name price qty" */
+  .row {
+    grid-template-areas: "name price qty";
+    grid-template-columns: 1fr auto auto;
+    column-gap: var(--space-6);
+    row-gap: 0;
+    padding: var(--space-4) 0;
+    align-items: center;
+  }
+
+  .mobileLabel {
+    display: none;
+  }
+
+  .rowPrice {
+    grid-area: price;
+    font-size: var(--font-size-md);
+    color: var(--color-foreground);
+    min-width: 80px;
+  }
+
+  /* Total row: "name price qty" */
+  .totalRow {
+    grid-template-areas: "name price qty";
+    grid-template-columns: 1fr auto auto;
+  }
+
+  .totalRow .rowName {
+    display: block;
+  }
+
+  .totalQty {
+    color: var(--color-foreground);
+    min-width: 48px;
+  }
+
+  .cta {
+    width: var(--size-col-3);
+  }
+}

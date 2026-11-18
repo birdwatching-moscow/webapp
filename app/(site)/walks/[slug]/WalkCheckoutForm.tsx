@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useId } from 'react'
-import { Button } from '@/components/ui/buttons/Button'
-import { formatKopecksShort, formatKopecksRu } from '@/utils/formatMoney'
-import styles from './walk.module.css'
+import { formatKopecksShort } from '@/utils/formatMoney'
+import styles from './WalkCheckoutForm.module.css'
 
 type TicketTypeItem = {
   id: number
@@ -15,6 +14,14 @@ interface Props {
   walkId: string
   priceKopecks: number
   ticketTypes: TicketTypeItem[]
+}
+
+const QTY_OPTIONS = Array.from({ length: 11 }, (_, i) => i)
+
+function ticketWord(n: number): string {
+  if (n === 1) return 'билет'
+  if (n >= 2 && n <= 4) return 'билета'
+  return 'билетов'
 }
 
 export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes }: Props) {
@@ -38,13 +45,6 @@ export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes }: Props) {
   const totalKopecks = hasTypes
     ? ticketTypes.reduce((s, t) => s + t.priceKopecks * (quantities[t.id] ?? 0), 0)
     : priceKopecks * simpleQty
-
-  function changeQty(typeId: number, delta: number) {
-    setQuantities((prev) => ({
-      ...prev,
-      [typeId]: Math.max(0, Math.min(10, (prev[typeId] ?? 0) + delta)),
-    }))
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -93,74 +93,62 @@ export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes }: Props) {
   }
 
   return (
-    <form className={styles.checkoutForm} onSubmit={handleSubmit}>
-      <div className={styles.ticketTable}>
-        <div className={styles.ticketTableHead}>
-          <span className={`text-label ${styles.ticketTableLabel}`}>Тип билета</span>
-          <span className={`text-label ${styles.ticketTableLabel}`}>Цена</span>
-          <span className={`text-label ${styles.ticketTableLabel}`}>Количество</span>
+    <form className={styles.form} onSubmit={handleSubmit}>
+      <div className={styles.card}>
+        {/* Desktop header row */}
+        <div className={styles.tableHead}>
+          <span className={styles.tableHeadCell}>Тип билета</span>
+          <span className={styles.tableHeadCell}>Цена</span>
+          <span className={styles.tableHeadCell}>Количество</span>
         </div>
 
+        {/* Ticket rows */}
         {hasTypes ? (
           ticketTypes.map((type) => (
-            <div key={type.id} className={styles.ticketRow}>
-              <span className={`text-body-l ${styles.ticketName}`}>{type.name}</span>
-              <span className={`text-body-l ${styles.ticketPrice}`}>{formatKopecksShort(type.priceKopecks)}</span>
-              <div className={styles.qtyControl}>
-                <button
-                  type="button"
-                  className={styles.qtyBtn}
-                  onClick={() => changeQty(type.id, -1)}
-                  disabled={(quantities[type.id] ?? 0) === 0}
-                  aria-label={`Уменьшить количество ${type.name}`}
-                >
-                  –
-                </button>
-                <span className={`text-body-l ${styles.qtyValue}`}>{quantities[type.id] ?? 0}</span>
-                <button
-                  type="button"
-                  className={styles.qtyBtn}
-                  onClick={() => changeQty(type.id, 1)}
-                  disabled={(quantities[type.id] ?? 0) >= 10}
-                  aria-label={`Увеличить количество ${type.name}`}
-                >
-                  +
-                </button>
-              </div>
+            <div key={type.id} className={styles.row}>
+              <span className={styles.mobileLabel}>Тип билета</span>
+              <span className={styles.rowName}>{type.name}</span>
+              <select
+                className={styles.qtySelect}
+                value={quantities[type.id] ?? 0}
+                onChange={(e) =>
+                  setQuantities((prev) => ({ ...prev, [type.id]: parseInt(e.target.value, 10) }))
+                }
+                aria-label={`Количество билетов «${type.name}»`}
+              >
+                {QTY_OPTIONS.map((n) => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+              <span className={styles.rowPrice}>{formatKopecksShort(type.priceKopecks)}</span>
             </div>
           ))
         ) : (
-          <div className={styles.ticketRow}>
-            <span className={`text-body-l ${styles.ticketName}`}>Стандартный</span>
-            <span className={`text-body-l ${styles.ticketPrice}`}>{formatKopecksShort(priceKopecks)}</span>
-            <div className={styles.qtyControl}>
-              <button
-                type="button"
-                className={styles.qtyBtn}
-                onClick={() => setSimpleQty((q) => Math.max(1, q - 1))}
-                disabled={simpleQty <= 1}
-                aria-label="Уменьшить количество"
-              >
-                –
-              </button>
-              <span className={`text-body-l ${styles.qtyValue}`}>{simpleQty}</span>
-              <button
-                type="button"
-                className={styles.qtyBtn}
-                onClick={() => setSimpleQty((q) => Math.min(10, q + 1))}
-                disabled={simpleQty >= 10}
-                aria-label="Увеличить количество"
-              >
-                +
-              </button>
-            </div>
+          <div className={styles.row}>
+            <span className={styles.mobileLabel}>Тип билета</span>
+            <span className={styles.rowName}>Стандартный</span>
+            <select
+              className={styles.qtySelect}
+              value={simpleQty}
+              onChange={(e) => setSimpleQty(parseInt(e.target.value, 10))}
+              aria-label="Количество билетов"
+            >
+              {QTY_OPTIONS.filter((n) => n > 0).map((n) => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+            <span className={styles.rowPrice}>{formatKopecksShort(priceKopecks)}</span>
           </div>
         )}
 
-        <div className={`${styles.ticketRow} ${styles.totalRow}`}>
-          <span className={`text-body-l ${styles.ticketName}`}>Итого</span>
-          <span className={`text-body-l ${styles.ticketPrice}`}>{formatKopecksShort(totalKopecks)}</span>
-          <span />
+        {/* Total row */}
+        <div className={`${styles.row} ${styles.totalRow}`}>
+          <span className={styles.mobileLabel}>Итого</span>
+          <span className={styles.rowName}>Итого</span>
+          <span className={styles.rowPrice}>{formatKopecksShort(totalKopecks)}</span>
+          <span className={styles.totalQty}>
+            {totalQty > 0 ? `${totalQty} ${ticketWord(totalQty)}` : '—'}
+          </span>
         </div>
       </div>
 
@@ -194,9 +182,9 @@ export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes }: Props) {
 
       {error && <p className={styles.checkoutError}>{error}</p>}
 
-      <Button type="submit" size="lg" fullWidth disabled={loading || totalQty === 0}>
-        {loading ? 'Перенаправление…' : `Купить · ${formatKopecksRu(totalKopecks)}`}
-      </Button>
+      <button type="submit" className={styles.cta} disabled={loading || totalQty === 0}>
+        {loading ? 'Перенаправление…' : 'Купить'}
+      </button>
     </form>
   )
 }
