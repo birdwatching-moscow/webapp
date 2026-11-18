@@ -38,9 +38,9 @@ describe('PhotoWithCredit', () => {
     expect(link).toHaveAttribute('rel', 'noopener noreferrer')
   })
 
-  it('caption reads «author, license»', () => {
+  it('caption reads «author, license, изменено» — the photo is cropped to 16:9 (CC BY 4.0 §3(a)(1)(B))', () => {
     renderPhoto()
-    expect(screen.getByTestId('photo-caption')).toHaveTextContent('Kristy2906, CC BY-SA 4.0')
+    expect(screen.getByTestId('photo-caption')).toHaveTextContent(/^Kristy2906, CC BY-SA 4\.0, изменено$/)
   })
 
   it('credit is collapsed until the info icon is clicked, and a second click collapses it', () => {
