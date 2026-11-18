@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { updateExpedition, publishExpedition, cancelExpedition, deleteExpedition } from '@/app/admin/expeditions/_actions'
+import { Button } from '@/components/ui/buttons/Button'
 import { ROUTES } from '@/utils/routes'
 
 export default async function EditExpeditionPage({ params }: { params: Promise<{ id: string }> }) {
@@ -137,7 +138,7 @@ export default async function EditExpeditionPage({ params }: { params: Promise<{
             ))}
           </select>
         </label>
-        <button type="submit">Сохранить</button>
+        <Button type="submit" fullWidth>Сохранить</Button>
       </form>
     </div>
   )

@@ -98,7 +98,7 @@ export function TeamMemberEditForm({
       </div>
 
       <div className={styles.formActions}>
-        <Button type="submit" size="sm" disabled={pending}>
+        <Button type="submit" fullWidth disabled={pending}>
           {pending ? 'Сохранение…' : 'Сохранить'}
         </Button>
       </div>

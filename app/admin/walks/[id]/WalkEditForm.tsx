@@ -381,6 +381,14 @@ export function WalkEditForm({ walk, guides }: Props) {
         />
       )}
 
+      {isEditable && (
+        <div className={styles.formActions}>
+          <Button fullWidth onClick={handleSave} disabled={saving || !isDirty}>
+            {saving ? 'Сохранение…' : 'Сохранить'}
+          </Button>
+        </div>
+      )}
+
       {(walk.status === 'ACTIVE' || walk.status === 'DRAFT') && (
         <div className={styles.dangerZone}>
           {walk.status === 'ACTIVE' && (

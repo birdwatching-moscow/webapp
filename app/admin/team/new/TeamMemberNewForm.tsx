@@ -105,7 +105,7 @@ export function TeamMemberNewForm({ nextSortOrder }: { nextSortOrder: number }) 
       </div>
 
       <div className={styles.formActions}>
-        <Button type="submit" size="sm" disabled={pending}>
+        <Button type="submit" fullWidth disabled={pending}>
           {pending ? 'Создание…' : 'Создать'}
         </Button>
       </div>

@@ -159,8 +159,6 @@
 /* ── Form actions ────────────────────────────────── */
 
 .formActions {
-  display: flex;
-  justify-content: flex-end;
   margin-top: var(--space-4);
 }
 
