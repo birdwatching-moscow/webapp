@@ -23,4 +23,22 @@ describe('PageHero', () => {
     render(<PageHero {...props} />)
     expect(screen.getByRole('link', { name: props.cta.label })).toHaveAttribute('href', '#price')
   })
+
+  it('renders each description paragraph separately', () => {
+    render(<PageHero title={props.title} description={['Первый абзац', 'Второй абзац']} cta={props.cta} />)
+    expect(screen.getByText('Первый абзац').tagName).toBe('P')
+    expect(screen.getByText('Второй абзац').tagName).toBe('P')
+  })
+
+  it('renders a custom action instead of the link', () => {
+    render(
+      <PageHero
+        title={props.title}
+        description={props.description}
+        action={<button type="button">Оставить заявку</button>}
+      />,
+    )
+    expect(screen.getByRole('button', { name: 'Оставить заявку' })).toBeInTheDocument()
+    expect(screen.queryByRole('link')).not.toBeInTheDocument()
+  })
 })
