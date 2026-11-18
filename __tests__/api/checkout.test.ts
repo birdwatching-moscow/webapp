@@ -23,6 +23,7 @@ vi.mock('@/lib/rateLimit', () => ({ checkRateLimit: checkRateLimitMock }))
 vi.mock('@/lib/payments/yookassa', () => ({ createPayment: createPaymentMock }))
 
 import { POST } from '@/app/api/checkout/route'
+import { CHECKOUT_ERROR_CODE } from '@/types/checkout'
 import {
   HTTP_METHOD,
   JSON_HEADERS,
@@ -105,7 +106,7 @@ describe('POST /api/checkout — capacity', () => {
     const res = await POST(makeRequest())
     expect(res.status).toBe(HTTP_STATUS_CONFLICT)
     const body = await res.json()
-    expect(body.code).toBe('CAPACITY_EXCEEDED')
+    expect(body.code).toBe(CHECKOUT_ERROR_CODE.capacityExceeded)
   })
 
   it('returns 409 CAPACITY_EXCEEDED when sold + order seats + quantity exceeds capacity', async () => {
@@ -115,7 +116,7 @@ describe('POST /api/checkout — capacity', () => {
     const res = await POST(makeRequest())
     expect(res.status).toBe(HTTP_STATUS_CONFLICT)
     const body = await res.json()
-    expect(body.code).toBe('CAPACITY_EXCEEDED')
+    expect(body.code).toBe(CHECKOUT_ERROR_CODE.capacityExceeded)
   })
 })
 

@@ -1,5 +1,10 @@
 export type CheckoutErrorCode = 'CAPACITY_EXCEEDED' | 'INVALID_TICKET_TYPE'
 
+export const CHECKOUT_ERROR_CODE = {
+  capacityExceeded:   'CAPACITY_EXCEEDED',
+  invalidTicketType:  'INVALID_TICKET_TYPE',
+} as const satisfies Record<string, CheckoutErrorCode>
+
 export interface WalkSnapshot {
   id: string
   title: string
