@@ -40,17 +40,21 @@ export async function saveTeamMemberForm(
     await requireAdmin()
     const id = parseInt(formData.get('memberId') as string, 10)
     const sortOrder = parseInt(formData.get('sortOrder') as string, 10)
+    const name = (formData.get('name') as string ?? '').trim()
+    const photoUrl = (formData.get('photoUrl') as string ?? '').trim()
+    const education = (formData.get('education') as string ?? '').trim()
+    const achievements = (formData.get('achievements') as string ?? '').trim()
     const link = ((formData.get('profileLink') as string) ?? '').trim()
+
+    if (!name)         return { success: false, error: 'Укажите имя' }
+    if (!photoUrl)     return { success: false, error: 'Загрузите фото' }
+    if (!education)    return { success: false, error: 'Заполните поле «Образование»' }
+    if (!achievements) return { success: false, error: 'Заполните поле «Достижения»' }
+    if (!link)         return { success: false, error: 'Заполните поле «Профиль»' }
+
     await prisma.teamMember.update({
       where: { id },
-      data: {
-        name:         formData.get('name') as string,
-        photoUrl:     formData.get('photoUrl') as string,
-        education:    (formData.get('education') as string) || undefined,
-        achievements: (formData.get('achievements') as string) || undefined,
-        profileLinks: link ? [link] : [],
-        sortOrder,
-      },
+      data: { name, photoUrl, education, achievements, profileLinks: [link], sortOrder },
     })
   } catch (e) {
     return { success: false, error: e instanceof Error ? e.message : 'Ошибка при сохранении' }
