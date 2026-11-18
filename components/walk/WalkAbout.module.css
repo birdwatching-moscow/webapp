@@ -20,63 +20,6 @@
   margin: 0;
 }
 
-/* ─── Guide card ─────────────────────────────────────── */
-
-.guide {
-  display: flex;
-  flex-direction: row;
-  gap: var(--space-4);
-}
-
-.guidePhoto {
-  position: relative;
-  width: 120px;
-  height: 120px;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.guidePhotoImg {
-  object-fit: cover;
-}
-
-.guideInfo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.guideName {
-  margin: 0;
-}
-
-.guideSubtitle {
-  margin: 0;
-  color: var(--color-muted-foreground);
-}
-
-.guideText {
-  margin: 0;
-}
-
-.guideLinks {
-  list-style: none;
-  margin: var(--space-1) 0 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-}
-
-.guideLink {
-  color: var(--color-primary);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-/* ─── Desktop ────────────────────────────────────────── */
-
 @media (min-width: 1248px) {
   .about {
     flex-direction: row;
@@ -88,10 +31,5 @@
   .descriptionCol,
   .guideCol {
     flex: 1 1 0;
-  }
-
-  .guidePhoto {
-    width: 200px;
-    height: 200px;
   }
 }
