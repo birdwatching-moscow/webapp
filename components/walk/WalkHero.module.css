@@ -64,7 +64,7 @@
 /* ─── Photo ──────────────────────────────────────────── */
 
 .photoCol {
-  /* mobile: col takes full width, photo inside is full width too */
+  padding-inline: var(--page-gutter);
 }
 
 .photo {
@@ -113,6 +113,7 @@
     display: flex;
     justify-content: flex-end;
     align-items: center;
+    padding-inline: 0;
     padding-right: var(--page-gutter);
   }
 

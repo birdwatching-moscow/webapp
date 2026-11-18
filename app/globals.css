@@ -125,7 +125,7 @@ svg {
   --z-index-base:     1;
   --z-index-raised:   2;
   --z-index-float:    3;
-  --z-index-dropdown: 10;
+  --z-index-dropdown: 50;
   --z-index-header:   100;
   --z-index-modal:    200;
 

@@ -25,6 +25,7 @@ import {
   deleteWalk,
   restoreWalk,
 } from '@/app/admin/walks/_actions'
+import { EventStatus } from '@/generated/prisma/client'
 
 const ADMIN_SESSION = { user: { id: 'u1', role: 'ADMIN' as const, name: 'Admin' } }
 const FUTURE = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
@@ -95,20 +96,20 @@ describe('createWalk — gallery', () => {
 
 describe('publishWalk', () => {
   it('throws "Прогулка уже опубликована" when status is already ACTIVE', async () => {
-    walkMock.findFirst.mockResolvedValue({ id: 'walk-1', status: 'ACTIVE' })
+    walkMock.findFirst.mockResolvedValue({ id: 'walk-1', status: EventStatus.ACTIVE })
     await expect(publishWalk('walk-1')).rejects.toThrow('Прогулка уже опубликована')
   })
 })
 
 describe('deleteWalk', () => {
   it('throws when ticket count is greater than 0', async () => {
-    walkMock.findFirst.mockResolvedValue({ id: 'walk-1', status: 'DRAFT' })
+    walkMock.findFirst.mockResolvedValue({ id: 'walk-1', status: EventStatus.DRAFT })
     ticketMock.count.mockResolvedValue(1)
     await expect(deleteWalk('walk-1')).rejects.toThrow(/проданными билетами/)
   })
 
   it('calls walk.update with status DELETED when no tickets sold', async () => {
-    walkMock.findFirst.mockResolvedValue({ id: 'walk-1', status: 'DRAFT' })
+    walkMock.findFirst.mockResolvedValue({ id: 'walk-1', status: EventStatus.DRAFT })
     ticketMock.count.mockResolvedValue(0)
     walkMock.update.mockResolvedValue({ id: 'walk-1', status: 'DELETED' })
     await deleteWalk('walk-1')
@@ -142,16 +143,16 @@ describe('createWalk — auto-slug', () => {
 
 describe('cancelWalk', () => {
   it('throws when walk status is not ACTIVE', async () => {
-    walkMock.findFirst.mockResolvedValue({ id: 'walk-1', status: 'DRAFT' })
+    walkMock.findFirst.mockResolvedValue({ id: 'walk-1', status: EventStatus.DRAFT })
     await expect(cancelWalk('walk-1')).rejects.toThrow()
   })
 
   it('calls walk.update with CANCELLED when walk is ACTIVE', async () => {
-    walkMock.findFirst.mockResolvedValue({ id: 'walk-1', status: 'ACTIVE' })
-    walkMock.update.mockResolvedValue({ id: 'walk-1', status: 'CANCELLED' })
+    walkMock.findFirst.mockResolvedValue({ id: 'walk-1', status: EventStatus.ACTIVE })
+    walkMock.update.mockResolvedValue({ id: 'walk-1', status: EventStatus.CANCELLED })
     await cancelWalk('walk-1')
     expect(walkMock.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ status: 'CANCELLED' }) })
+      expect.objectContaining({ data: expect.objectContaining({ status: EventStatus.CANCELLED }) })
     )
   })
 })
@@ -159,7 +160,7 @@ describe('cancelWalk', () => {
 
 describe('restoreWalk', () => {
   it('throws when startsAt is in the past and no newStartsAt is provided', async () => {
-    walkMock.findFirst.mockResolvedValue({ id: 'walk-1', status: 'CANCELLED', startsAt: new Date(PAST) })
+    walkMock.findFirst.mockResolvedValue({ id: 'walk-1', status: EventStatus.CANCELLED, startsAt: new Date(PAST) })
     await expect(restoreWalk('walk-1')).rejects.toThrow()
   })
 })

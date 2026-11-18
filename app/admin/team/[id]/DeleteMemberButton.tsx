@@ -33,9 +33,9 @@ export function DeleteMemberButton({ memberId, memberName }: Props) {
 
   return (
     <>
-      <Button variant="destructive" size="sm" onClick={() => { setError(null); setOpen(true) }}>
+      <button type="button" className={styles.dangerBtn} onClick={() => { setError(null); setOpen(true) }}>
         Удалить участника
-      </Button>
+      </button>
 
       {error && <p className={styles.modalError}>{error}</p>}
 

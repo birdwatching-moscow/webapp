@@ -1,7 +1,9 @@
 import Link from 'next/link'
 import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import { EventStatus } from '@/generated/prisma/client'
 import { updateExpedition, publishExpedition, cancelExpedition, deleteExpedition } from '@/app/admin/expeditions/_actions'
+import { Button } from '@/components/ui/buttons/Button'
 import { ROUTES } from '@/utils/routes'
 
 export default async function EditExpeditionPage({ params }: { params: Promise<{ id: string }> }) {
@@ -43,19 +45,19 @@ export default async function EditExpeditionPage({ params }: { params: Promise<{
         description: d.description,
       })),
     })
-    redirect(`/admin/expeditions/${id}`)
+    redirect('/admin/expeditions')
   }
 
   async function handlePublish() {
     'use server'
     await publishExpedition(id)
-    redirect(`/admin/expeditions/${id}`)
+    redirect('/admin/expeditions')
   }
 
   async function handleCancel() {
     'use server'
     await cancelExpedition(id)
-    redirect(`/admin/expeditions/${id}`)
+    redirect('/admin/expeditions')
   }
 
   async function handleDelete() {
@@ -75,12 +77,12 @@ export default async function EditExpeditionPage({ params }: { params: Promise<{
       <p>Статус: {expedition.status}</p>
 
       <div>
-        {expedition.status === 'DRAFT' && (
+        {expedition.status === EventStatus.DRAFT && (
           <form action={handlePublish} style={{ display: 'inline' }}>
             <button type="submit">Опубликовать</button>
           </form>
         )}
-        {expedition.status === 'ACTIVE' && (
+        {expedition.status === EventStatus.ACTIVE && (
           <form action={handleCancel} style={{ display: 'inline' }}>
             <button type="submit">Отменить</button>
           </form>
@@ -137,7 +139,7 @@ export default async function EditExpeditionPage({ params }: { params: Promise<{
             ))}
           </select>
         </label>
-        <button type="submit">Сохранить</button>
+        <Button type="submit" fullWidth>Сохранить</Button>
       </form>
     </div>
   )

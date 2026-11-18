@@ -6,6 +6,11 @@
   border-radius: var(--radius-lg);
 }
 
+.horizontal {
+  flex-direction: row;
+  align-items: flex-start;
+}
+
 .photo {
   width: 200px;
   flex-shrink: 0;
@@ -20,7 +25,18 @@
 }
 
 .name {
-  /* inherits typography from text-h2 global class */
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 24px;
+  margin: 0;
+}
+
+@media (min-width: 1248px) {
+  .name {
+    font-size: 24px;
+    line-height: 28px;
+  }
 }
 
 .role {

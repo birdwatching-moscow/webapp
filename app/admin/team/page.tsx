@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { SORT_ASC } from '@/lib/constants'
 import { ROUTES } from '@/utils/routes'
 import { Button } from '@/components/ui/buttons/Button'
 import { TeamList } from './TeamList'
@@ -7,7 +8,7 @@ import styles from './team.module.css'
 export default async function TeamPage() {
   const members = await prisma.teamMember.findMany({
     select: { id: true, name: true, photoUrl: true, sortOrder: true },
-    orderBy: { sortOrder: 'asc' },
+    orderBy: SORT_ASC,
   })
 
   return (

@@ -9,14 +9,17 @@ export type DropdownOption = {
 };
 
 export type DropdownProps = {
-  value:     number;
-  onChange:  (value: number) => void;
-  options:   DropdownOption[];
-  disabled?: boolean;
-  label?:    string;
+  value:            number;
+  onChange:         (value: number) => void;
+  options:          DropdownOption[];
+  disabled?:        boolean;
+  label?:           string;
+  className?:        string;
+  triggerClassName?: string;
+  listClassName?:    string;
 };
 
-export const Dropdown = ({ value, onChange, options, disabled, label }: DropdownProps) => {
+export const Dropdown = ({ value, onChange, options, disabled, label, className, triggerClassName, listClassName }: DropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef   = useRef<HTMLButtonElement>(null);
@@ -64,7 +67,7 @@ export const Dropdown = ({ value, onChange, options, disabled, label }: Dropdown
   const triggerId = label ? `dropdown-trigger-${value}` : undefined;
 
   return (
-    <div ref={containerRef} className={styles.wrapper}>
+    <div ref={containerRef} className={[styles.wrapper, className].filter(Boolean).join(' ')}>
       {label && triggerId && (
         <label htmlFor={triggerId} className={styles.label}>
           {label}
@@ -74,7 +77,7 @@ export const Dropdown = ({ value, onChange, options, disabled, label }: Dropdown
         id={triggerId}
         ref={triggerRef}
         type="button"
-        className={[styles.trigger, disabled ? styles.disabled : ''].filter(Boolean).join(' ')}
+        className={[styles.trigger, disabled ? styles.disabled : '', triggerClassName].filter(Boolean).join(' ')}
         onClick={handleTriggerClick}
         aria-haspopup="listbox"
         aria-expanded={isOpen ? 'true' : 'false'}
@@ -89,7 +92,7 @@ export const Dropdown = ({ value, onChange, options, disabled, label }: Dropdown
       </button>
 
       {isOpen && (
-        <ul role="listbox" className={styles.list}>
+        <ul role="listbox" className={[styles.list, listClassName].filter(Boolean).join(' ')}>
           {options.map(opt => (
             <li
               key={opt.value}

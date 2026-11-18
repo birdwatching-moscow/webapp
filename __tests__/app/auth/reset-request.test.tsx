@@ -38,7 +38,7 @@ describe('RequestResetPage — success', () => {
     fillAndSubmit('user@example.com')
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith(API_ROUTES.requestPasswordReset, {
+      expect(fetch).toHaveBeenCalledWith(API_ROUTES.auth.requestPasswordReset, {
         method: HTTP_METHOD.POST,
         headers: JSON_HEADERS,
         body: JSON.stringify({ email: 'user@example.com' }),

@@ -15,6 +15,7 @@ import {
   HTTP_STATUS_BAD_GATEWAY,
 } from '@/lib/constants'
 import type { Prisma } from '@/generated/prisma/client'
+import { CHECKOUT_ERROR_CODE } from '@/types/checkout'
 import type { CheckoutErrorCode, WalkSnapshot, CreatedOrder, OrderLineItem } from '@/types/checkout'
 
 const MS_PER_MINUTE = 60 * 1000
@@ -27,7 +28,7 @@ const lineItemSchema = z.object({
 const checkoutBodySchema = z
   .object({
     walkId: z.string().uuid(),
-    hasBinoculars: z.boolean(),
+    hasBinoculars: z.boolean().optional().default(false),
     quantity: z.number().int().min(1).max(10).optional(),
     lineItems: z.array(lineItemSchema).min(1).max(5).optional(),
   })
@@ -75,7 +76,7 @@ async function createPendingOrder(
 
     const orderSeats = activeOrderItems.reduce((sum, item) => sum + item.quantity, 0)
     if (soldCount + orderSeats + quantity > walk.capacity) {
-      throw new CheckoutError('CAPACITY_EXCEEDED', HTTP_STATUS_CONFLICT)
+      throw new CheckoutError(CHECKOUT_ERROR_CODE.capacityExceeded, HTTP_STATUS_CONFLICT)
     }
 
     const totalKopecks = walk.priceKopecks * quantity
@@ -137,7 +138,7 @@ async function createPendingOrderMultiType(
     const totalQty = lineItems.reduce((sum, li) => sum + li.quantity, 0)
     const orderSeats = activeOrderItems.reduce((sum, item) => sum + item.quantity, 0)
     if (soldCount + orderSeats + totalQty > walk.capacity) {
-      throw new CheckoutError('CAPACITY_EXCEEDED', HTTP_STATUS_CONFLICT)
+      throw new CheckoutError(CHECKOUT_ERROR_CODE.capacityExceeded, HTTP_STATUS_CONFLICT)
     }
 
     const resolvedItems = lineItems.map((li) => {

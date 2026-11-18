@@ -8,8 +8,10 @@ import { HomeMedia } from '@/components/HomeMedia/HomeMedia'
 import { HomePartners } from '@/components/HomePartners/HomePartners'
 import { HomeBook } from '@/components/HomeBook/HomeBook'
 import { HomePodcast } from '@/components/HomePodcast/HomePodcast'
-import { HomeBirdID } from '@/components/HomeBirdID/HomeBirdID'
+import { BirdIDCTABand } from '@/components/BirdIDCTABand/BirdIDCTABand'
+import { CertificateCTABand } from '@/components/CertificateCTABand/CertificateCTABand'
 import { SaveBirds } from '@/components/SaveBirds/SaveBirds'
+import styles from './home.module.css'
 import { getActiveWalks } from '@/lib/walks'
 import { getActiveExpeditions } from '@/lib/expeditions'
 
@@ -31,7 +33,10 @@ export default async function Home() {
       <HomePartners />
       <HomeBook />
       <HomePodcast />
-      <HomeBirdID />
+      <section className={styles.ctaBands}>
+        <BirdIDCTABand />
+        <CertificateCTABand />
+      </section>
       <SaveBirds />
     </>
   )

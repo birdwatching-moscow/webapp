@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import ExcelJS from 'exceljs'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
+import { SORT_ASC } from '@/lib/constants'
 import { isAdmin } from '@/lib/auth/permissions'
 import { buildWalksWhere } from '@/lib/admin/walksWhere'
 
@@ -25,7 +26,7 @@ export async function GET(req: NextRequest) {
     orderBy: { startsAt: 'desc' },
     include: {
       guide:       { select: { name: true } },
-      ticketTypes: { orderBy: { sortOrder: 'asc' } },
+      ticketTypes: { orderBy: SORT_ASC },
     },
     take: 10_000,
   })

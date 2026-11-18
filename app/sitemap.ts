@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { prisma } from '@/lib/prisma'
+import { EventStatus } from '@/generated/prisma/client'
 
 const BASE_URL = 'https://birdwatching.moscow'
 
@@ -22,11 +23,11 @@ const staticRoutes: MetadataRoute.Sitemap = [
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [walks, expeditions] = await Promise.all([
     prisma.walk.findMany({
-      where: { status: 'ACTIVE' },
+      where: { status: EventStatus.ACTIVE },
       select: { slug: true, publishedAt: true },
     }),
     prisma.expedition.findMany({
-      where: { status: 'ACTIVE' },
+      where: { status: EventStatus.ACTIVE },
       select: { slug: true, publishedAt: true },
     }),
   ])

@@ -407,6 +407,12 @@
   margin: 0;
 }
 
+/* ── Form actions ────────────────────────────────── */
+
+.formActions {
+  margin-top: var(--space-4);
+}
+
 /* ── Danger zone ─────────────────────────────────── */
 
 .dangerZone {

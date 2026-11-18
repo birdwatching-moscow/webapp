@@ -1,7 +1,8 @@
 import Link from 'next/link'
-import { Prisma } from '@/generated/prisma/client'
+import { Prisma, EventStatus } from '@/generated/prisma/client'
 import { prisma } from '@/lib/prisma'
-import { ROUTES } from '@/utils/routes'
+import { SORT_ASC } from '@/lib/constants'
+import { ROUTES, API_ROUTES } from '@/utils/routes'
 import { Button } from '@/components/ui/buttons/Button'
 import { buildWalksWhere } from '@/lib/admin/walksWhere'
 import { WalksFilters } from './WalksFilters'
@@ -25,7 +26,7 @@ const EMPTY_LABEL: Record<Tab, string> = {
   all:    'Нет прогулок',
 }
 
-type StatusKey = 'ACTIVE' | 'DRAFT' | 'PAST' | 'CANCELLED'
+type StatusKey = typeof EventStatus.ACTIVE | typeof EventStatus.DRAFT | typeof EventStatus.PAST | typeof EventStatus.CANCELLED
 
 const STATUS_INFO: Record<StatusKey, { label: string; cls: string }> = {
   ACTIVE:    { label: 'Активна',   cls: 'badgeACTIVE' },
@@ -121,8 +122,8 @@ export default async function WalksPage({
       guides: selectedGuides,
       now,
     }) :
-    activeTab === 'active' ? { status: 'ACTIVE', startsAt: { gte: now } } :
-    activeTab === 'draft'  ? { status: 'DRAFT' } :
+    activeTab === 'active' ? { status: EventStatus.ACTIVE, startsAt: { gte: now } } :
+    activeTab === 'draft'  ? { status: EventStatus.DRAFT } :
     { status: { not: 'DELETED' as const } }
 
   const orderByClause: { startsAt: 'asc' | 'desc' } =
@@ -140,9 +141,9 @@ export default async function WalksPage({
       take: PAGE_SIZE,
     }),
     prisma.walk.count({ where: whereClause }),
-    prisma.walk.count({ where: { status: 'DRAFT' } }),
-    prisma.walk.count({ where: { status: 'ACTIVE', startsAt: { gte: now } } }),
-    prisma.teamMember.findMany({ select: { id: true, name: true }, orderBy: { sortOrder: 'asc' } }),
+    prisma.walk.count({ where: { status: EventStatus.DRAFT } }),
+    prisma.walk.count({ where: { status: EventStatus.ACTIVE, startsAt: { gte: now } } }),
+    prisma.teamMember.findMany({ select: { id: true, name: true }, orderBy: SORT_ASC }),
   ])
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
@@ -208,7 +209,7 @@ export default async function WalksPage({
           />
           <div className={styles.allTabActions}>
             <ExportButton
-              href={`/api/admin/walks/export?${filtersToSearchParams(filters).toString()}`}
+              href={`${API_ROUTES.admin.walksExport}?${filtersToSearchParams(filters).toString()}`}
               className={styles.exportBtn}
             />
           </div>

@@ -2,7 +2,10 @@
   display: flex;
   flex-direction: column;
   padding-top: var(--space-8);
-  padding-bottom: var(--space-10);
+}
+
+.noticeBanner {
+  margin-bottom: var(--space-8);
 }
 
 /* ─── Payment section ────────────────────────────────── */
@@ -165,6 +168,12 @@
   font-size: var(--font-size-sm);
   color: var(--color-error);
   margin: 0;
+}
+
+/* ─── Certificate band ───────────────────────────────── */
+
+.certificateBand {
+  margin-top: var(--space-10);
 }
 
 /* ─── Desktop ────────────────────────────────────────── */

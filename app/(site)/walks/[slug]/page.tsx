@@ -1,11 +1,13 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
+import { EventStatus } from '@/generated/prisma/client'
+import { SORT_ASC } from '@/lib/constants'
 import { NoticeBanner } from '@/components/NoticeBanner/NoticeBanner'
 import { PrivateHighlights, type PrivateHighlight } from '@/components/private/PrivateHighlights'
 import { WalkHero } from '@/components/walk/WalkHero'
 import { WalkAbout } from '@/components/walk/WalkAbout'
-import { WalkCertificateBanner } from '@/components/walk/WalkCertificateBanner'
+import { CertificateCTABand } from '@/components/CertificateCTABand/CertificateCTABand'
 import { WalkCheckoutForm } from './WalkCheckoutForm'
 import { ROUTES } from '@/utils/routes'
 import styles from './walk.module.css'
@@ -39,7 +41,7 @@ const WALK_HIGHLIGHTS: readonly PrivateHighlight[] = [
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const walk = await prisma.walk.findFirst({ where: { slug, status: 'ACTIVE' }, select: { title: true } })
+  const walk = await prisma.walk.findFirst({ where: { slug, status: EventStatus.ACTIVE }, select: { title: true } })
   return { title: walk ? `${walk.title} | Birdwatching Moscow` : 'Прогулка | Birdwatching Moscow' }
 }
 
@@ -47,7 +49,7 @@ export default async function WalkPage({ params }: Props) {
   const { slug } = await params
 
   const walk = await prisma.walk.findFirst({
-    where: { slug, status: 'ACTIVE' },
+    where: { slug, status: EventStatus.ACTIVE },
     select: {
       id: true,
       title: true,
@@ -70,7 +72,7 @@ export default async function WalkPage({ params }: Props) {
       },
       ticketTypes: {
         select: { id: true, name: true, priceKopecks: true, capacity: true, sortOrder: true },
-        orderBy: { sortOrder: 'asc' },
+        orderBy: SORT_ASC,
       },
       _count: { select: { tickets: true } },
     },
@@ -90,7 +92,7 @@ export default async function WalkPage({ params }: Props) {
   return (
     <main className={`container ${styles.page}`}>
       {isSoldOut && (
-        <div style={{ paddingTop: 'var(--space-8)' }}>
+        <div className={styles.noticeBanner}>
           <NoticeBanner
             text={
               <>
@@ -121,18 +123,19 @@ export default async function WalkPage({ params }: Props) {
         more={{ label: 'Подробнее', href: ROUTES.faq }}
       />
 
-      {!isSoldOut && (
-        <section id="payment" className={styles.paymentSection}>
-          <h2 className={`text-h1 ${styles.paymentTitle}`}>Оплата</h2>
-          <WalkCheckoutForm
-            walkId={walk.id}
-            priceKopecks={walk.priceKopecks}
-            ticketTypes={resolvedTicketTypes}
-          />
-        </section>
-      )}
+      <section id="payment" className={styles.paymentSection}>
+        <h2 className={`text-h1 ${styles.paymentTitle}`}>Оплата</h2>
+        <WalkCheckoutForm
+          walkId={walk.id}
+          priceKopecks={walk.priceKopecks}
+          ticketTypes={resolvedTicketTypes}
+          disabled={isSoldOut}
+        />
+      </section>
 
-      <WalkCertificateBanner />
+      <div className={styles.certificateBand}>
+        <CertificateCTABand />
+      </div>
     </main>
   )
 }

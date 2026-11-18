@@ -30,7 +30,6 @@ export default async function EditTeamMemberPage({ params }: { params: Promise<{
       />
 
       <div className={styles.dangerZone}>
-        <p className={styles.dangerZoneTitle}>Опасная зона</p>
         <DeleteMemberButton memberId={memberId} memberName={member.name} />
       </div>
     </div>

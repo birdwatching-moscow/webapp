@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { API_ROUTES } from '@/utils/routes'
 import styles from './ImageUpload.module.css'
 
 type Folder = 'walks' | 'expeditions' | 'team'
@@ -51,7 +52,7 @@ export function ImageUpload({ folder, value, onChange, disabled, required, targe
       const blob = await resizeToTarget(file)
       const form = new FormData()
       form.append('file', new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }))
-      const res = await fetch(`/api/admin/upload?folder=${folder}`, { method: 'POST', body: form })
+      const res = await fetch(API_ROUTES.admin.upload(folder), { method: 'POST', body: form })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Ошибка загрузки')
       onChange(json.url)

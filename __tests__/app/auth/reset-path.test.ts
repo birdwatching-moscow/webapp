@@ -30,10 +30,10 @@ describe('password reset lives under an unguessable path', () => {
   })
 
   it('has the API routes where API_ROUTES points, under the same secret segment', () => {
-    expect(API_ROUTES.requestPasswordReset).toContain(secretSegment())
-    expect(API_ROUTES.resetPassword).toContain(secretSegment())
-    expect(existsSync(join(ROOT, 'app', API_ROUTES.requestPasswordReset, 'route.ts'))).toBe(true)
-    expect(existsSync(join(ROOT, 'app', API_ROUTES.resetPassword, 'route.ts'))).toBe(true)
+    expect(API_ROUTES.auth.requestPasswordReset).toContain(secretSegment())
+    expect(API_ROUTES.auth.resetPassword).toContain(secretSegment())
+    expect(existsSync(join(ROOT, 'app', API_ROUTES.auth.requestPasswordReset, 'route.ts'))).toBe(true)
+    expect(existsSync(join(ROOT, 'app', API_ROUTES.auth.resetPassword, 'route.ts'))).toBe(true)
   })
 
   it('removes the old guessable pages and API routes', () => {

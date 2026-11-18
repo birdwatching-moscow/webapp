@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
-import { ROUTES } from '@/utils/routes'
+import { ROUTES, API_ROUTES } from '@/utils/routes'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { safeRedirect } from '@/utils/safeRedirect'
 import {
@@ -87,7 +87,7 @@ function LoginCodeForm() {
     setEmailError('')
 
     await run(async () => {
-      const checkRes = await fetch('/api/auth/check-email', {
+      const checkRes = await fetch(API_ROUTES.auth.checkEmail, {
         method: HTTP_METHOD.POST,
         headers: JSON_HEADERS,
         body: JSON.stringify({ email: emailInput.trim() }),
@@ -110,7 +110,7 @@ function LoginCodeForm() {
       }
 
       setIsNewUser(false)
-      const res = await fetch('/api/auth/request-login-code', {
+      const res = await fetch(API_ROUTES.auth.requestLoginCode, {
         method: HTTP_METHOD.POST,
         headers: JSON_HEADERS,
         body: JSON.stringify({ email: emailInput.trim() }),
@@ -142,7 +142,7 @@ function LoginCodeForm() {
     setNameError('')
 
     await run(async () => {
-      const res = await fetch('/api/auth/register', {
+      const res = await fetch(API_ROUTES.auth.register, {
         method: HTTP_METHOD.POST,
         headers: JSON_HEADERS,
         body: JSON.stringify({ email, name: nameInput.trim() }),
@@ -176,7 +176,7 @@ function LoginCodeForm() {
     setNotice(null)
     await run(async () => {
       if (isNewUser) {
-        const verifyRes = await fetch('/api/auth/verify-registration-code', {
+        const verifyRes = await fetch(API_ROUTES.auth.verifyRegistrationCode, {
           method: HTTP_METHOD.POST,
           headers: { ...JSON_HEADERS, 'x-csrf-token': csrfToken },
           body: JSON.stringify({ email, code, name }),
@@ -196,7 +196,7 @@ function LoginCodeForm() {
         return
       }
 
-      const verifyRes = await fetch('/api/auth/verify-login-code', {
+      const verifyRes = await fetch(API_ROUTES.auth.verifyLoginCode, {
         method: HTTP_METHOD.POST,
         headers: { ...JSON_HEADERS, 'x-csrf-token': csrfToken },
         body: JSON.stringify({ email, code }),
@@ -236,12 +236,12 @@ function LoginCodeForm() {
     setNotice(null)
     await run(async () => {
       const res = isNewUser
-        ? await fetch('/api/auth/register', {
+        ? await fetch(API_ROUTES.auth.register, {
             method: HTTP_METHOD.POST,
             headers: JSON_HEADERS,
             body: JSON.stringify({ email, name }),
           })
-        : await fetch('/api/auth/request-login-code', {
+        : await fetch(API_ROUTES.auth.requestLoginCode, {
             method: HTTP_METHOD.POST,
             headers: JSON_HEADERS,
             body: JSON.stringify({ email }),
@@ -309,7 +309,7 @@ function LoginCodeForm() {
     const password = newPassword.password
 
     await run(async () => {
-      const setRes = await fetch('/api/auth/set-initial-password', {
+      const setRes = await fetch(API_ROUTES.auth.setInitialPassword, {
         method: HTTP_METHOD.POST,
         headers: JSON_HEADERS,
         body: JSON.stringify({ email, challengeToken, password }),
