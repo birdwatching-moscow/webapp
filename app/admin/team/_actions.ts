@@ -52,10 +52,10 @@ export async function saveTeamMemberForm(
         sortOrder,
       },
     })
-    redirect('/admin/team')
   } catch (e) {
     return { success: false, error: e instanceof Error ? e.message : 'Ошибка при сохранении' }
   }
+  redirect('/admin/team')
 }
 
 export async function reorderTeamMembers(orderedIds: number[]): Promise<void> {
