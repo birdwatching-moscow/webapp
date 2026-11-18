@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { formatKopecksShort } from '@/utils/formatMoney'
 import { FormError } from '@/components/ui/form-error/FormError'
 import { CHECKOUT_LABELS } from '@/lib/checkout-labels'
+import { HTTP_METHOD, JSON_HEADERS } from '@/lib/constants'
 import { ROUTES, API_ROUTES } from '@/utils/routes'
 import styles from './WalkCheckoutForm.module.css'
 
@@ -68,8 +69,8 @@ export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes }: Props) {
         : { walkId, quantity: simpleQty }
 
       const res = await fetch(API_ROUTES.checkout, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: HTTP_METHOD.POST,
+        headers: JSON_HEADERS,
         body: JSON.stringify(body),
       })
       if (res.status === 401) { window.location.href = ROUTES.login; return }
