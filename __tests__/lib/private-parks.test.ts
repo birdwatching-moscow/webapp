@@ -39,8 +39,10 @@ describe('PRIVATE_PARKS data', () => {
     for (const park of PRIVATE_PARKS) expect(park.imageUrl, park.name).toBeDefined()
   })
 
-  it('photo captions credit the author and license (shown on info icon hover)', () => {
-    const captions = Object.fromEntries(PRIVATE_PARKS.map((p) => [p.name, p.photoCaption]))
+  it('photo credits name the author and license', () => {
+    const captions = Object.fromEntries(
+      PRIVATE_PARKS.map((p) => [p.name, p.photoCredit && `${p.photoCredit.author}, ${p.photoCredit.license}`]),
+    )
     expect(captions).toEqual({
       'Скверы МГУ': 'Ivtorov, CC BY-SA 4.0',
       'Измайловский парк': 'Kristy2906, CC BY-SA 4.0',
@@ -61,5 +63,21 @@ describe('PRIVATE_PARKS data', () => {
       'Константиново (Сергиево-Посадского района)': undefined,
       'Хотьково (велобёрдинг)': undefined,
     })
+  })
+
+  it('author links to the Wikimedia Commons file page', () => {
+    for (const { name, photoCredit } of PRIVATE_PARKS) {
+      if (photoCredit) expect(photoCredit.sourceUrl, name).toMatch(/^https:\/\/commons\.wikimedia\.org\/wiki\/File:.+\.jpg$/i)
+    }
+    expect(PRIVATE_PARKS[0].photoCredit?.sourceUrl).toBe('https://commons.wikimedia.org/wiki/File:2016-MSU.jpg')
+  })
+
+  it('license links to the text of that exact license', () => {
+    for (const { name, photoCredit } of PRIVATE_PARKS) {
+      if (!photoCredit) continue
+      const [, kind, version] = photoCredit.license.match(/^CC (BY(?:-SA)?) (\d\.\d)$/) ?? []
+      expect(kind, name).toBeDefined()
+      expect(photoCredit.licenseUrl, name).toBe(`https://creativecommons.org/licenses/${kind.toLowerCase()}/${version}/`)
+    }
   })
 })
