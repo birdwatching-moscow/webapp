@@ -38,7 +38,7 @@ const TYPE_CONFIG: Record<ContactRequestType, TypeConfig> = {
     successText: 'Спасибо, что написали. Мы ответим в течение 24 часов.',
   },
   PRIVATE_EVENT: {
-    label: 'Заявка на частное мероприятие',
+    label: 'Заявка на частное событие',
     subtitle: (
       <ul>
         <li>желаемый диапазон дат для прогулки,</li>
