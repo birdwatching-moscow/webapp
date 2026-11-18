@@ -74,3 +74,10 @@ describe('ContactModal — «Закрыть» button (Figma 2088:8554)', () => {
     expect(note.compareDocumentPosition(closeButton()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 })
+
+describe('ContactModal — private event title (Figma 2088:8554)', () => {
+  it('reads «Заявка на частное событие»', () => {
+    render(<ContactModal open onClose={vi.fn()} defaultType="PRIVATE_EVENT" />)
+    expect(screen.getByText('Заявка на частное событие')).toBeInTheDocument()
+  })
+})
