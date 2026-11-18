@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { PageHero } from '@/components/PageHero/PageHero'
 import { PrivateLocations } from '@/components/private/PrivateLocations'
 import { PrivateHighlights, type PrivateHighlight } from '@/components/private/PrivateHighlights'
@@ -9,6 +8,7 @@ import { ROUTES } from '@/utils/routes'
 import styles from './parks.module.css'
 
 const TITLE = 'Парки Москвы и окрестностей'
+const VK_ALBUMS_URL = 'https://vk.ru/albums-81135982'
 
 export const metadata: Metadata = {
   title: `${TITLE} | Birdwatching Moscow`,
@@ -26,7 +26,7 @@ const HIGHLIGHTS: readonly PrivateHighlight[] = [
     description: (
       <>
         Чтобы получить большее представление о локациях и птицах, посмотрите{' '}
-        <Link href={ROUTES.media} className="text-link">альбомы</Link>
+        <a href={VK_ALBUMS_URL} target="_blank" rel="noopener noreferrer" className="text-link">альбомы</a>
         {' '}с фотографиями, сделанными во время наших событий
       </>
     ),
