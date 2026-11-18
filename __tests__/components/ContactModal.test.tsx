@@ -47,3 +47,30 @@ describe('ContactModal — no character counters', () => {
     expect(screen.getByPlaceholderText('Комментарий')).toHaveAttribute('maxlength', String(MAX_REQUEST_MESSAGE))
   })
 })
+
+describe('ContactModal — «Закрыть» button (Figma 2088:8554)', () => {
+  // The header ✕ is labelled «Закрыть» too but has no text — match the visible label only
+  const closeButton = () => screen.getByText('Закрыть', { selector: 'button' })
+
+  it.each(['QUESTION', 'EXPEDITION', 'CERTIFICATE', 'PRIVATE_EVENT'] as const)(
+    '%s form shows «Закрыть» under the open form, outside it',
+    (type) => {
+      render(<ContactModal open onClose={vi.fn()} defaultType={type} />)
+      expect(closeButton().closest('form')).toBeNull()
+      expect(screen.getByRole('dialog')).toContainElement(closeButton())
+    },
+  )
+
+  it('clicking «Закрыть» closes the modal', () => {
+    const onClose = vi.fn()
+    render(<ContactModal open onClose={onClose} defaultType="QUESTION" />)
+    fireEvent.click(closeButton())
+    expect(onClose).toHaveBeenCalledOnce()
+  })
+
+  it('private event: the lead-time note comes before «Закрыть»', () => {
+    render(<ContactModal open onClose={vi.fn()} defaultType="PRIVATE_EVENT" />)
+    const note = screen.getByText(LEAD_TIME_NOTE)
+    expect(note.compareDocumentPosition(closeButton()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+})
