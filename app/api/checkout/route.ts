@@ -19,11 +19,22 @@ import type { CheckoutErrorCode, WalkSnapshot, CreatedOrder, OrderLineItem } fro
 
 const MS_PER_MINUTE = 60 * 1000
 
-const checkoutBodySchema = z.object({
-  walkId: z.string().uuid(),
+const lineItemSchema = z.object({
+  ticketTypeId: z.number().int().positive(),
   quantity: z.number().int().min(1).max(10),
-  hasBinoculars: z.boolean(),
 })
+
+const checkoutBodySchema = z
+  .object({
+    walkId: z.string().uuid(),
+    hasBinoculars: z.boolean(),
+    quantity: z.number().int().min(1).max(10).optional(),
+    lineItems: z.array(lineItemSchema).min(1).max(5).optional(),
+  })
+  .refine(
+    (d) => d.quantity !== undefined || (d.lineItems && d.lineItems.length > 0),
+    { message: 'Provide quantity or lineItems' }
+  )
 
 // NOTE: dynamic import so module resolution is deferred until the handler runs —
 // required for the mocked '@/lib/prisma' module to resolve correctly in tests.
@@ -95,6 +106,77 @@ async function createPendingOrder(
   })
 }
 
+async function createPendingOrderMultiType(
+  userId: string,
+  walkId: string,
+  lineItems: { ticketTypeId: number; quantity: number }[],
+  hasBinoculars: boolean,
+): Promise<{ order: CreatedOrder; lineItems: OrderLineItem[] }> {
+  const prisma = await getPrisma()
+  return prisma.$transaction(async (tx) => {
+    const now = new Date()
+
+    await tx.$executeRaw`SELECT id FROM "Walk" WHERE id = ${walkId} FOR UPDATE`
+
+    const [walk] = (await tx.walk.findMany({ where: { id: walkId } })) as WalkSnapshot[]
+
+    const ticketTypes = await tx.ticketType.findMany({
+      where: { id: { in: lineItems.map((li) => li.ticketTypeId) }, walkId },
+    })
+    if (ticketTypes.length !== lineItems.length) {
+      throw new CheckoutError('INVALID_TICKET_TYPE', 400)
+    }
+
+    const [soldCount, activeOrderItems] = await Promise.all([
+      tx.ticket.count({ where: { walkId } }),
+      tx.orderItem.findMany({
+        where: { walkId, order: { status: 'AWAITING_PAYMENT', expiresAt: { gt: now } } },
+      }),
+    ])
+
+    const totalQty = lineItems.reduce((sum, li) => sum + li.quantity, 0)
+    const orderSeats = activeOrderItems.reduce((sum, item) => sum + item.quantity, 0)
+    if (soldCount + orderSeats + totalQty > walk.capacity) {
+      throw new CheckoutError('CAPACITY_EXCEEDED', HTTP_STATUS_CONFLICT)
+    }
+
+    const resolvedItems = lineItems.map((li) => {
+      const type = ticketTypes.find((t) => t.id === li.ticketTypeId)!
+      return {
+        walkId,
+        quantity: li.quantity,
+        unitPriceKopecks: (type.priceKopecks ?? walk.priceKopecks),
+        hasBinoculars,
+        typeName: type.name,
+      }
+    })
+
+    const totalKopecks = resolvedItems.reduce((sum, item) => sum + item.unitPriceKopecks * item.quantity, 0)
+    const expiresAt = new Date(now.getTime() + PAYMENT_HOLD_MINUTES * MS_PER_MINUTE)
+
+    const order = await tx.order.create({
+      data: {
+        userId,
+        status: 'PENDING',
+        totalKopecks,
+        expiresAt,
+        orderItems: {
+          create: resolvedItems.map(({ typeName: _n, ...item }) => item),
+        },
+      } satisfies Prisma.OrderUncheckedCreateInput,
+    })
+
+    const orderLineItems: OrderLineItem[] = resolvedItems.map((item) => ({
+      walkId,
+      title: `${walk.title} – ${item.typeName}`,
+      quantity: item.quantity,
+      unitPriceKopecks: item.unitPriceKopecks,
+    }))
+
+    return { order: order as CreatedOrder, lineItems: orderLineItems }
+  })
+}
+
 async function markAwaitingPayment(orderId: string, paymentId: string): Promise<void> {
   const prisma = await getPrisma()
   await prisma.$transaction(async (tx) => {
@@ -129,12 +211,16 @@ export async function POST(req: Request): Promise<NextResponse> {
   const parsed = await validateRequest(req, checkoutBodySchema)
   if (!parsed.success) return parsed.response
 
-  const { walkId, quantity, hasBinoculars } = parsed.data
+  const { walkId, quantity, lineItems: reqLineItems, hasBinoculars } = parsed.data
 
   let order: CreatedOrder
   let lineItems: OrderLineItem[]
   try {
-    ;({ order, lineItems } = await createPendingOrder(userId, walkId, quantity, hasBinoculars))
+    if (reqLineItems && reqLineItems.length > 0) {
+      ;({ order, lineItems } = await createPendingOrderMultiType(userId, walkId, reqLineItems, hasBinoculars))
+    } else {
+      ;({ order, lineItems } = await createPendingOrder(userId, walkId, quantity!, hasBinoculars))
+    }
   } catch (error) {
     if (error instanceof CheckoutError) {
       return NextResponse.json({ code: error.code }, { status: error.status })

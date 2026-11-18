@@ -1,4 +1,4 @@
-export type CheckoutErrorCode = 'CAPACITY_EXCEEDED'
+export type CheckoutErrorCode = 'CAPACITY_EXCEEDED' | 'INVALID_TICKET_TYPE'
 
 export interface WalkSnapshot {
   id: string

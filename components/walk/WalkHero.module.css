@@ -1,0 +1,122 @@
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  margin-inline: calc(-1 * var(--page-gutter));
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-inline: var(--page-gutter);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.title,
+.subtitle {
+  margin: 0;
+}
+
+.subtitle {
+  color: var(--color-muted-foreground);
+}
+
+/* ─── Stats row ─────────────────────────────────────── */
+
+.stats {
+  display: flex;
+  justify-content: space-between;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.statValue,
+.statLabel {
+  margin: 0;
+}
+
+.statValue {
+  line-height: 1;
+}
+
+/* Day number and tickets-remaining counter */
+.statNum {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: var(--font-size-2xl); /* 24px mobile */
+}
+
+.statLabel {
+  color: var(--color-muted-foreground);
+  margin-top: var(--space-1);
+}
+
+/* ─── Photo ──────────────────────────────────────────── */
+
+.photoCol {
+  /* mobile: col takes full width, photo inside is full width too */
+}
+
+.photo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.photoImg {
+  object-fit: cover;
+}
+
+/* ─── Desktop ────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .hero {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-10);
+  }
+
+  .content {
+    flex: 0 0 50%;
+    gap: var(--space-5);
+    padding-inline: 0;
+    padding-left: var(--page-gutter);
+  }
+
+  .statNum {
+    font-size: var(--font-size-3xl); /* 28px desktop */
+  }
+
+  .cta {
+    max-width: var(--size-col-3);
+  }
+
+  .photoCol {
+    flex: 1 0 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-right: var(--page-gutter);
+  }
+
+  .photo {
+    width: 100%;
+  }
+}

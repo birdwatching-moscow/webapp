@@ -27,6 +27,7 @@ type WalkData = {
   endsAt: string
   location: string
   coverPhotoUrl: string
+  coverPhotoCredit: string | null
   guideId: number
   status: string
   purchaseEmailSubject: string | null
@@ -77,6 +78,7 @@ export function WalkEditForm({ walk, guides }: Props) {
   const [endsAt, setEndsAt]     = useState(walk.endsAt)
   const [location, setLocation] = useState(walk.location)
   const [coverUrl, setCoverUrl]         = useState(walk.coverPhotoUrl)
+  const [coverCredit, setCoverCredit]   = useState(walk.coverPhotoCredit ?? '')
   const [guideId, setGuideId]           = useState(String(walk.guideId))
   const [tickets, setTickets]           = useState<TicketTypeRow[]>(() => initialTickets(walk.ticketTypes))
   const [purchaseEmailSubject, setPurchaseEmailSubject] = useState(walk.purchaseEmailSubject ?? '')
@@ -149,6 +151,7 @@ export function WalkEditForm({ walk, guides }: Props) {
       endsAt: endsAt || undefined,
       location: location.trim(),
       coverPhotoUrl: coverUrl.trim(),
+      coverPhotoCredit: coverCredit.trim() || undefined,
       guideId: Number(guideId),
       purchaseEmailSubject: purchaseEmailSubject.trim() || undefined,
       purchaseEmailBody: purchaseEmailBody.trim() || undefined,
@@ -343,6 +346,8 @@ export function WalkEditForm({ walk, guides }: Props) {
           <WalkSectionCover
             coverUrl={coverUrl}
             onCoverUrl={v => { setCoverUrl(v); markDirty() }}
+            coverCredit={coverCredit}
+            onCoverCredit={v => { setCoverCredit(v); markDirty() }}
             disabled={!isEditable}
             requireAll={requireAll}
           />
