@@ -88,7 +88,7 @@
 @media (min-width: 1248px) {
   .hero {
     flex-direction: row;
-    align-items: flex-start;
+    align-items: center;
     gap: var(--space-10);
   }
 
