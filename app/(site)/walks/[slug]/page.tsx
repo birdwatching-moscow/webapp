@@ -5,7 +5,7 @@ import { NoticeBanner } from '@/components/NoticeBanner/NoticeBanner'
 import { PrivateHighlights, type PrivateHighlight } from '@/components/private/PrivateHighlights'
 import { WalkHero } from '@/components/walk/WalkHero'
 import { WalkAbout } from '@/components/walk/WalkAbout'
-import { WalkCertificateBanner } from '@/components/walk/WalkCertificateBanner'
+import { CertificateCTABand } from '@/components/CertificateCTABand/CertificateCTABand'
 import { WalkCheckoutForm } from './WalkCheckoutForm'
 import { ROUTES } from '@/utils/routes'
 import styles from './walk.module.css'
@@ -132,7 +132,7 @@ export default async function WalkPage({ params }: Props) {
         </section>
       )}
 
-      <WalkCertificateBanner />
+      <CertificateCTABand />
     </main>
   )
 }
