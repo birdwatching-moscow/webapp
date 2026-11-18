@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { formatKopecksShort } from '@/utils/formatMoney'
+import { FormError } from '@/components/ui/form-error/FormError'
 import styles from './WalkCheckoutForm.module.css'
 
 type TicketTypeItem = {
@@ -145,7 +146,7 @@ export function WalkCheckoutForm({ walkId, priceKopecks, ticketTypes }: Props) {
         </div>
       </div>
 
-      {error && <p className={styles.checkoutError}>{error}</p>}
+      <FormError message={error} />
 
       <button type="submit" className={styles.cta} disabled={loading}>
         {loading ? 'Перенаправление…' : 'Купить'}
