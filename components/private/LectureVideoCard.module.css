@@ -1,0 +1,126 @@
+/* Same type size on every breakpoint, so no shared text-* utility fits */
+
+.card {
+  /* Containing block for the stretched video link */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.media {
+  position: relative;
+}
+
+/* The placeholder picture is 4:3 — crop it to the 16:9 slot instead of stretching */
+.preview img {
+  object-fit: cover;
+}
+
+/* The whole card is clickable: the title link covers it */
+.link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.link:focus-visible {
+  outline: var(--stroke-focus) solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ─── Info icon: same spot and behaviour as PhotoWithCredit ───────────────── */
+
+.icon {
+  position: absolute;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  composes: flex-center from global;
+  list-style: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  /* Above the stretched link */
+  z-index: var(--z-index-float);
+}
+
+.icon::-webkit-details-marker {
+  display: none;
+}
+
+.icon:focus-visible {
+  outline: var(--stroke-focus) solid var(--color-primary-foreground);
+  outline-offset: 2px;
+  border-radius: var(--radius-lg);
+}
+
+.caption {
+  position: absolute;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  max-width: 70%;
+  margin: 0;
+  text-align: right;
+  text-transform: uppercase;
+  color: var(--color-primary-foreground);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  text-shadow: 0 0 4px rgb(0 0 0 / 0.6);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s;
+  z-index: var(--z-index-raised);
+}
+
+/* Desktop: hover or keyboard focus on the icon — icon hides, info shows */
+@media (hover: hover) {
+  .info:is(:hover, :focus-within)::details-content {
+    content-visibility: visible;
+  }
+
+  .info:is(:hover, :focus-within) .caption {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .info:is(:hover, :focus-within) .icon {
+    opacity: 0;
+  }
+}
+
+/* Touch: a tap on the icon opens <details>; while open, the invisible summary
+   covers the cover image, so a tap on it closes the info instead of opening the video */
+@media (hover: none) {
+  .info[open] .caption {
+    opacity: 1;
+    visibility: visible;
+    z-index: var(--z-index-float);
+  }
+
+  .info[open] .icon {
+    inset: 0;
+    opacity: 0;
+    z-index: var(--z-index-raised);
+  }
+}
+
+/* ─── Text ────────────────────────────────────────────────────────────────── */
+
+.title,
+.subtitle {
+  margin: 0;
+}
+
+.title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: var(--font-size-2xl);
+  line-height: 28px;
+}
+
+.subtitle {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: var(--font-size-lg);
+  line-height: 24px;
+  color: var(--color-muted-foreground);
+}

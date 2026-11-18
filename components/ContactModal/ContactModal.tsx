@@ -19,6 +19,17 @@ const DEFAULT_RETRY_MINUTES = 10
 
 export type ContactRequestType = 'EXPEDITION' | 'CERTIFICATE' | 'QUESTION' | 'PRIVATE_EVENT'
 
+/** Form texts; lecture requests have their own copy but are stored as PRIVATE_EVENT. */
+export type ContactFormType = ContactRequestType | 'PRIVATE_LECTURE'
+
+const REQUEST_TYPE: Record<ContactFormType, ContactRequestType> = {
+  EXPEDITION:      'EXPEDITION',
+  CERTIFICATE:     'CERTIFICATE',
+  QUESTION:        'QUESTION',
+  PRIVATE_EVENT:   'PRIVATE_EVENT',
+  PRIVATE_LECTURE: 'PRIVATE_EVENT',
+}
+
 type TypeConfig = {
   label: string
   subtitle: React.ReactNode
@@ -27,7 +38,7 @@ type TypeConfig = {
   formNote?: string
 }
 
-const TYPE_CONFIG: Record<ContactRequestType, TypeConfig> = {
+const TYPE_CONFIG: Record<ContactFormType, TypeConfig> = {
   EXPEDITION: {
     label: 'Заявка на экспедицию',
     subtitle: 'Оставьте контакты — координатор уточнит детали.',
@@ -57,12 +68,24 @@ const TYPE_CONFIG: Record<ContactRequestType, TypeConfig> = {
     successText: 'Спасибо, что написали. Мы отвечаем обычно в течение дня после предоставления данных и отвечаем в зависимости от: есть ли свободный гид для ваших критериев или что мы можем предложить, если нет.',
     formNote: 'Желательно дать нам вводные данные для вашей прогулки за неделю до нужной даты, а в апреле - июне - за 2-3 недели, так как график у гидов плотный.',
   },
+  PRIVATE_LECTURE: {
+    label: 'Заявка на лекцию',
+    subtitle: (
+      <ul>
+        <li>желаемую дату или диапазон дат,</li>
+        <li>место проведения или онлайн-формат,</li>
+        <li>аудиторию и примерное количество слушателей,</li>
+        <li>тему лекции или задачу, которую она должна решить.</li>
+      </ul>
+    ),
+    successText: 'Спасибо, что написали. Обычно мы отвечаем в течение дня, чтобы обсудить тему, формат и дату лекции.',
+  },
 }
 
 type ContactModalProps = {
   open: boolean
   onClose: () => void
-  defaultType?: ContactRequestType
+  defaultType?: ContactFormType
 }
 
 export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: ContactModalProps) => {
@@ -99,7 +122,7 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
     setSubmitting(true)
     setServerError(null)
     try {
-      await submitContactRequest({ type: defaultType, name, email, message, _hp: hp })
+      await submitContactRequest({ type: REQUEST_TYPE[defaultType], name, email, message, _hp: hp })
       setSubmitted(true)
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 429) {

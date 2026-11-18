@@ -9,7 +9,7 @@ export const WalksPageHero = () => (
     <div className={styles.imageWrapper}>
       <div className={styles.mediaContainer}>
         <Image
-          src="/placeholders/videos-placeholder.png"
+          src="/placeholders/vertical-videos-placeholder.png"
           alt=""
           fill
           sizes={HERO_IMAGE_SIZES}
