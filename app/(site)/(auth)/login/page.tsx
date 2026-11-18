@@ -454,7 +454,7 @@ function LoginCodeForm() {
               className={styles.fieldInput}
             />
             <div className={styles.actions}>
-              <Button type="submit" fullWidth loading={loading} disabled={loading}>
+              <Button type="submit" size="lg" fullWidth loading={loading} disabled={loading}>
                 {loading ? LA.submitting : LA.submit}
               </Button>
             </div>
