@@ -8,6 +8,32 @@ export const SECURITY_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  webpack(config, { isServer, webpack }) {
+    // Some packages (jose, next-auth internals) use `node:` URI scheme.
+    // Webpack 5 doesn't handle it by default — strip the prefix so normal
+    // resolution + fallbacks apply.
+    config.plugins.push(
+      new webpack.NormalModuleReplacementPlugin(/^node:/, (resource: { request: string }) => {
+        resource.request = resource.request.replace(/^node:/, '')
+      })
+    )
+
+    if (!isServer) {
+      // These Node.js built-ins have no browser equivalent; replace with empty modules.
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        async_hooks: false,
+        url: false,
+        crypto: false,
+        stream: false,
+        buffer: false,
+        path: false,
+        fs: false,
+      }
+    }
+
+    return config
+  },
   reactCompiler: true,
   experimental: {
     agentUpgrade: "security",

@@ -14,14 +14,16 @@ export type WalkRow = {
   capacity: number
   statusLabel: string
   statusCls: string
+  createdBy: string | null
 }
 
 interface Props {
   rows: WalkRow[]
   showStatus: boolean
+  basePath?: string
 }
 
-export function WalksTable({ rows, showStatus }: Props) {
+export function WalksTable({ rows, showStatus, basePath = '/admin/walks' }: Props) {
   const router = useRouter()
 
   return (
@@ -34,6 +36,7 @@ export function WalksTable({ rows, showStatus }: Props) {
             <th>Гид</th>
             <th>Билеты</th>
             {showStatus && <th>Статус</th>}
+            <th>Автор</th>
           </tr>
         </thead>
         <tbody>
@@ -43,7 +46,7 @@ export function WalksTable({ rows, showStatus }: Props) {
               className={styles.tableRow}
               onClick={e => {
                 if ((e.target as HTMLElement).closest('a')) return
-                router.push(`/admin/walks/${w.id}`)
+                router.push(`${basePath}/${w.id}`)
               }}
             >
               <td className={styles.nameLink}>{w.title}</td>
@@ -64,6 +67,7 @@ export function WalksTable({ rows, showStatus }: Props) {
                   </span>
                 </td>
               )}
+              <td className={styles.muted}>{w.createdBy ?? '—'}</td>
             </tr>
           ))}
         </tbody>

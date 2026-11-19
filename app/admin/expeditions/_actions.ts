@@ -5,7 +5,7 @@ import { isAdmin } from '@/lib/auth/permissions'
 import { ensureUniqueSlug } from '@/lib/admin/slug'
 import { EventStatus } from '@/generated/prisma/client'
 
-const MAX_EXPEDITION_GALLERY = 5
+const MAX_EXPEDITION_GALLERY = 3
 
 async function requireAdmin() {
   const session = await auth()
@@ -14,6 +14,9 @@ async function requireAdmin() {
 }
 
 type DayInput = { clientId: string; dayNumber: number; title: string; description: string }
+export type ChecklistItem = { title: string; text: string }
+export type GalleryItem = { url: string; info: string }
+export type TicketTypeInput = { name: string; priceKopecks: number | null; capacity: number }
 
 type ExpeditionInput = {
   type: 'EXPEDITION'
@@ -21,9 +24,16 @@ type ExpeditionInput = {
   description: string
   startsAt: string
   endsAt?: string
-  location: string
   coverPhotoUrl: string
-  galleryUrls: string[]
+  galleryItems: GalleryItem[]
+  checklistItems: ChecklistItem[]
+  durationDays?: number | null
+  aboutTitle?: string | null
+  aboutText?: string | null
+  difficulty?: number | null
+  includedItems?: string[]
+  excludedItems?: string[]
+  ticketTypes?: TicketTypeInput[]
   totalSpots: number
   spotsLeft: number
   guideIds: string[]
@@ -31,15 +41,15 @@ type ExpeditionInput = {
   slug?: string
 }
 
-function validateGallery(galleryUrls: string[]) {
-  if (galleryUrls.length > MAX_EXPEDITION_GALLERY) {
-    throw new Error(`Галерея: не более 5 изображений.`)
+function validateGallery(items: GalleryItem[]) {
+  if (items.length > MAX_EXPEDITION_GALLERY) {
+    throw new Error(`Галерея: не более ${MAX_EXPEDITION_GALLERY} изображений.`)
   }
 }
 
 export async function createExpedition(input: ExpeditionInput): Promise<string> {
-  await requireAdmin()
-  validateGallery(input.galleryUrls)
+  const session = await requireAdmin()
+  validateGallery(input.galleryItems)
 
   const slug = input.slug ?? await ensureUniqueSlug(input.title, async (s) => {
     const existing = await prisma.expedition.findFirst({ where: { slug: s } })
@@ -53,17 +63,32 @@ export async function createExpedition(input: ExpeditionInput): Promise<string> 
       description: input.description,
       startsAt: new Date(input.startsAt),
       endsAt: input.endsAt ? new Date(input.endsAt) : null,
-      location: input.location,
-      coverPhotoUrl: input.coverPhotoUrl,
-      galleryUrls: input.galleryUrls,
-      totalSpots: input.totalSpots,
-      spotsLeft: input.totalSpots,
+      coverPhotoUrl:  input.coverPhotoUrl,
+      galleryItems:   input.galleryItems,
+      checklistItems: input.checklistItems,
+      durationDays:   input.durationDays ?? null,
+      aboutTitle:    input.aboutTitle ?? null,
+      aboutText:     input.aboutText ?? null,
+      difficulty:    input.difficulty ?? null,
+      createdBy:     session.user.email ?? null,
+      includedItems: input.includedItems ?? [],
+      excludedItems: input.excludedItems ?? [],
+      totalSpots:    input.totalSpots,
+      spotsLeft:     input.totalSpots,
       guides: { connect: input.guideIds.map((id) => ({ id: parseInt(id, 10) })) },
       days: {
         create: input.days.map((d) => ({
           dayNumber: d.dayNumber,
           title: d.title,
           description: d.description,
+        })),
+      },
+      ticketTypes: {
+        create: (input.ticketTypes ?? []).map((t, i) => ({
+          name: t.name,
+          priceKopecks: t.priceKopecks,
+          capacity: t.capacity,
+          sortOrder: i,
         })),
       },
     },
@@ -73,9 +98,12 @@ export async function createExpedition(input: ExpeditionInput): Promise<string> 
 
 export async function updateExpedition(id: string, input: ExpeditionInput): Promise<void> {
   await requireAdmin()
-  validateGallery(input.galleryUrls)
+  validateGallery(input.galleryItems)
 
-  await prisma.expeditionDay.deleteMany({ where: { expeditionId: id } })
+  await Promise.all([
+    prisma.expeditionDay.deleteMany({ where: { expeditionId: id } }),
+    prisma.expeditionTicketType.deleteMany({ where: { expeditionId: id } }),
+  ])
   await prisma.expedition.update({
     where: { id },
     data: {
@@ -83,17 +111,31 @@ export async function updateExpedition(id: string, input: ExpeditionInput): Prom
       description: input.description,
       startsAt: new Date(input.startsAt),
       endsAt: input.endsAt ? new Date(input.endsAt) : null,
-      location: input.location,
-      coverPhotoUrl: input.coverPhotoUrl,
-      galleryUrls: input.galleryUrls,
-      totalSpots: input.totalSpots,
-      spotsLeft: input.spotsLeft,
+      coverPhotoUrl:  input.coverPhotoUrl,
+      galleryItems:   input.galleryItems,
+      checklistItems: input.checklistItems,
+      durationDays:   input.durationDays ?? null,
+      aboutTitle:     input.aboutTitle ?? null,
+      aboutText:      input.aboutText ?? null,
+      difficulty:     input.difficulty ?? null,
+      includedItems:  input.includedItems ?? [],
+      excludedItems:  input.excludedItems ?? [],
+      totalSpots:     input.totalSpots,
+      spotsLeft:      input.spotsLeft,
       guides: { set: input.guideIds.map((gid) => ({ id: parseInt(gid, 10) })) },
       days: {
         create: input.days.map((d) => ({
           dayNumber: d.dayNumber,
           title: d.title,
           description: d.description,
+        })),
+      },
+      ticketTypes: {
+        create: (input.ticketTypes ?? []).map((t, i) => ({
+          name: t.name,
+          priceKopecks: t.priceKopecks,
+          capacity: t.capacity,
+          sortOrder: i,
         })),
       },
     },

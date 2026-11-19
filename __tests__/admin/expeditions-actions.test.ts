@@ -37,9 +37,12 @@ const VALID_EXPEDITION_INPUT = {
   title: 'Test Expedition',
   description: 'Description',
   startsAt: FUTURE,
-  location: 'Mountains',
   coverPhotoUrl: 'https://example.com/photo.jpg',
-  galleryUrls: ['https://example.com/g1.jpg', 'https://example.com/g2.jpg'],
+  galleryItems: [
+    { url: 'https://example.com/g1.jpg', info: 'Bird 1' },
+    { url: 'https://example.com/g2.jpg', info: 'Bird 2' },
+  ],
+  checklistItems: [],
   totalSpots: 10,
   spotsLeft: 10,
   guideIds: ['1', '2'],
@@ -53,31 +56,31 @@ beforeEach(() => {
   expeditionMock.findFirst.mockResolvedValue(null)
 })
 
-describe('createExpedition — gallery URLs', () => {
-  it('accepts galleryUrls with 5 or fewer items', async () => {
+describe('createExpedition — gallery items', () => {
+  it('accepts galleryItems with 3 or fewer items', async () => {
     const input = {
       ...VALID_EXPEDITION_INPUT,
-      galleryUrls: Array.from({ length: 5 }, (_, i) => `https://example.com/g${i}.jpg`),
+      galleryItems: Array.from({ length: 3 }, (_, i) => ({ url: `https://example.com/g${i}.jpg`, info: '' })),
     }
     await expect(createExpedition(input)).resolves.not.toThrow()
   })
 
-  it('rejects galleryUrls array longer than 5 items with error containing "не более 5"', async () => {
+  it('rejects galleryItems array longer than 3 items', async () => {
     const input = {
       ...VALID_EXPEDITION_INPUT,
-      galleryUrls: Array.from({ length: 6 }, (_, i) => `https://example.com/g${i}.jpg`),
+      galleryItems: Array.from({ length: 4 }, (_, i) => ({ url: `https://example.com/g${i}.jpg`, info: '' })),
     }
-    await expect(createExpedition(input)).rejects.toThrow(/не более 5/)
+    await expect(createExpedition(input)).rejects.toThrow(/не более 3/)
   })
 })
 
-describe('updateExpedition — gallery URLs', () => {
-  it('rejects galleryUrls array longer than 5 items', async () => {
+describe('updateExpedition — gallery items', () => {
+  it('rejects galleryItems array longer than 3 items', async () => {
     const input = {
       ...VALID_EXPEDITION_INPUT,
-      galleryUrls: Array.from({ length: 6 }, (_, i) => `https://example.com/g${i}.jpg`),
+      galleryItems: Array.from({ length: 4 }, (_, i) => ({ url: `https://example.com/g${i}.jpg`, info: '' })),
     }
-    await expect(updateExpedition('exp-1', input)).rejects.toThrow(/не более 5/)
+    await expect(updateExpedition('exp-1', input)).rejects.toThrow(/не более 3/)
   })
 })
 

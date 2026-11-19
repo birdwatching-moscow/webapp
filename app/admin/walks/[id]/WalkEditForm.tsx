@@ -17,7 +17,7 @@ import { WalkSectionTickets } from '@/app/admin/walks/_sections/WalkSectionTicke
 import { WalkEmailTab } from '@/app/admin/walks/_sections/WalkEmailTab'
 import { WalkTicketsTab } from '@/app/admin/walks/_sections/WalkTicketsTab'
 import styles from './walk-edit.module.css'
-import { EventStatus } from '@/generated/prisma/client'
+import { EventStatus } from '@/lib/enums'
 
 type WalkData = {
   id: string

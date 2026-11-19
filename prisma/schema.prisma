@@ -31,7 +31,6 @@ enum OrderStatus {
 }
 
 enum RequestType {
-  PRIVATE_WALK
   EXPEDITION
   CERTIFICATE
   QUESTION
@@ -95,6 +94,7 @@ model Walk {
   purchaseEmailBody     String?  @db.Text
   publishedAt           DateTime?
   publishedBy   String?
+  createdBy     String?     @db.VarChar(254)
   createdAt     DateTime    @default(now())
 
   guide       TeamMember  @relation("WalkPrimaryGuide",   fields: [guideId],  references: [id])
@@ -126,22 +126,43 @@ model Expedition {
   description   String      @db.Text
   startsAt      DateTime
   endsAt        DateTime?
-  location      String      @db.VarChar(100)
   totalSpots    Int
   spotsLeft     Int
   status        EventStatus @default(DRAFT)
   coverPhotoUrl String      @db.VarChar(2048)
-  galleryUrls   String[]
-  publishedAt   DateTime?
+  galleryItems   Json     @default("[]")
+  checklistItems Json     @default("[]")
+  durationDays   Int?
+  aboutTitle     String?   @db.VarChar(200)
+  aboutText      String?   @db.Text
+  difficulty     Int?
+  includedItems  String[]
+  excludedItems  String[]
+  publishedAt    DateTime?
   publishedBy   String?
+  createdBy     String?   @db.VarChar(254)
   createdAt     DateTime    @default(now())
 
-  guides    TeamMember[]
-  publisher User?          @relation("ExpeditionPublisher", fields: [publishedBy], references: [id])
-  days      ExpeditionDay[]
-  requests  Request[]
+  guides      TeamMember[]
+  publisher   User?                   @relation("ExpeditionPublisher", fields: [publishedBy], references: [id])
+  days        ExpeditionDay[]
+  ticketTypes ExpeditionTicketType[]
+  requests    Request[]
 
   @@index([status, startsAt])
+}
+
+model ExpeditionTicketType {
+  id           Int    @id @default(autoincrement())
+  expeditionId String
+  name         String @db.VarChar(100)
+  priceKopecks Int?
+  capacity     Int    @default(0)
+  sortOrder    Int    @default(0)
+
+  expedition Expedition @relation(fields: [expeditionId], references: [id])
+
+  @@index([expeditionId])
 }
 
 model ExpeditionDay {
@@ -162,6 +183,7 @@ model TeamMember {
   achievements String?  @db.Text
   profileLinks String[]
   sortOrder    Int
+  createdBy    String?  @db.VarChar(254)
 
   walks       Walk[]  @relation("WalkPrimaryGuide")
   expeditions Expedition[]
@@ -262,7 +284,7 @@ model LoginCode {
 model Request {
   id           String        @id @default(uuid())
   type         RequestType
-  // NOTE: set for EXPEDITION requests, null for PRIVATE_WALK
+  // NOTE: set for EXPEDITION requests, null for all other types
   expeditionId String?
   name         String        @db.VarChar(100)
   email        String        @db.VarChar(254)

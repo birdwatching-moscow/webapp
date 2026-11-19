@@ -21,8 +21,8 @@ type TeamMemberInput = {
 }
 
 export async function createTeamMember(input: TeamMemberInput): Promise<number> {
-  await requireAdmin()
-  const member = await prisma.teamMember.create({ data: input })
+  const session = await requireAdmin()
+  const member = await prisma.teamMember.create({ data: { ...input, createdBy: session.user.email ?? null } })
   return member.id
 }
 

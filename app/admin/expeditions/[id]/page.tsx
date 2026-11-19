@@ -1,146 +1,83 @@
-import Link from 'next/link'
-import { redirect, notFound } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import { EventStatus } from '@/generated/prisma/client'
-import { updateExpedition, publishExpedition, cancelExpedition, deleteExpedition } from '@/app/admin/expeditions/_actions'
-import { Button } from '@/components/ui/buttons/Button'
-import { ROUTES } from '@/utils/routes'
+import { SORT_ASC } from '@/lib/constants'
+import { makeKey, makeKey as makeTicketKey } from '@/app/admin/walks/_sections/types'
+import { ExpeditionEditForm } from './ExpeditionEditForm'
+import type { ChecklistItem, GalleryItem } from '@/app/admin/expeditions/_actions'
 
 export default async function EditExpeditionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+
   const [expedition, guides] = await Promise.all([
     prisma.expedition.findFirst({
       where: { id, status: { not: 'DELETED' } },
-      include: { guides: { select: { id: true } }, days: { orderBy: { dayNumber: 'asc' } } },
+      select: {
+        id:             true,
+        title:          true,
+        description:    true,
+        startsAt:       true,
+        endsAt:         true,
+        coverPhotoUrl:  true,
+        galleryItems:   true,
+        checklistItems: true,
+        durationDays:   true,
+        aboutTitle:     true,
+        aboutText:      true,
+        difficulty:     true,
+        includedItems:  true,
+        excludedItems:  true,
+        totalSpots:     true,
+        ticketTypes:    { orderBy: { sortOrder: 'asc' as const } },
+        spotsLeft:      true,
+        status:         true,
+        guides:         { select: { id: true, name: true } },
+        days:           { orderBy: { dayNumber: 'asc' } },
+      },
     }),
-    prisma.teamMember.findMany({ orderBy: { name: 'asc' } }),
+    prisma.teamMember.findMany({ select: { id: true, name: true }, orderBy: SORT_ASC }),
   ])
+
   if (!expedition) notFound()
 
-  const expeditionDays = expedition.days
-
-  async function handleUpdate(formData: FormData) {
-    'use server'
-    const guideIds = formData.getAll('guideIds') as string[]
-    const galleryUrls = (formData.get('galleryUrls') as string)
-      .split('\n')
-      .map((u) => u.trim())
-      .filter(Boolean)
-    await updateExpedition(id, {
-      type: 'EXPEDITION',
-      title: formData.get('title') as string,
-      description: formData.get('description') as string,
-      startsAt: formData.get('startsAt') as string,
-      endsAt: (formData.get('endsAt') as string) || undefined,
-      location: formData.get('location') as string,
-      coverPhotoUrl: formData.get('coverPhotoUrl') as string,
-      galleryUrls,
-      totalSpots: parseInt(formData.get('totalSpots') as string, 10),
-      spotsLeft: parseInt(formData.get('spotsLeft') as string, 10),
-      guideIds,
-      days: expeditionDays.map((d) => ({
-        clientId: d.id,
-        dayNumber: d.dayNumber,
-        title: d.title,
-        description: d.description,
-      })),
-    })
-    redirect('/admin/expeditions')
+  function toDateOnly(date: Date) {
+    return date.toISOString().slice(0, 10)
   }
-
-  async function handlePublish() {
-    'use server'
-    await publishExpedition(id)
-    redirect('/admin/expeditions')
-  }
-
-  async function handleCancel() {
-    'use server'
-    await cancelExpedition(id)
-    redirect('/admin/expeditions')
-  }
-
-  async function handleDelete() {
-    'use server'
-    await deleteExpedition(id)
-    redirect('/admin/expeditions')
-  }
-
-  const currentGuideIds = new Set(expedition.guides.map((g) => String(g.id)))
-  const startsAtLocal = expedition.startsAt.toISOString().slice(0, 16)
-  const endsAtLocal = expedition.endsAt?.toISOString().slice(0, 16) ?? ''
 
   return (
-    <div>
-      <h1>{expedition.title}</h1>
-      <Link href={ROUTES.admin.expeditions}>← Назад</Link>
-      <p>Статус: {expedition.status}</p>
-
-      <div>
-        {expedition.status === EventStatus.DRAFT && (
-          <form action={handlePublish} style={{ display: 'inline' }}>
-            <button type="submit">Опубликовать</button>
-          </form>
-        )}
-        {expedition.status === EventStatus.ACTIVE && (
-          <form action={handleCancel} style={{ display: 'inline' }}>
-            <button type="submit">Отменить</button>
-          </form>
-        )}
-        <form action={handleDelete} style={{ display: 'inline' }}>
-          <button type="submit">Удалить</button>
-        </form>
-      </div>
-
-      <form action={handleUpdate}>
-        <label>
-          Название
-          <input name="title" defaultValue={expedition.title} required />
-        </label>
-        <label>
-          Описание
-          <textarea name="description" defaultValue={expedition.description} required />
-        </label>
-        <label>
-          Начало
-          <input name="startsAt" type="datetime-local" defaultValue={startsAtLocal} required />
-        </label>
-        <label>
-          Конец
-          <input name="endsAt" type="datetime-local" defaultValue={endsAtLocal} />
-        </label>
-        <label>
-          Место
-          <input name="location" defaultValue={expedition.location} required />
-        </label>
-        <label>
-          Обложка (URL)
-          <input name="coverPhotoUrl" type="url" defaultValue={expedition.coverPhotoUrl} required />
-        </label>
-        <label>
-          Галерея (URL, по одному на строку, макс. 5)
-          <textarea name="galleryUrls" rows={5} defaultValue={expedition.galleryUrls.join('\n')} />
-        </label>
-        <label>
-          Мест всего
-          <input name="totalSpots" type="number" min="1" defaultValue={expedition.totalSpots} required />
-        </label>
-        <label>
-          Мест осталось
-          <input name="spotsLeft" type="number" min="0" defaultValue={expedition.spotsLeft} required />
-        </label>
-        <label>
-          Гиды
-          <select name="guideIds" multiple>
-            {guides.map((g) => (
-              <option key={g.id} value={String(g.id)} selected={currentGuideIds.has(String(g.id))}>
-                {g.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <Button type="submit" fullWidth>Сохранить</Button>
-      </form>
-    </div>
+    <ExpeditionEditForm
+      expedition={{
+        id:            expedition.id,
+        title:         expedition.title,
+        description:   expedition.description,
+        startsAt:      toDateOnly(expedition.startsAt),
+        endsAt:        expedition.endsAt ? toDateOnly(expedition.endsAt) : '',
+        coverPhotoUrl: expedition.coverPhotoUrl,
+        galleryItems:   expedition.galleryItems as GalleryItem[],
+        checklistItems: expedition.checklistItems as ChecklistItem[],
+        durationDays:   expedition.durationDays,
+        aboutTitle:     expedition.aboutTitle,
+        aboutText:      expedition.aboutText,
+        difficulty:     expedition.difficulty,
+        includedItems:  expedition.includedItems,
+        excludedItems:  expedition.excludedItems,
+        ticketTypes:    expedition.ticketTypes.map(t => ({
+          key: makeTicketKey(),
+          name: t.name,
+          priceRub: t.priceKopecks != null ? String(t.priceKopecks / 100) : '',
+          capacity:  String(t.capacity),
+        })),
+        totalSpots:     expedition.totalSpots,
+        spotsLeft:     expedition.spotsLeft,
+        status:        expedition.status,
+        guideIds:      expedition.guides.map(g => String(g.id)),
+        days:          expedition.days.map(d => ({
+          clientId:    makeKey(),
+          dayNumber:   d.dayNumber,
+          title:       d.title,
+          description: d.description,
+        })),
+      }}
+      guides={guides}
+    />
   )
 }

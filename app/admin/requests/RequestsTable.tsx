@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { RequestStatus, RequestType } from '@/generated/prisma/client'
+import { RequestStatus, RequestType } from '@/lib/enums'
 import { Modal } from '@/components/ui/modal/Modal'
 import { Button } from '@/components/ui/buttons/Button'
 import { StatusPicker } from './StatusPicker'
@@ -20,7 +20,6 @@ export type RequestRow = {
 }
 
 const TYPE_LABELS: Record<RequestType, string> = {
-  PRIVATE_WALK:  'Личная прогулка',
   EXPEDITION:    'Экспедиция',
   CERTIFICATE:   'Сертификат',
   QUESTION:      'Вопрос',

@@ -16,5 +16,5 @@ export function formatDurationRange(startsAt: Date, endsAt: Date): string {
     else word = 'часов'
   }
 
-  return `${fmtNum(lower)}–${fmtNum(upper)} ${word}`
+  return `${fmtNum(lower)} – ${fmtNum(upper)} ${word}`
 }

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useTransition } from 'react'
 import { createPortal } from 'react-dom'
-import { RequestStatus } from '@/generated/prisma/client'
+import { RequestStatus } from '@/lib/enums'
 import { updateRequestStatus } from './_actions'
 import styles from './requests.module.css'
 

@@ -132,7 +132,9 @@ export default async function WalksPage({
   const [walks, total, draftCount, activeCount, allGuides] = await Promise.all([
     prisma.walk.findMany({
       where: whereClause,
-      include: {
+      select: {
+        id: true, title: true, startsAt: true, endsAt: true,
+        status: true, capacity: true, createdBy: true,
         _count: { select: { tickets: true } },
         guide: { select: { name: true } },
       },
@@ -164,6 +166,7 @@ export default async function WalksPage({
       capacity:      w.capacity,
       statusLabel:   statusInfo.label,
       statusCls:     statusInfo.cls,
+      createdBy:     w.createdBy,
     }
   })
 

@@ -169,7 +169,7 @@
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-3);
-  padding: var(--space-5);
+  padding-top: var(--space-5);
 }
 
 .dangerBtn {

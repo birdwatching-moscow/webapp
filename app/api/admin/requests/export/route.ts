@@ -14,7 +14,6 @@ const STATUS_LABELS: Record<RequestStatus, string> = {
 }
 
 const TYPE_LABELS: Record<RequestType, string> = {
-  PRIVATE_WALK:   'Личная прогулка',
   EXPEDITION:     'Экспедиция',
   CERTIFICATE:    'Сертификат',
   QUESTION:       'Вопрос',
