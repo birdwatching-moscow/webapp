@@ -11,12 +11,18 @@ interface Props {
   disabled?: boolean
   requireAll?: boolean
   autoFocusTitle?: boolean
+  showSubtitle?: boolean
+  titlePlaceholder?: string
+  descriptionLabel?: string
 }
 
 export function WalkSectionMain({
   titleId, title, subtitle, description,
   onTitle, onSubtitle, onDescription,
   disabled, requireAll, autoFocusTitle,
+  showSubtitle = true,
+  titlePlaceholder = 'Например: Утренний бёрдвотчинг в Коломенском',
+  descriptionLabel = 'Описание',
 }: Props) {
   return (
     <section className={styles.section}>
@@ -33,27 +39,29 @@ export function WalkSectionMain({
             value={title}
             onChange={e => onTitle(e.target.value)}
             disabled={disabled}
-            placeholder="Например: Утренний бёрдвотчинг в Коломенском"
+            placeholder={titlePlaceholder}
             autoFocus={autoFocusTitle}
           />
         </div>
 
-        <div className={`${styles.field} ${styles.fieldFullWidth}`}>
-          <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>
-            Подзаголовок
-          </label>
-          <input
-            className={styles.input}
-            value={subtitle}
-            onChange={e => onSubtitle(e.target.value)}
-            disabled={disabled}
-            placeholder="Краткое описание под заголовком"
-          />
-        </div>
+        {showSubtitle && (
+          <div className={`${styles.field} ${styles.fieldFullWidth}`}>
+            <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>
+              Подзаголовок
+            </label>
+            <input
+              className={styles.input}
+              value={subtitle}
+              onChange={e => onSubtitle(e.target.value)}
+              disabled={disabled}
+              placeholder="Краткое описание под заголовком"
+            />
+          </div>
+        )}
 
         <div className={`${styles.field} ${styles.fieldFullWidth}`}>
           <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>
-            Описание
+            {descriptionLabel}
           </label>
           <textarea
             className={styles.textarea}

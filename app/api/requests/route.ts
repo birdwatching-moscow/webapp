@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { validateRequest } from '@/lib/api/validate'
-import { EventStatus } from '@/generated/prisma/client'
+import { EventStatus, RequestStatus, RequestType } from '@/generated/prisma/client'
 import { requestBodySchema } from '@/lib/validation/requests'
 import { sendMail } from '@/lib/mail'
 import { checkContactFormRateLimit } from '@/lib/rateLimit'
@@ -18,7 +18,6 @@ const REQUEST_TYPE_LABEL: Record<string, string> = {
   EXPEDITION:    'Заявка на экспедицию',
   CERTIFICATE:   'Заявка на сертификат',
   QUESTION:      'Задать вопрос',
-  PRIVATE_WALK:  'Заявка на частную прогулку',
   PRIVATE_EVENT: 'Заявка на частное мероприятие',
 }
 
@@ -44,7 +43,7 @@ export async function POST(req: Request): Promise<NextResponse> {
   const data = validation.data
 
   try {
-    if (data.type === 'EXPEDITION' && data.expeditionId) {
+    if (data.type === RequestType.EXPEDITION && data.expeditionId) {
       const expedition = await prisma.expedition.findUnique({
         where: { id: data.expeditionId },
         select: { id: true, status: true },
@@ -57,11 +56,11 @@ export async function POST(req: Request): Promise<NextResponse> {
     const request = await prisma.request.create({
       data: {
         type:        data.type,
-        expeditionId: data.type === 'EXPEDITION' && 'expeditionId' in data ? (data.expeditionId ?? null) : null,
+        expeditionId: data.type === RequestType.EXPEDITION && 'expeditionId' in data ? (data.expeditionId ?? null) : null,
         name:        data.name,
         email:       data.email,
         message:     data.message ?? '',
-        status:      'OPEN',
+        status:      RequestStatus.OPEN,
       },
     })
 

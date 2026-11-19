@@ -91,7 +91,7 @@ type WalkInput = {
 }
 
 export async function createWalkFull(data: UpdateWalkFullData): Promise<string> {
-  await requireAdmin()
+  const session = await requireAdmin()
   const slug = await ensureUniqueSlug(data.title, async (s) => {
     const existing = await prisma.walk.findFirst({ where: { slug: s } })
     return existing != null
@@ -117,6 +117,7 @@ export async function createWalkFull(data: UpdateWalkFullData): Promise<string> 
       emailSubject: data.emailSubject ?? null,
       emailBody: data.emailBody ?? null,
       reminderDaysBefore: data.reminderDaysBefore ?? null,
+      createdBy: session.user.email ?? null,
     },
   })
   if (data.ticketTypes.length > 0) {

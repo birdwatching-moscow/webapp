@@ -21,16 +21,6 @@ const expeditionRequestSchema = z
   })
   .strict()
 
-const privateWalkRequestSchema = z
-  .object({
-    type:    z.literal('PRIVATE_WALK'),
-    name:    baseName,
-    email:   baseEmail,
-    message: baseMessage,
-    ...honeypot,
-  })
-  .strict()
-
 const certificateRequestSchema = z
   .object({
     type:    z.literal('CERTIFICATE'),
@@ -63,7 +53,6 @@ const privateEventRequestSchema = z
 
 export const requestBodySchema = z.discriminatedUnion('type', [
   expeditionRequestSchema,
-  privateWalkRequestSchema,
   certificateRequestSchema,
   questionRequestSchema,
   privateEventRequestSchema,

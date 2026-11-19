@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useEffect } from 'react'
+import { useActionState, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/buttons/Button'
 import { saveTeamMemberForm } from '@/app/admin/team/_actions'
 import { ProfileLinkField } from './ProfileLinkField'
@@ -22,13 +22,15 @@ export function TeamMemberEditForm({
   defaultName, defaultPhotoUrl, defaultEducation, defaultAchievements, defaultProfileLink,
 }: Props) {
   const [state, action, pending] = useActionState(saveTeamMemberForm, null)
+  const [isDirty, setIsDirty] = useState(false)
 
   useEffect(() => {
     if (state?.success === false) window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (state?.success === true) setIsDirty(false)
   }, [state])
 
   return (
-    <form action={action}>
+    <form action={action} onChange={() => setIsDirty(true)}>
       <input type="hidden" name="memberId" value={memberId} />
       <input type="hidden" name="sortOrder" value={sortOrder} />
 
@@ -61,7 +63,7 @@ export function TeamMemberEditForm({
 
         <div className={styles.field}>
           <span className={styles.label}>Фото <span className={styles.required}>*</span></span>
-          <TeamPhotoField defaultValue={defaultPhotoUrl} />
+          <TeamPhotoField defaultValue={defaultPhotoUrl} onDirty={() => setIsDirty(true)} />
         </div>
 
         <div className={styles.field}>
@@ -98,7 +100,7 @@ export function TeamMemberEditForm({
       </div>
 
       <div className={styles.formActions}>
-        <Button type="submit" fullWidth disabled={pending}>
+        <Button type="submit" fullWidth disabled={pending || !isDirty}>
           {pending ? 'Сохранение…' : 'Сохранить'}
         </Button>
       </div>

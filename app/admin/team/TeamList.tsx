@@ -2,6 +2,7 @@
 
 import { useState, useRef, useTransition } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { reorderTeamMembers, deleteTeamMember } from './_actions'
 import { Modal } from '@/components/ui/modal/Modal'
 import { Button } from '@/components/ui/buttons/Button'
@@ -15,6 +16,7 @@ type Member = {
 }
 
 export function TeamList({ initialMembers }: { initialMembers: Member[] }) {
+  const router = useRouter()
   const [members, setMembers] = useState(initialMembers)
   const [draggingId, setDraggingId] = useState<number | null>(null)
   const [dropTargetId, setDropTargetId] = useState<number | null>(null)
@@ -116,8 +118,13 @@ export function TeamList({ initialMembers }: { initialMembers: Member[] }) {
             onDragLeave={handleDragLeave}
             onDrop={e => handleDrop(e, m.id)}
             onDragEnd={handleDragEnd}
+            onClick={e => {
+              if ((e.target as HTMLElement).closest('button,a')) return
+              router.push(`/admin/team/${m.id}`)
+            }}
             className={[
               styles.item,
+              styles.itemClickable,
               draggingId === m.id ? styles.itemDragging : '',
               dropTargetId === m.id ? styles.itemDropTarget : '',
             ].filter(Boolean).join(' ')}

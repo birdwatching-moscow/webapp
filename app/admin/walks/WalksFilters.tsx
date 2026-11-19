@@ -17,9 +17,10 @@ const STATUS_OPTIONS = [
 interface Props {
   guides: { id: number; name: string }[]
   initial: { q: string; from: string; to: string; statuses: string[]; guides: string[] }
+  basePath?: string
 }
 
-export function WalksFilters({ guides, initial }: Props) {
+export function WalksFilters({ guides, initial, basePath = ROUTES.admin.walks }: Props) {
   const router = useRouter()
   const [q, setQ] = useState(initial.q)
   const [from, setFrom] = useState(initial.from)
@@ -41,8 +42,8 @@ export function WalksFilters({ guides, initial }: Props) {
     if (state.to) params.set('to', state.to)
     state.statuses.forEach(s => params.append('status', s))
     state.guides.forEach(g => params.append('guide', g))
-    return `${ROUTES.admin.walks}?${params.toString()}`
-  }, [q, from, to, statuses, selectedGuides])
+    return `${basePath}?${params.toString()}`
+  }, [q, from, to, statuses, selectedGuides, basePath])
 
   useEffect(() => {
     if (isFirst.current) { isFirst.current = false; return }
@@ -52,7 +53,7 @@ export function WalksFilters({ guides, initial }: Props) {
 
   function reset() {
     setQ(''); setFrom(''); setTo(''); setStatuses([]); setSelectedGuides([])
-    router.push(`${ROUTES.admin.walks}?tab=all`)
+    router.push(`${basePath}?tab=all`)
   }
 
   return (

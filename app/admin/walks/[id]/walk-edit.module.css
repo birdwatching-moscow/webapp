@@ -441,6 +441,145 @@
   cursor: not-allowed;
 }
 
+/* ── Checkbox group ─────────────────────────────── */
+
+.checkboxGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.checklistItem {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.checklistItemHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.checklistItemNum {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dayNumberInput {
+  display: inline-block;
+  width: 4rem;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-input-bg, var(--color-bg));
+  color: inherit;
+  font: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: 1.6;
+  text-align: center;
+  vertical-align: baseline;
+}
+
+.checkboxOption {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  color: var(--color-foreground);
+  user-select: none;
+}
+
+.checkboxOption input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.checkboxOption input[type='checkbox']:disabled {
+  cursor: not-allowed;
+}
+
+/* ── Gallery list ────────────────────────────────── */
+
+.galleryList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.galleryRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.galleryRowInput {
+  flex: 1;
+}
+
+.galleryItemBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.galleryItemBlock:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* ── Difficulty picker ───────────────────────────── */
+
+.difficultyPicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.difficultyChip {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-muted-foreground);
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.difficultyChip:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.difficultyChipActive {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.difficultyChip:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
 /* ── Leave-confirm modal ─────────────────────────── */
 
 .leaveModalFooter {

@@ -1,0 +1,44 @@
+import { Prisma, EventStatus } from '@/generated/prisma/client'
+
+type ExpeditionsFilterParams = {
+  q?: string
+  fromStr?: string
+  toStr?: string
+  statuses?: string[]
+  guides?: string[]
+  now?: Date
+}
+
+export function buildExpeditionsWhere({
+  q = '',
+  fromStr = '',
+  toStr = '',
+  statuses = [],
+  guides = [],
+  now = new Date(),
+}: ExpeditionsFilterParams): Prisma.ExpeditionWhereInput {
+  const and: Prisma.ExpeditionWhereInput[] = []
+
+  if (q)       and.push({ title: { contains: q, mode: 'insensitive' } })
+  if (fromStr) and.push({ startsAt: { gte: new Date(fromStr) } })
+  if (toStr)   and.push({ startsAt: { lte: new Date(toStr + 'T23:59:59') } })
+
+  if (statuses.length > 0) {
+    const statusOr: Prisma.ExpeditionWhereInput[] = []
+    for (const s of statuses) {
+      if (s === 'active')    statusOr.push({ status: EventStatus.ACTIVE, startsAt: { gte: now } })
+      if (s === 'past')      statusOr.push({ status: EventStatus.ACTIVE, startsAt: { lt:  now } })
+      if (s === 'draft')     statusOr.push({ status: EventStatus.DRAFT })
+      if (s === 'cancelled') statusOr.push({ status: EventStatus.CANCELLED })
+    }
+    and.push({ OR: statusOr })
+  } else {
+    and.push({ status: { not: 'DELETED' } })
+  }
+
+  if (guides.length > 0) {
+    and.push({ guides: { some: { id: { in: guides.map(Number) } } } })
+  }
+
+  return and.length === 1 ? and[0] : { AND: and }
+}

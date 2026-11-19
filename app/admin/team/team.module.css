@@ -48,6 +48,10 @@
   background: color-mix(in srgb, var(--color-primary) 4%, transparent);
 }
 
+.itemClickable {
+  cursor: pointer;
+}
+
 .itemDragging {
   opacity: 0.45;
   background: color-mix(in srgb, var(--color-border) 30%, transparent);

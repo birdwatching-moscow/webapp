@@ -1,0 +1,3 @@
+ALTER TABLE "Walk" ADD COLUMN "createdBy" VARCHAR(254);
+ALTER TABLE "Expedition" ADD COLUMN "createdBy" VARCHAR(254);
+ALTER TABLE "TeamMember" ADD COLUMN "createdBy" VARCHAR(254);

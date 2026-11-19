@@ -108,12 +108,12 @@ describe('POST /api/requests — EXPEDITION happy path', () => {
   })
 })
 
-// ─── SC2: valid PRIVATE_WALK body ─────────────────────────────────────────────
+// ─── SC2: valid PRIVATE_EVENT body ────────────────────────────────────────────
 
-describe('POST /api/requests — PRIVATE_WALK happy path', () => {
-  it('returns 201 with { id } for a valid PRIVATE_WALK request', async () => {
+describe('POST /api/requests — PRIVATE_EVENT happy path', () => {
+  it('returns 201 with { id } for a valid PRIVATE_EVENT request', async () => {
     const res = await POST(makePost({
-      type: 'PRIVATE_WALK',
+      type: 'PRIVATE_EVENT',
       name: 'Иван Иванов',
       email: 'ivan@example.com',
       message: 'Хочу организовать прогулку',
@@ -123,9 +123,9 @@ describe('POST /api/requests — PRIVATE_WALK happy path', () => {
     expect(body).toEqual({ id: CREATED_REQUEST.id })
   })
 
-  it('creates DB row with type PRIVATE_WALK, status NEW, expeditionId null', async () => {
+  it('creates DB row with type PRIVATE_EVENT, status OPEN, expeditionId null', async () => {
     await POST(makePost({
-      type: 'PRIVATE_WALK',
+      type: 'PRIVATE_EVENT',
       name: 'Иван Иванов',
       email: 'ivan@example.com',
       message: 'Хочу организовать прогулку',
@@ -133,7 +133,7 @@ describe('POST /api/requests — PRIVATE_WALK happy path', () => {
     expect(requestCreateMock).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          type: 'PRIVATE_WALK',
+          type: 'PRIVATE_EVENT',
           expeditionId: null,
           status: 'OPEN',
         }),
@@ -141,9 +141,9 @@ describe('POST /api/requests — PRIVATE_WALK happy path', () => {
     )
   })
 
-  it('does not call expedition lookup for PRIVATE_WALK', async () => {
+  it('does not call expedition lookup for PRIVATE_EVENT', async () => {
     const res = await POST(makePost({
-      type: 'PRIVATE_WALK',
+      type: 'PRIVATE_EVENT',
       name: 'Иван Иванов',
       email: 'ivan@example.com',
       message: 'Хочу организовать прогулку',
@@ -244,21 +244,21 @@ describe('POST /api/requests — required field validation', () => {
   })
 })
 
-// ─── SC9: PRIVATE_WALK requires message ──────────────────────────────────────
+// ─── SC9: PRIVATE_EVENT requires message ─────────────────────────────────────
 
-describe('POST /api/requests — PRIVATE_WALK validation', () => {
-  it('returns 400 when type=PRIVATE_WALK and message is missing', async () => {
+describe('POST /api/requests — PRIVATE_EVENT validation', () => {
+  it('returns 400 when type=PRIVATE_EVENT and message is missing', async () => {
     const res = await POST(makePost({
-      type: 'PRIVATE_WALK',
+      type: 'PRIVATE_EVENT',
       name: 'Иван',
       email: 'ivan@example.com',
     }))
     expect(res.status).toBe(HTTP_STATUS_BAD_REQUEST)
   })
 
-  it('returns 400 when type=PRIVATE_WALK and message is empty string', async () => {
+  it('returns 400 when type=PRIVATE_EVENT and message is empty string', async () => {
     const res = await POST(makePost({
-      type: 'PRIVATE_WALK',
+      type: 'PRIVATE_EVENT',
       name: 'Иван',
       email: 'ivan@example.com',
       message: '',
@@ -266,10 +266,10 @@ describe('POST /api/requests — PRIVATE_WALK validation', () => {
     expect(res.status).toBe(HTTP_STATUS_BAD_REQUEST)
   })
 
-  // ─── SC10: PRIVATE_WALK with expeditionId supplied ────────────────────────
-  it('returns 400 when type=PRIVATE_WALK and expeditionId is supplied', async () => {
+  // ─── SC10: PRIVATE_EVENT with expeditionId supplied ───────────────────────
+  it('returns 400 when type=PRIVATE_EVENT and expeditionId is supplied', async () => {
     const res = await POST(makePost({
-      type: 'PRIVATE_WALK',
+      type: 'PRIVATE_EVENT',
       expeditionId: EXPEDITION_ID,
       name: 'Иван',
       email: 'ivan@example.com',
