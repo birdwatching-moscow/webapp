@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { z } from 'zod'
 import { auth } from '@/lib/auth'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { createPayment } from '@/lib/payments/yookassa'
@@ -7,6 +6,7 @@ import { kopecksToString } from '@/lib/payments/money'
 import { buildReceipt, truncateDescription } from '@/lib/payments/receipt'
 import { env } from '@/lib/env'
 import { validateRequest } from '@/lib/api/validate'
+import { checkoutBodySchema } from '@/lib/validation/checkout'
 import {
   PAYMENT_HOLD_MINUTES,
   HTTP_STATUS_CONFLICT,
@@ -19,23 +19,6 @@ import { CHECKOUT_ERROR_CODE } from '@/types/checkout'
 import type { CheckoutErrorCode, WalkSnapshot, CreatedOrder, OrderLineItem } from '@/types/checkout'
 
 const MS_PER_MINUTE = 60 * 1000
-
-const lineItemSchema = z.object({
-  ticketTypeId: z.number().int().positive(),
-  quantity: z.number().int().min(1).max(10),
-})
-
-const checkoutBodySchema = z
-  .object({
-    walkId: z.string().uuid(),
-    hasBinoculars: z.boolean().optional().default(false),
-    quantity: z.number().int().min(1).max(10).optional(),
-    lineItems: z.array(lineItemSchema).min(1).max(5).optional(),
-  })
-  .refine(
-    (d) => d.quantity !== undefined || (d.lineItems && d.lineItems.length > 0),
-    { message: 'Provide quantity or lineItems' }
-  )
 
 // NOTE: dynamic import so module resolution is deferred until the handler runs —
 // required for the mocked '@/lib/prisma' module to resolve correctly in tests.
