@@ -1,11 +1,11 @@
 import { z } from 'zod'
-import { MAX_EMAIL } from '@/lib/constants'
+import { emailField } from '@/lib/validation/fields'
 
 export const MAX_REQUEST_NAME    = 100
 export const MAX_REQUEST_MESSAGE = 2000
 
 const baseName    = z.string().min(1).max(MAX_REQUEST_NAME)
-const baseEmail   = z.string().email().max(MAX_EMAIL)
+const baseEmail   = emailField
 const baseMessage = z.string().min(1).max(MAX_REQUEST_MESSAGE)
 
 const honeypot = { _hp: z.string().optional() }
