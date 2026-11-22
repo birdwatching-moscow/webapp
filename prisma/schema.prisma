@@ -57,10 +57,10 @@ model User {
   passwordResetRequired Boolean @default(false)
   // NOTE: bumped on password reset / block — every JWT carrying an older value is rejected
   sessionVersion Int @default(0)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  deletedAt    DateTime?
-  blockedAt    DateTime?
+  createdAt    DateTime  @default(now()) @db.Timestamptz
+  updatedAt    DateTime  @updatedAt @db.Timestamptz
+  deletedAt    DateTime? @db.Timestamptz
+  blockedAt    DateTime? @db.Timestamptz
 
   orders               Order[]
   tickets              Ticket[]
@@ -77,8 +77,8 @@ model Walk {
   title         String      @db.VarChar(150)
   subtitle      String?     @db.VarChar(300)
   description   String      @db.Text
-  startsAt      DateTime
-  endsAt        DateTime?
+  startsAt      DateTime    @db.Timestamptz
+  endsAt        DateTime?   @db.Timestamptz
   location      String      @db.VarChar(100)
   priceKopecks  Int
   capacity      Int
@@ -92,10 +92,10 @@ model Walk {
   reminderDaysBefore    Int?
   purchaseEmailSubject  String?  @db.VarChar(255)
   purchaseEmailBody     String?  @db.Text
-  publishedAt           DateTime?
+  publishedAt           DateTime? @db.Timestamptz
   publishedBy   String?
   createdBy     String?     @db.VarChar(254)
-  createdAt     DateTime    @default(now())
+  createdAt     DateTime    @default(now()) @db.Timestamptz
 
   guide       TeamMember  @relation("WalkPrimaryGuide",   fields: [guideId],  references: [id])
   publisher   User?       @relation("WalkPublisher", fields: [publishedBy], references: [id])
@@ -124,8 +124,8 @@ model Expedition {
   slug          String      @unique @db.VarChar(200)
   title         String      @db.VarChar(150)
   description   String      @db.Text
-  startsAt      DateTime
-  endsAt        DateTime?
+  startsAt      DateTime    @db.Timestamptz
+  endsAt        DateTime?   @db.Timestamptz
   totalSpots    Int
   spotsLeft     Int
   status        EventStatus @default(DRAFT)
@@ -138,10 +138,10 @@ model Expedition {
   difficulty     Int?
   includedItems  String[]
   excludedItems  String[]
-  publishedAt    DateTime?
+  publishedAt    DateTime? @db.Timestamptz
   publishedBy   String?
   createdBy     String?   @db.VarChar(254)
-  createdAt     DateTime    @default(now())
+  createdAt     DateTime    @default(now()) @db.Timestamptz
 
   guides      TeamMember[]
   publisher   User?                   @relation("ExpeditionPublisher", fields: [publishedBy], references: [id])
@@ -197,12 +197,12 @@ model Order {
   // NOTE: unique index supports idempotent webhook matching — ЮKassa may deliver the same event twice
   yooKassaPaymentId String?     @unique @db.VarChar(100)
   // End of the payment window: now + PAYMENT_HOLD_MINUTES, set at checkout. Lazy-on-read expiry.
-  expiresAt         DateTime
-  paidAt            DateTime?
+  expiresAt         DateTime    @db.Timestamptz
+  paidAt            DateTime?   @db.Timestamptz
   // Non-null flags an order for manual admin attention (amount mismatch, oversell, unexpected provider state)
   paymentIssue      String?
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+  createdAt         DateTime    @default(now()) @db.Timestamptz
+  updatedAt         DateTime    @updatedAt @db.Timestamptz
 
   user       User        @relation(fields: [userId], references: [id])
   tickets    Ticket[]
@@ -219,7 +219,7 @@ model OrderItem {
   // Snapshot of Walk.priceKopecks at checkout time — a later admin price edit must not change an in-flight order
   unitPriceKopecks Int
   hasBinoculars    Boolean?
-  createdAt        DateTime @default(now())
+  createdAt        DateTime @default(now()) @db.Timestamptz
 
   order Order @relation(fields: [orderId], references: [id])
   walk  Walk  @relation(fields: [walkId], references: [id])
@@ -233,7 +233,7 @@ model Ticket {
   userId        String
   walkId        String
   hasBinoculars Boolean?
-  createdAt     DateTime @default(now())
+  createdAt     DateTime @default(now()) @db.Timestamptz
 
   order Order @relation(fields: [orderId], references: [id])
   user  User  @relation(fields: [userId], references: [id])
@@ -247,9 +247,9 @@ model PasswordResetToken {
   id        String    @id @default(uuid())
   userId    String
   tokenHash String    @unique @db.VarChar(64)
-  expiresAt DateTime
-  usedAt    DateTime?
-  createdAt DateTime  @default(now())
+  expiresAt DateTime  @db.Timestamptz
+  usedAt    DateTime? @db.Timestamptz
+  createdAt DateTime  @default(now()) @db.Timestamptz
 
   user User @relation(fields: [userId], references: [id])
 
@@ -260,9 +260,9 @@ model AdminLoginChallenge {
   id        String    @id @default(uuid())
   email     String    @db.VarChar(254)
   tokenHash String    @unique @db.VarChar(64)
-  expiresAt DateTime
-  usedAt    DateTime?
-  createdAt DateTime  @default(now())
+  expiresAt DateTime  @db.Timestamptz
+  usedAt    DateTime? @db.Timestamptz
+  createdAt DateTime  @default(now()) @db.Timestamptz
 
   @@index([email])
 }
@@ -273,10 +273,10 @@ model LoginCode {
   email String @db.VarChar(254)
   // NOTE: deliberately NOT @unique — the 6-char space makes collisions realistic; always look up email + codeHash together
   codeHash  String    @db.VarChar(64)
-  expiresAt DateTime
-  usedAt    DateTime?
+  expiresAt DateTime  @db.Timestamptz
+  usedAt    DateTime? @db.Timestamptz
   attempts  Int       @default(0)
-  createdAt DateTime  @default(now())
+  createdAt DateTime  @default(now()) @db.Timestamptz
 
   @@index([email])
 }
@@ -290,7 +290,7 @@ model Request {
   email        String        @db.VarChar(254)
   message      String        @db.Text
   status       RequestStatus @default(NEW)
-  createdAt    DateTime      @default(now())
+  createdAt    DateTime      @default(now()) @db.Timestamptz
 
   expedition Expedition? @relation(fields: [expeditionId], references: [id])
 
@@ -303,7 +303,7 @@ model RoleChangeLog {
   changedByUserId String
   fromRole        Role
   toRole          Role
-  createdAt       DateTime @default(now())
+  createdAt       DateTime @default(now()) @db.Timestamptz
 
   targetUser    User @relation("RoleChangeTarget", fields: [targetUserId], references: [id])
   changedByUser User @relation("RoleChangeChanger", fields: [changedByUserId], references: [id])
