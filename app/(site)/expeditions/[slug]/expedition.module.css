@@ -1,0 +1,40 @@
+.page {
+  display: flex;
+  flex-direction: column;
+}
+
+.noticeBanner {
+  padding-top: var(--space-8);
+  margin-bottom: var(--space-6);
+}
+
+.about {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-top: var(--space-8);
+}
+
+.aboutTitle {
+  margin: 0;
+}
+
+.aboutDesc {
+  margin: 0;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  color: var(--color-muted-foreground);
+}
+
+@media (min-width: 1248px) {
+  .noticeBanner {
+    padding-top: var(--space-10);
+  }
+
+  .about {
+    padding-top: var(--space-10);
+    max-width: 60%;
+    margin-inline: auto;
+    text-align: center;
+  }
+}

@@ -25,6 +25,7 @@ type ExpeditionInput = {
   startsAt: string
   endsAt?: string
   coverPhotoUrl: string
+  coverPhotoCredit?: string | null
   galleryItems: GalleryItem[]
   checklistItems: ChecklistItem[]
   durationDays?: number | null
@@ -63,8 +64,9 @@ export async function createExpedition(input: ExpeditionInput): Promise<string> 
       description: input.description,
       startsAt: new Date(input.startsAt),
       endsAt: input.endsAt ? new Date(input.endsAt) : null,
-      coverPhotoUrl:  input.coverPhotoUrl,
-      galleryItems:   input.galleryItems,
+      coverPhotoUrl:    input.coverPhotoUrl,
+      coverPhotoCredit: input.coverPhotoCredit ?? null,
+      galleryItems:     input.galleryItems,
       checklistItems: input.checklistItems,
       durationDays:   input.durationDays ?? null,
       aboutTitle:    input.aboutTitle ?? null,
@@ -111,18 +113,19 @@ export async function updateExpedition(id: string, input: ExpeditionInput): Prom
       description: input.description,
       startsAt: new Date(input.startsAt),
       endsAt: input.endsAt ? new Date(input.endsAt) : null,
-      coverPhotoUrl:  input.coverPhotoUrl,
-      galleryItems:   input.galleryItems,
-      checklistItems: input.checklistItems,
-      durationDays:   input.durationDays ?? null,
-      aboutTitle:     input.aboutTitle ?? null,
-      aboutText:      input.aboutText ?? null,
-      difficulty:     input.difficulty ?? null,
-      includedItems:  input.includedItems ?? [],
-      excludedItems:  input.excludedItems ?? [],
-      totalSpots:     input.totalSpots,
-      spotsLeft:      input.spotsLeft,
-      updatedBy:      session.user.email ?? null,
+      coverPhotoUrl:    input.coverPhotoUrl,
+      coverPhotoCredit: input.coverPhotoCredit ?? null,
+      galleryItems:     input.galleryItems,
+      checklistItems:   input.checklistItems,
+      durationDays:     input.durationDays ?? null,
+      aboutTitle:       input.aboutTitle ?? null,
+      aboutText:        input.aboutText ?? null,
+      difficulty:       input.difficulty ?? null,
+      includedItems:    input.includedItems ?? [],
+      excludedItems:    input.excludedItems ?? [],
+      totalSpots:       input.totalSpots,
+      spotsLeft:        input.spotsLeft,
+      updatedBy:        session.user.email ?? null,
       guides: { set: input.guideIds.map((gid) => ({ id: parseInt(gid, 10) })) },
       days: {
         create: input.days.map((d) => ({
@@ -214,8 +217,9 @@ export async function copyExpedition(id: string): Promise<string> {
       description:    expedition.description,
       startsAt:       newStartsAt,
       endsAt:         newEndsAt,
-      coverPhotoUrl:  expedition.coverPhotoUrl,
-      galleryItems:   expedition.galleryItems as Prisma.InputJsonValue,
+      coverPhotoUrl:    expedition.coverPhotoUrl,
+      coverPhotoCredit: expedition.coverPhotoCredit ?? null,
+      galleryItems:     expedition.galleryItems as Prisma.InputJsonValue,
       checklistItems: expedition.checklistItems as Prisma.InputJsonValue,
       durationDays:   expedition.durationDays,
       aboutTitle:     expedition.aboutTitle,

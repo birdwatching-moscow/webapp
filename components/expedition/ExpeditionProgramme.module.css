@@ -1,0 +1,121 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-top: var(--space-8);
+}
+
+.heading {
+  margin: 0;
+}
+
+/* ─── Tabs ────────────────────────────────────────────── */
+
+.tabs {
+  display: flex;
+  gap: var(--space-5);
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  flex: 0 0 auto;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  padding: 0;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  font-size: var(--font-size-xl);
+  line-height: 24px;
+  color: var(--color-muted-foreground);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: var(--color-foreground);
+}
+
+.tabActive {
+  color: var(--color-foreground);
+  border-bottom-color: var(--color-foreground);
+}
+
+/* ─── Content ─────────────────────────────────────────── */
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.dayText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.dayNumber {
+  margin: 0;
+  color: var(--color-muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.dayTitle,
+.dayDescription {
+  margin: 0;
+}
+
+.dayDescription {
+  color: var(--color-muted-foreground);
+}
+
+
+/* ─── Photo ──────────────────────────────────────────── */
+
+.photo {
+  display: none;
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.photoImg {
+  object-fit: cover;
+}
+
+/* ─── Desktop ────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .section {
+    padding-top: var(--space-10);
+  }
+
+  .content {
+    flex-direction: row;
+    align-items: stretch;
+    gap: var(--space-10);
+    min-height: 480px;
+  }
+
+  .dayText {
+    flex: 0 0 50%;
+    justify-content: flex-start;
+  }
+
+  .photo {
+    display: block;
+    flex: 1 0 0;
+    aspect-ratio: unset;
+  }
+}
