@@ -15,6 +15,7 @@ import {
   LOGIN_CODE_PROVIDER_ID,
   ADMIN_2FA_PROVIDER_ID,
   HTTP_STATUS_TOO_MANY_REQUESTS,
+  LOGIN_CODE_TTL_MS,
 } from '@/lib/constants'
 import { AUTH_ERROR_ACCOUNT_BLOCKED, AUTH_ERROR_PASSWORD_RESET_REQUIRED } from '@/lib/auth/errors'
 import { useAuthForm } from '@/hooks/useAuthForm'
@@ -43,7 +44,8 @@ function LoginCodeForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = safeRedirect(
-    searchParams.get(RETURN_URL_PARAM) ?? searchParams.get(CALLBACK_URL_PARAM)
+    searchParams.get(RETURN_URL_PARAM) ?? searchParams.get(CALLBACK_URL_PARAM),
+    ROUTES.profile,
   )
   const { error, setError, loading, run } = useAuthForm()
   const [step, setStep] = useState<LoginStep>('email')
@@ -60,6 +62,7 @@ function LoginCodeForm() {
   const [passwordInput, setPasswordInput] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const [canResend, setCanResend] = useState(false)
+  const [codeSentAt, setCodeSentAt] = useState<number | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const otp = useOtpInput(submitCode)
 
@@ -76,6 +79,15 @@ function LoginCodeForm() {
   useEffect(() => {
     if (step === 'set-password') document.getElementById('newPassword')?.focus()
   }, [step])
+
+  useEffect(() => {
+    if (!codeSentAt) return
+    setCanResend(false)
+    const remaining = LOGIN_CODE_TTL_MS - (Date.now() - codeSentAt)
+    if (remaining <= 0) { setCanResend(true); return }
+    const timer = setTimeout(() => setCanResend(true), remaining)
+    return () => clearTimeout(timer)
+  }, [codeSentAt])
 
   async function handleEmailSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -127,6 +139,7 @@ function LoginCodeForm() {
       }
       setCsrfToken(resData.csrfToken ?? '')
       setEmail(emailInput.trim())
+      setCodeSentAt(Date.now())
       otp.reset()
       setStep('code')
     })
@@ -160,6 +173,7 @@ function LoginCodeForm() {
       const data = await res.json() as { csrfToken?: string }
       setCsrfToken(data.csrfToken ?? '')
       setName(nameInput.trim())
+      setCodeSentAt(Date.now())
       otp.reset()
       setStep('code')
     })
@@ -252,7 +266,7 @@ function LoginCodeForm() {
         return
       }
       setCsrfToken(data.csrfToken ?? '')
-      setCanResend(false)
+      setCodeSentAt(Date.now())
       setNotice(AUTH_LABELS.loginCode.codeResent)
       otp.reset({ focus: true })
     })
