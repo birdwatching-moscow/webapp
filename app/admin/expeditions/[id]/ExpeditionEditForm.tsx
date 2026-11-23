@@ -7,15 +7,13 @@ import { Modal } from '@/components/ui/modal/Modal'
 import { updateExpedition, publishExpedition, cancelExpedition, deleteExpedition, reactivateExpedition } from '@/app/admin/expeditions/_actions'
 import { CopyExpeditionButton } from './CopyExpeditionButton'
 import { ROUTES } from '@/utils/routes'
-import type { Guide } from '@/app/admin/walks/_sections/types'
+import type { Guide, TicketTypeRow } from '@/app/admin/walks/_sections/types'
 import { makeKey } from '@/app/admin/walks/_sections/types'
 import { WalkSectionMain } from '@/app/admin/walks/_sections/WalkSectionMain'
 import { WalkSectionDateTime } from '@/app/admin/walks/_sections/WalkSectionDateTime'
 import { WalkSectionCover } from '@/app/admin/walks/_sections/WalkSectionCover'
 import { WalkSectionGuides } from '@/app/admin/walks/_sections/WalkSectionGuides'
 import { WalkSectionTickets } from '@/app/admin/walks/_sections/WalkSectionTickets'
-import type { TicketTypeRow } from '@/app/admin/walks/_sections/types'
-import { makeKey as makeTicketKey } from '@/app/admin/walks/_sections/types'
 import { ImageUpload } from '@/components/admin/ImageUpload'
 import styles from '@/app/admin/walks/[id]/walk-edit.module.css'
 import { EventStatus } from '@/lib/enums'
@@ -86,7 +84,7 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
   const [tickets, setTickets]               = useState<TicketTypeRow[]>(
     expedition.ticketTypes.length > 0
       ? expedition.ticketTypes
-      : [{ key: makeTicketKey(), name: 'Стандартный', priceRub: '', capacity: '' }]
+      : [{ key: makeKey(), name: 'Стандартный', priceRub: '', capacity: '' }]
   )
   const [totalSpots, setTotalSpots]         = useState(String(expedition.totalSpots))
   const [spotsLeft, setSpotsLeft]     = useState(String(expedition.spotsLeft))

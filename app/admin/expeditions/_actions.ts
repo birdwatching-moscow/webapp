@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { isAdmin } from '@/lib/auth/permissions'
 import { ensureUniqueSlug } from '@/lib/admin/slug'
-import { EventStatus } from '@/generated/prisma/client'
+import { EventStatus, Prisma } from '@/generated/prisma/client'
 
 const MAX_EXPEDITION_GALLERY = 3
 
@@ -180,24 +180,6 @@ export async function reactivateExpedition(id: string): Promise<void> {
   await prisma.expedition.update({ where: { id }, data: { status: EventStatus.ACTIVE } })
 }
 
-export async function restoreExpedition(id: string, newStartsAt?: string): Promise<void> {
-  await requireAdmin()
-  const expedition = await prisma.expedition.findFirst({ where: { id } })
-  if (!expedition) throw new Error('Экспедиция не найдена')
-  const startsAt = new Date(expedition.startsAt)
-  if (startsAt < new Date() && !newStartsAt) {
-    throw new Error('Укажите новую дату: дата экспедиции в прошлом')
-  }
-  const resolvedStartsAt = newStartsAt ? new Date(newStartsAt) : startsAt
-  if (newStartsAt && resolvedStartsAt < new Date()) {
-    throw new Error('Новая дата должна быть в будущем')
-  }
-  await prisma.expedition.update({
-    where: { id },
-    data: { status: EventStatus.DRAFT, startsAt: resolvedStartsAt },
-  })
-}
-
 export async function copyExpedition(id: string): Promise<string> {
   const session = await requireAdmin()
   const expedition = await prisma.expedition.findFirst({
@@ -233,8 +215,8 @@ export async function copyExpedition(id: string): Promise<string> {
       startsAt:       newStartsAt,
       endsAt:         newEndsAt,
       coverPhotoUrl:  expedition.coverPhotoUrl,
-      galleryItems:   expedition.galleryItems,
-      checklistItems: expedition.checklistItems,
+      galleryItems:   expedition.galleryItems as Prisma.InputJsonValue,
+      checklistItems: expedition.checklistItems as Prisma.InputJsonValue,
       durationDays:   expedition.durationDays,
       aboutTitle:     expedition.aboutTitle,
       aboutText:      expedition.aboutText,

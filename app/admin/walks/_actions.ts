@@ -76,21 +76,6 @@ async function requireAdmin() {
   return session
 }
 
-type WalkInput = {
-  type: 'WALK'
-  title: string
-  description: string
-  startsAt: string
-  location: string
-  coverPhotoUrl: string
-  galleryUrl?: string
-  priceKopecks: number
-  capacity: number
-  guideId: number
-  slug?: string
-  endsAt?: string
-}
-
 export async function createWalkFull(data: UpdateWalkFullData): Promise<string> {
   const session = await requireAdmin()
   const slug = await ensureUniqueSlug(data.title, async (s) => {
@@ -135,49 +120,6 @@ export async function createWalkFull(data: UpdateWalkFullData): Promise<string> 
   return walk.id
 }
 
-export async function createWalk(input: WalkInput): Promise<string> {
-  await requireAdmin()
-  const slug = input.slug ?? await ensureUniqueSlug(input.title, async (s) => {
-    const existing = await prisma.walk.findFirst({ where: { slug: s } })
-    return existing != null
-  })
-  const walk = await prisma.walk.create({
-    data: {
-      slug,
-      title: input.title,
-      description: input.description,
-      startsAt: new Date(input.startsAt),
-      endsAt: input.endsAt ? new Date(input.endsAt) : null,
-      location: input.location,
-      coverPhotoUrl: input.coverPhotoUrl,
-      galleryUrl: input.galleryUrl ?? null,
-      priceKopecks: input.priceKopecks,
-      capacity: input.capacity,
-      guideId: input.guideId,
-    },
-  })
-  return walk.id
-}
-
-export async function updateWalk(id: string, input: WalkInput): Promise<void> {
-  await requireAdmin()
-  await prisma.walk.update({
-    where: { id },
-    data: {
-      title: input.title,
-      description: input.description,
-      startsAt: new Date(input.startsAt),
-      endsAt: input.endsAt ? new Date(input.endsAt) : null,
-      location: input.location,
-      coverPhotoUrl: input.coverPhotoUrl,
-      galleryUrl: input.galleryUrl ?? null,
-      priceKopecks: input.priceKopecks,
-      capacity: input.capacity,
-      guideId: input.guideId,
-    },
-  })
-}
-
 export async function publishWalk(id: string): Promise<void> {
   const session = await requireAdmin()
   const walk = await prisma.walk.findFirst({ where: { id } })
@@ -213,24 +155,6 @@ export async function reactivateWalk(id: string): Promise<void> {
   if (walk.status !== EventStatus.CANCELLED) throw new Error('Прогулка не отменена')
   if (walk.startsAt <= new Date()) throw new Error('Нельзя вернуть в активные: время прогулки уже прошло')
   await prisma.walk.update({ where: { id }, data: { status: EventStatus.ACTIVE } })
-}
-
-export async function restoreWalk(id: string, newStartsAt?: string): Promise<void> {
-  await requireAdmin()
-  const walk = await prisma.walk.findFirst({ where: { id } })
-  if (!walk) throw new Error('Прогулка не найдена')
-  const startsAt = new Date(walk.startsAt)
-  if (startsAt < new Date() && !newStartsAt) {
-    throw new Error('Укажите новую дату: дата прогулки в прошлом')
-  }
-  const resolvedStartsAt = newStartsAt ? new Date(newStartsAt) : startsAt
-  if (newStartsAt && resolvedStartsAt < new Date()) {
-    throw new Error('Новая дата должна быть в будущем')
-  }
-  await prisma.walk.update({
-    where: { id },
-    data: { status: EventStatus.DRAFT, startsAt: resolvedStartsAt },
-  })
 }
 
 export async function deleteWalk(id: string): Promise<void> {
@@ -304,13 +228,6 @@ export async function copyWalk(id: string): Promise<string> {
   }
 
   return newWalk.id
-}
-
-export async function deleteTicket(ticketId: string): Promise<void> {
-  await requireAdmin()
-  const ticket = await prisma.ticket.findFirst({ where: { id: ticketId } })
-  if (!ticket) throw new Error('Билет не найден')
-  await prisma.ticket.delete({ where: { id: ticketId } })
 }
 
 export async function exportWalkParticipants(walkId: string, timeZone?: string): Promise<{ b64: string; filename: string }> {
