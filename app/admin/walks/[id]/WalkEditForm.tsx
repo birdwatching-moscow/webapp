@@ -4,7 +4,7 @@ import { useState, useEffect, useTransition, useId } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/buttons/Button'
 import { Modal } from '@/components/ui/modal/Modal'
-import { updateWalkFull, publishWalk, cancelWalk, deleteWalk } from '@/app/admin/walks/_actions'
+import { updateWalkFull, publishWalk, cancelWalk, deleteWalk, reactivateWalk } from '@/app/admin/walks/_actions'
 import { CopyWalkButton } from './CopyWalkButton'
 import { ROUTES } from '@/utils/routes'
 import type { Guide, TicketTypeRow } from '@/app/admin/walks/_sections/types'
@@ -95,9 +95,10 @@ export function WalkEditForm({ walk, guides }: Props) {
   const [error, setError]           = useState<string | null>(null)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
   const [showDangerConfirm, setShowDangerConfirm] = useState<'cancel' | 'delete' | null>(null)
-  const [saving, startSave]     = useTransition()
-  const [publishing, startPublish] = useTransition()
-  const [danger, startDanger]   = useTransition()
+  const [saving, startSave]         = useTransition()
+  const [publishing, startPublish]  = useTransition()
+  const [danger, startDanger]       = useTransition()
+  const [reactivating, startReactivate] = useTransition()
 
   const titleId = useId()
   const requireAll = walk.status === EventStatus.ACTIVE
@@ -237,6 +238,20 @@ export function WalkEditForm({ walk, guides }: Props) {
     })
   }
 
+  function handleReactivate() {
+    setError(null)
+    startReactivate(async () => {
+      try {
+        await reactivateWalk(walk.id)
+        router.refresh()
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Ошибка')
+      }
+    })
+  }
+
+  const canReactivate = walk.status === EventStatus.CANCELLED && new Date(walk.startsAt) > new Date()
+
   return (
     <div className={styles.page}>
 
@@ -279,6 +294,14 @@ export function WalkEditForm({ walk, guides }: Props) {
       {!isEditable && (
         <div className={styles.readonlyBanner}>
           Эта прогулка доступна только для просмотра — редактирование возможно только в статусах «Черновик» и «Активна».
+        </div>
+      )}
+
+      {canReactivate && (
+        <div className={styles.formActions}>
+          <Button fullWidth onClick={handleReactivate} disabled={reactivating}>
+            {reactivating ? 'Возвращаем…' : 'Вернуть в активные'}
+          </Button>
         </div>
       )}
 

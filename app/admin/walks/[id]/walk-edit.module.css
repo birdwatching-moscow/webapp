@@ -487,6 +487,46 @@
   vertical-align: baseline;
 }
 
+/* ── Day drag-and-drop ───────────────────────────── */
+
+.dayCard {
+  transition: opacity 0.15s;
+}
+
+.dayDragging {
+  opacity: 0.35;
+}
+
+.dayDragOver {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+.dayHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.dayHandle {
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--color-muted-foreground);
+  cursor: grab;
+  user-select: none;
+  padding: 0 var(--space-1);
+}
+
+.dayHandle:active {
+  cursor: grabbing;
+}
+
+.dayAddButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
 .checkboxOption {
   display: flex;
   align-items: center;

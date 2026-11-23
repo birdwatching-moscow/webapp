@@ -205,6 +205,15 @@ export async function cancelWalk(id: string): Promise<void> {
   await prisma.walk.update({ where: { id }, data: { status: EventStatus.CANCELLED } })
 }
 
+export async function reactivateWalk(id: string): Promise<void> {
+  await requireAdmin()
+  const walk = await prisma.walk.findFirst({ where: { id } })
+  if (!walk) throw new Error('Прогулка не найдена')
+  if (walk.status !== EventStatus.CANCELLED) throw new Error('Прогулка не отменена')
+  if (walk.startsAt <= new Date()) throw new Error('Нельзя вернуть в активные: время прогулки уже прошло')
+  await prisma.walk.update({ where: { id }, data: { status: EventStatus.ACTIVE } })
+}
+
 export async function restoreWalk(id: string, newStartsAt?: string): Promise<void> {
   await requireAdmin()
   const walk = await prisma.walk.findFirst({ where: { id } })
