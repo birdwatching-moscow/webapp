@@ -131,8 +131,9 @@ model Expedition {
   totalSpots    Int
   spotsLeft     Int
   status        EventStatus @default(DRAFT)
-  coverPhotoUrl String      @db.VarChar(2048)
-  galleryItems   Json     @default("[]")
+  coverPhotoUrl    String      @db.VarChar(2048)
+  coverPhotoCredit String?     @db.VarChar(500)
+  galleryItems     Json        @default("[]")
   checklistItems Json     @default("[]")
   durationDays   Int?
   aboutTitle     String?   @db.VarChar(200)

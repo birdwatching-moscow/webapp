@@ -45,6 +45,7 @@ export type ExpeditionPageRow = {
   startsAt: Date
   endsAt: Date | null
   coverPhotoUrl: string
+  coverPhotoCredit: string | null
   durationDays: number | null
   totalSpots: number
   spotsLeft: number
@@ -106,8 +107,9 @@ export async function getExpeditionBySlug(slug: string): Promise<ExpeditionPageR
       description: true,
       startsAt: true,
       endsAt: true,
-      coverPhotoUrl: true,
-      durationDays: true,
+      coverPhotoUrl:    true,
+      coverPhotoCredit: true,
+      durationDays:     true,
       totalSpots: true,
       spotsLeft: true,
       difficulty: true,
@@ -140,8 +142,9 @@ export async function getExpeditionBySlug(slug: string): Promise<ExpeditionPageR
     description: row.description,
     startsAt: row.startsAt,
     endsAt: row.endsAt,
-    coverPhotoUrl: row.coverPhotoUrl,
-    durationDays: row.durationDays,
+    coverPhotoUrl:    row.coverPhotoUrl,
+    coverPhotoCredit: row.coverPhotoCredit,
+    durationDays:     row.durationDays,
     totalSpots: row.totalSpots,
     spotsLeft: row.spotsLeft,
     difficulty: row.difficulty,

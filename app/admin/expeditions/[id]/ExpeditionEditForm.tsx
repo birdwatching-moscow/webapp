@@ -28,6 +28,7 @@ type ExpeditionData = {
   startsAt: string
   endsAt: string
   coverPhotoUrl: string
+  coverPhotoCredit: string | null
   galleryItems: GalleryItem[]
   checklistItems: ChecklistItem[]
   durationDays: number | null
@@ -72,7 +73,8 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
   const [description, setDescription] = useState(expedition.description)
   const [startsAt, setStartsAt]       = useState(expedition.startsAt)
   const [endsAt, setEndsAt]           = useState(expedition.endsAt)
-  const [coverUrl, setCoverUrl]       = useState(expedition.coverPhotoUrl)
+  const [coverUrl, setCoverUrl]         = useState(expedition.coverPhotoUrl)
+  const [coverCredit, setCoverCredit]   = useState(expedition.coverPhotoCredit ?? '')
   const [galleryItems, setGalleryItems]     = useState<GalleryItem[]>(expedition.galleryItems)
   const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>(expedition.checklistItems)
   const [durationDays, setDurationDays] = useState(expedition.durationDays != null ? String(expedition.durationDays) : '')
@@ -171,7 +173,8 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
       description: description.trim(),
       startsAt,
       endsAt: endsAt || undefined,
-      coverPhotoUrl: coverUrl.trim(),
+      coverPhotoUrl:    coverUrl.trim(),
+      coverPhotoCredit: coverCredit.trim() || null,
       galleryItems:   galleryItems.map(g => ({ url: g.url.trim(), info: g.info.trim() })).filter(g => g.url),
       checklistItems: checklistItems.map(c => ({ title: c.title.trim(), text: c.text.trim() })).filter(c => c.title || c.text),
       durationDays: durationDays ? parseInt(durationDays, 10) : null,
@@ -455,10 +458,9 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
           <WalkSectionCover
             coverUrl={coverUrl}
             onCoverUrl={v => { setCoverUrl(v); markDirty() }}
-            coverCredit=""
-            onCoverCredit={() => {}}
+            coverCredit={coverCredit}
+            onCoverCredit={v => { setCoverCredit(v); markDirty() }}
             folder="expeditions"
-            showCredit={false}
             disabled={!isEditable}
             requireAll={requireAll}
           />

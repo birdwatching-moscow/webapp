@@ -50,6 +50,7 @@ export default async function ExpeditionPage({ params }: Props) {
         spotsLeft={expedition.spotsLeft}
         difficulty={expedition.difficulty}
         coverPhotoUrl={expedition.coverPhotoUrl}
+        coverPhotoCredit={expedition.coverPhotoCredit}
         isSoldOut={isSoldOut}
       />
 
