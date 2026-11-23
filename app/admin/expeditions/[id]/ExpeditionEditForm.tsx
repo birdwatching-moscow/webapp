@@ -1,6 +1,34 @@
 'use client'
 
-import { useState, useEffect, useTransition, useId, useRef } from 'react'
+import { useState, useEffect, useMemo, useTransition, useId, useRef } from 'react'
+
+function getExpectedDayNumbers(start: string, end: string): number[] {
+  if (!start) return []
+  if (!end) return [1]
+  const s = new Date(start + 'T00:00:00')
+  const e = new Date(end + 'T00:00:00')
+  const n = Math.round((e.getTime() - s.getTime()) / 86400000) + 1
+  return n >= 1 ? Array.from({ length: n }, (_, i) => i + 1) : [1]
+}
+
+function getDayDate(startsAt: string, dayNumber: number): string {
+  if (!startsAt) return ''
+  const start = new Date(startsAt + 'T00:00:00')
+  const offset = dayNumber === 0 ? -1 : dayNumber - 1
+  const d = new Date(start.getTime() + offset * 86400000)
+  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })
+}
+
+type DayRow = { clientId: string; dayNumber: number; title: string; description: string; photoUrl: string; photoCredit: string }
+
+function syncDays(prev: DayRow[], startsAt: string, endsAt: string): DayRow[] {
+  const expected = getExpectedDayNumbers(startsAt, endsAt)
+  const byNum = new Map(prev.map(d => [d.dayNumber, d]))
+  const hasZero = prev.some(d => d.dayNumber === 0)
+  const numbered = expected.map(n => byNum.get(n) ?? { clientId: makeKey(), dayNumber: n, title: '', description: '', photoUrl: '', photoCredit: '' })
+  if (hasZero) return [byNum.get(0)!, ...numbered]
+  return numbered
+}
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/buttons/Button'
 import { Modal } from '@/components/ui/modal/Modal'
@@ -18,8 +46,6 @@ import { ImageUpload } from '@/components/admin/ImageUpload'
 import styles from '@/app/admin/walks/[id]/walk-edit.module.css'
 import { EventStatus } from '@/lib/enums'
 import type { ChecklistItem, GalleryItem } from '@/app/admin/expeditions/_actions'
-
-type DayRow = { clientId: string; dayNumber: number; title: string; description: string }
 
 type ExpeditionData = {
   id: string
@@ -42,7 +68,7 @@ type ExpeditionData = {
   spotsLeft: number
   status: string
   guideIds: string[]
-  days: DayRow[]
+  days: { dayNumber: number; title: string; description: string; photoUrl: string | null; photoCredit: string | null }[]
 }
 
 interface Props {
@@ -77,7 +103,10 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
   const [coverCredit, setCoverCredit]   = useState(expedition.coverPhotoCredit ?? '')
   const [galleryItems, setGalleryItems]     = useState<GalleryItem[]>(expedition.galleryItems)
   const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>(expedition.checklistItems)
-  const [durationDays, setDurationDays] = useState(expedition.durationDays != null ? String(expedition.durationDays) : '')
+  const durationDays = useMemo(() => {
+    const n = getExpectedDayNumbers(startsAt, endsAt).length
+    return n > 0 ? String(n) : ''
+  }, [startsAt, endsAt])
   const [aboutTitle, setAboutTitle]         = useState(expedition.aboutTitle ?? '')
   const [aboutText, setAboutText]           = useState(expedition.aboutText ?? '')
   const [difficulty, setDifficulty]         = useState<number | null>(expedition.difficulty)
@@ -91,11 +120,13 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
   const [totalSpots, setTotalSpots]         = useState(String(expedition.totalSpots))
   const [spotsLeft, setSpotsLeft]     = useState(String(expedition.spotsLeft))
   const [guideIds, setGuideIds]       = useState<string[]>(expedition.guideIds)
-  const [days, setDays]               = useState<DayRow[]>(() => [...expedition.days].sort((a, b) => a.dayNumber - b.dayNumber))
+  const [days, setDays]               = useState<DayRow[]>(() => syncDays(
+    expedition.days.map(d => ({ ...d, clientId: makeKey(), photoUrl: d.photoUrl ?? '', photoCredit: d.photoCredit ?? '' })),
+    expedition.startsAt,
+    expedition.endsAt,
+  ))
   const [formTab, setFormTab]         = useState<'main' | 'days'>('main')
-  const [dragOverId, setDragOverId]   = useState<string | null>(null)
-  const [draggingId, setDraggingId]   = useState<string | null>(null)
-  const draggedIdRef                  = useRef<string | null>(null)
+  const datesInitRef                  = useRef(true)
 
   const [isDirty, setIsDirty]               = useState(false)
   const [publishSuccess, setPublishSuccess] = useState(false)
@@ -135,6 +166,11 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
     if (!includedItems.some(s => s.trim()))                    errors.push('Хотя бы один пункт «Включено в стоимость»')
     if (!excludedItems.some(s => s.trim()))                    errors.push('Хотя бы один пункт «Не входит в стоимость»')
     if (days.length === 0)                                     errors.push('Хотя бы один день программы')
+    const emptyDays = days.filter(d => !d.title.trim() || !d.description.trim() || !d.photoUrl.trim() || !d.photoCredit.trim())
+    if (emptyDays.length > 0) {
+      const nums = emptyDays.map(d => `День ${d.dayNumber}`).join(', ')
+      errors.push(`Не заполнены дни программы: ${nums}`)
+    }
     return errors
   }
 
@@ -145,6 +181,11 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
     window.addEventListener('beforeunload', onBeforeUnload)
     return () => window.removeEventListener('beforeunload', onBeforeUnload)
   }, [isDirty])
+
+  useEffect(() => {
+    if (datesInitRef.current) { datesInitRef.current = false; return }
+    setDays(prev => syncDays(prev, startsAt, endsAt))
+  }, [startsAt, endsAt])
 
   function expeditionsListHref() {
     const from = searchParams.get('from')
@@ -194,10 +235,12 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
       spotsLeft: parseInt(spotsLeft, 10) || 0,
       guideIds,
       days: days.map(d => ({
-        clientId: d.clientId,
-        dayNumber: d.dayNumber,
-        title: d.title.trim(),
+        clientId:    d.clientId,
+        dayNumber:   d.dayNumber,
+        title:       d.title.trim(),
         description: d.description.trim(),
+        photoUrl:    d.photoUrl.trim(),
+        photoCredit: d.photoCredit.trim(),
       })),
     }
   }
@@ -291,74 +334,22 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
     markDirty()
   }
 
-  function sortedDays(list: DayRow[]) {
-    return [...list].sort((a, b) => a.dayNumber - b.dayNumber)
-  }
-
-  function addDay() {
-    setDays(prev => {
-      const sorted = sortedDays(prev)
-      const maxNum = sorted.length > 0 ? sorted[sorted.length - 1].dayNumber : 0
-      return sortedDays([...prev, { clientId: makeKey(), dayNumber: maxNum + 1, title: '', description: '' }])
-    })
-    markDirty()
-  }
-
-  function addDayZero() {
-    setDays(prev => sortedDays([...prev, { clientId: makeKey(), dayNumber: 0, title: '', description: '' }]))
-    markDirty()
-  }
-
-  function updateDay(clientId: string, field: 'title' | 'description', value: string) {
+  function updateDay(clientId: string, field: 'title' | 'description' | 'photoUrl' | 'photoCredit', value: string) {
     setDays(prev => prev.map(d => d.clientId === clientId ? { ...d, [field]: value } : d))
     markDirty()
   }
 
-  function removeDay(clientId: string) {
+  function addDayZero() {
     setDays(prev => {
-      const remaining = sortedDays(prev.filter(d => d.clientId !== clientId))
-      if (remaining.length === 0) return remaining
-      const startNum = remaining[0].dayNumber === 0 ? 0 : 1
-      return remaining.map((d, i) => ({ ...d, dayNumber: startNum + i }))
+      if (prev.some(d => d.dayNumber === 0)) return prev
+      return [{ clientId: makeKey(), dayNumber: 0, title: '', description: '', photoUrl: '', photoCredit: '' }, ...prev]
     })
     markDirty()
   }
 
-  function handleDragStart(clientId: string) {
-    draggedIdRef.current = clientId
-    setDraggingId(clientId)
-  }
-
-  function handleDragOver(e: React.DragEvent, clientId: string) {
-    e.preventDefault()
-    setDragOverId(clientId)
-  }
-
-  function handleDrop(targetClientId: string) {
-    const draggedId = draggedIdRef.current
-    setDragOverId(null)
-    setDraggingId(null)
-    draggedIdRef.current = null
-    if (!draggedId || draggedId === targetClientId) return
-    setDays(prev => {
-      const sorted = sortedDays(prev)
-      const hasZero = sorted[0]?.dayNumber === 0
-      const fromIdx = sorted.findIndex(d => d.clientId === draggedId)
-      const toIdx   = sorted.findIndex(d => d.clientId === targetClientId)
-      if (fromIdx === -1 || toIdx === -1) return prev
-      const reordered = [...sorted]
-      const [item] = reordered.splice(fromIdx, 1)
-      reordered.splice(toIdx, 0, item)
-      const startNum = hasZero ? 0 : 1
-      return reordered.map((d, i) => ({ ...d, dayNumber: startNum + i }))
-    })
+  function removeDayZero() {
+    setDays(prev => prev.filter(d => d.dayNumber !== 0))
     markDirty()
-  }
-
-  function handleDragEnd() {
-    draggedIdRef.current = null
-    setDraggingId(null)
-    setDragOverId(null)
   }
 
   function handleReactivate() {
@@ -470,7 +461,6 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
             onStartsAt={v => { setStartsAt(v); markDirty() }}
             onEndsAt={v => { setEndsAt(v); markDirty() }}
             durationDays={durationDays}
-            onDurationDays={v => { setDurationDays(v); markDirty() }}
             disabled={!isEditable}
             requireAll={requireAll}
             dateOnly
@@ -480,7 +470,7 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
             <h2 className={styles.sectionTitle}>О поездке</h2>
             <div className={`${styles.fieldRow} ${styles.fieldRow2}`}>
               <div className={`${styles.field} ${styles.fieldFullWidth}`}>
-                <label className={styles.label}>Заголовок</label>
+                <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Заголовок</label>
                 <input
                   className={styles.input}
                   value={aboutTitle}
@@ -490,7 +480,7 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
                 />
               </div>
               <div className={`${styles.field} ${styles.fieldFullWidth}`}>
-                <label className={styles.label}>Текст</label>
+                <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Текст</label>
                 <textarea
                   className={styles.textarea}
                   value={aboutText}
@@ -517,7 +507,7 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
           </section>
 
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Будем искать</h2>
+            <h2 className={`${styles.sectionTitle} ${requireAll ? styles.required : ''}`}>Будем искать</h2>
             <div className={styles.galleryList}>
               {galleryItems.map((item, i) => (
                 <div key={i} className={styles.galleryItemBlock}>
@@ -567,7 +557,7 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
           />
 
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Всё, что важно знать перед поездкой</h2>
+            <h2 className={`${styles.sectionTitle} ${requireAll ? styles.required : ''}`}>Всё, что важно знать перед поездкой</h2>
             {checklistItems.map((item, i) => (
               <div key={i} className={styles.checklistItem}>
                 <div className={styles.checklistItemHeader}>
@@ -623,7 +613,7 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
           />
 
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Включено в базовую стоимость</h2>
+            <h2 className={`${styles.sectionTitle} ${requireAll ? styles.required : ''}`}>Включено в базовую стоимость</h2>
             <div className={styles.galleryList}>
               {includedItems.map((item, i) => (
                 <div key={i} className={styles.galleryRow}>
@@ -654,7 +644,7 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
           </section>
 
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Не входит в стоимость</h2>
+            <h2 className={`${styles.sectionTitle} ${requireAll ? styles.required : ''}`}>Не входит в стоимость</h2>
             <div className={styles.galleryList}>
               {excludedItems.map((item, i) => (
                 <div key={i} className={styles.galleryRow}>
@@ -718,44 +708,45 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
 
       {formTab === 'days' && (
         <div className={styles.sections}>
-          {days.length === 0 && (
-            <p className={styles.emailNote}>Программа не добавлена</p>
+          {!startsAt && (
+            <p className={styles.emailNote}>Укажите даты экспедиции на вкладке «Описание».</p>
+          )}
+          {isEditable && startsAt && !days.some(d => d.dayNumber === 0) && (
+            <div className={styles.dayAddButtons}>
+              <button type="button" className={styles.addGuideBtn} onClick={addDayZero}>
+                + Добавить день 0
+              </button>
+            </div>
           )}
           {days.map(day => (
             <section
               key={day.clientId}
-              className={[
-                styles.section,
-                styles.dayCard,
-                draggingId === day.clientId ? styles.dayDragging : '',
-                dragOverId === day.clientId ? styles.dayDragOver : '',
-              ].filter(Boolean).join(' ')}
-              draggable={isEditable}
-              onDragStart={() => handleDragStart(day.clientId)}
-              onDragOver={e => handleDragOver(e, day.clientId)}
-              onDrop={() => handleDrop(day.clientId)}
-              onDragEnd={handleDragEnd}
+              className={[styles.section, styles.dayCard].join(' ')}
             >
               <div className={styles.topBar} style={{ marginBottom: 0 }}>
                 <div className={styles.dayHeaderLeft}>
-                  {isEditable && (
-                    <span className={styles.dayHandle} aria-hidden>⠿</span>
+                  <h2 className={styles.sectionTitle}>
+                    {day.dayNumber === 0 ? 'День 0' : `День ${day.dayNumber}`}
+                  </h2>
+                  {startsAt && (
+                    <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-muted-foreground)', fontWeight: 400 }}>
+                      — {getDayDate(startsAt, day.dayNumber)}
+                    </span>
                   )}
-                  <h2 className={styles.sectionTitle}>День {day.dayNumber}</h2>
                 </div>
-                {isEditable && (
+                {isEditable && day.dayNumber === 0 && (
                   <button
                     type="button"
                     className={styles.dangerBtn}
-                    onClick={() => removeDay(day.clientId)}
+                    onClick={removeDayZero}
                   >
-                    Удалить день
+                    Удалить день 0
                   </button>
                 )}
               </div>
               <div className={`${styles.fieldRow} ${styles.fieldRow2}`}>
                 <div className={`${styles.field} ${styles.fieldFullWidth}`}>
-                  <label className={styles.label}>Название дня</label>
+                  <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Название дня</label>
                   <input
                     className={styles.input}
                     value={day.title}
@@ -765,7 +756,7 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
                   />
                 </div>
                 <div className={`${styles.field} ${styles.fieldFullWidth}`}>
-                  <label className={styles.label}>Описание</label>
+                  <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Описание</label>
                   <textarea
                     className={styles.textarea}
                     value={day.description}
@@ -774,21 +765,29 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
                     rows={4}
                   />
                 </div>
+                <div className={`${styles.field} ${styles.fieldFullWidth}`}>
+                  <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Фото дня</label>
+                  <ImageUpload
+                    folder="expeditions"
+                    value={day.photoUrl}
+                    onChange={v => { updateDay(day.clientId, 'photoUrl', v); markDirty() }}
+                    disabled={!isEditable}
+                    targetWidth={800}
+                    targetHeight={600}
+                  />
+                  <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Подпись к фото</label>
+                  <input
+                    className={styles.input}
+                    value={day.photoCredit}
+                    onChange={e => { updateDay(day.clientId, 'photoCredit', e.target.value); markDirty() }}
+                    disabled={!isEditable}
+                    placeholder="Например: Фото: Иван Иванов · Личный архив"
+                    maxLength={500}
+                  />
+                </div>
               </div>
             </section>
           ))}
-          {isEditable && (
-            <div className={styles.dayAddButtons}>
-              {!days.some(d => d.dayNumber === 0) && (
-                <button type="button" className={styles.addGuideBtn} onClick={addDayZero}>
-                  + Добавить день 0
-                </button>
-              )}
-              <button type="button" className={styles.addGuideBtn} onClick={addDay}>
-                + Добавить день
-              </button>
-            </div>
-          )}
         </div>
       )}
 

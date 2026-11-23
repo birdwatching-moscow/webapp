@@ -70,6 +70,7 @@ export default async function ExpeditionPage({ params }: Props) {
           days={expedition.days}
           coverPhotoUrl={expedition.coverPhotoUrl}
           title={expedition.title}
+          startsAt={expedition.startsAt}
         />
       )}
     </main>

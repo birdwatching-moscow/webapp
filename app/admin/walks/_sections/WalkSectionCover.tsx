@@ -32,7 +32,7 @@ export function WalkSectionCover({
       />
       {showCredit && (
         <div className={styles.field}>
-          <label className={styles.label}>Подпись к фото</label>
+          <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Подпись к фото</label>
           <input
             className={styles.input}
             value={coverCredit}

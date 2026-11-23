@@ -71,13 +71,13 @@
   letter-spacing: 0.08em;
 }
 
-.dayTitle,
-.dayDescription {
+.dayText > * {
   margin: 0;
 }
 
 .dayDescription {
   color: var(--color-muted-foreground);
+  white-space: pre-line;
 }
 
 
@@ -90,9 +90,6 @@
   overflow: hidden;
 }
 
-.photoImg {
-  object-fit: cover;
-}
 
 /* ─── Desktop ────────────────────────────────────────── */
 

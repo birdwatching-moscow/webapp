@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { SORT_ASC } from '@/lib/constants'
-import { makeKey, makeKey as makeTicketKey } from '@/app/admin/walks/_sections/types'
+import { makeKey as makeTicketKey } from '@/app/admin/walks/_sections/types'
 import { ExpeditionEditForm } from './ExpeditionEditForm'
 import type { ChecklistItem, GalleryItem } from '@/app/admin/expeditions/_actions'
 
@@ -32,7 +32,7 @@ export default async function EditExpeditionPage({ params }: { params: Promise<{
         spotsLeft:      true,
         status:         true,
         guides:         { select: { id: true, name: true } },
-        days:           { orderBy: { dayNumber: 'asc' } },
+        days:           { orderBy: { dayNumber: 'asc' }, select: { dayNumber: true, title: true, description: true, photoUrl: true, photoCredit: true } },
       },
     }),
     prisma.teamMember.findMany({ select: { id: true, name: true }, orderBy: SORT_ASC }),
@@ -73,10 +73,11 @@ export default async function EditExpeditionPage({ params }: { params: Promise<{
         status:        expedition.status,
         guideIds:      expedition.guides.map(g => String(g.id)),
         days:          expedition.days.map(d => ({
-          clientId:    makeKey(),
           dayNumber:   d.dayNumber,
           title:       d.title,
           description: d.description,
+          photoUrl:    d.photoUrl,
+          photoCredit: d.photoCredit,
         })),
       }}
       guides={guides}

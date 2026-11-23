@@ -53,18 +53,28 @@ export function WalkSectionDateTime({
             <span className={styles.fieldError}>Дата окончания не может быть раньше даты начала</span>
           )}
         </div>
-        {onDurationDays !== undefined && (
+        {durationDays !== undefined && (
           <div className={styles.field}>
             <label className={styles.label}>Длительность (дней)</label>
-            <input
-              className={styles.input}
-              type="number"
-              min="1"
-              value={durationDays ?? ''}
-              onChange={e => onDurationDays(e.target.value)}
-              disabled={disabled}
-              placeholder="Например: 10"
-            />
+            {onDurationDays !== undefined ? (
+              <input
+                className={styles.input}
+                type="number"
+                min="1"
+                value={durationDays}
+                onChange={e => onDurationDays(e.target.value)}
+                disabled={disabled}
+                placeholder="Например: 10"
+              />
+            ) : (
+              <input
+                className={styles.input}
+                type="number"
+                value={durationDays}
+                readOnly
+                disabled
+              />
+            )}
           </div>
         )}
         {onLocation !== undefined && (

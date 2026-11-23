@@ -171,11 +171,13 @@ model ExpeditionTicketType {
 }
 
 model ExpeditionDay {
-  id           String @id @default(uuid())
+  id           String  @id @default(uuid())
   expeditionId String
   dayNumber    Int
-  title        String @db.VarChar(150)
-  description  String @db.Text
+  title        String  @db.VarChar(150)
+  description  String  @db.Text
+  photoUrl     String? @db.VarChar(2048)
+  photoCredit  String? @db.VarChar(500)
 
   expedition Expedition @relation(fields: [expeditionId], references: [id])
 }
