@@ -24,8 +24,8 @@ import {
   updateExpedition,
   publishExpedition,
   cancelExpedition,
-  restoreExpedition,
   deleteExpedition,
+  reactivateExpedition,
 } from '@/app/admin/expeditions/_actions'
 import { EventStatus } from '@/generated/prisma/client'
 
@@ -128,19 +128,23 @@ describe('cancelExpedition', () => {
   })
 })
 
-describe('restoreExpedition', () => {
-  it('throws when startsAt is in the past and no newStartsAt provided', async () => {
-    expeditionMock.findFirst.mockResolvedValue(PAST_EXPEDITION)
-    await expect(restoreExpedition('exp-1')).rejects.toThrow()
+describe('reactivateExpedition', () => {
+  it('throws when expedition is not CANCELLED', async () => {
+    expeditionMock.findFirst.mockResolvedValue(DRAFT_EXPEDITION)
+    await expect(reactivateExpedition('exp-1')).rejects.toThrow('Экспедиция не отменена')
   })
 
-  it('calls expedition.update with DRAFT when a future newStartsAt is provided', async () => {
+  it('throws when start time is in the past', async () => {
     expeditionMock.findFirst.mockResolvedValue(PAST_EXPEDITION)
+    await expect(reactivateExpedition('exp-1')).rejects.toThrow(/время экспедиции уже прошло/)
+  })
+
+  it('sets status to ACTIVE when CANCELLED and start time is in the future', async () => {
+    expeditionMock.findFirst.mockResolvedValue(CANCELLED_EXPEDITION)
     expeditionMock.update.mockResolvedValue({})
-    const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-    await restoreExpedition('exp-1', futureDate)
+    await reactivateExpedition('exp-1')
     expect(expeditionMock.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ status: EventStatus.DRAFT }) })
+      expect.objectContaining({ data: expect.objectContaining({ status: EventStatus.ACTIVE }) })
     )
   })
 })

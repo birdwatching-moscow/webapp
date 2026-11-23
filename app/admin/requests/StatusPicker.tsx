@@ -7,7 +7,6 @@ import { updateRequestStatus } from './_actions'
 import styles from './requests.module.css'
 
 const STATUS_OPTIONS: { value: RequestStatus; label: string; cls: string }[] = [
-  { value: 'WAITLIST',    label: 'Лист ожидания',  cls: 'badgeWAITLIST' },
   { value: 'OPEN',        label: 'Открыта',        cls: 'badgeOPEN' },
   { value: 'IN_PROGRESS', label: 'В работе',       cls: 'badgeIN_PROGRESS' },
   { value: 'CLOSED',      label: 'Закрыта',        cls: 'badgeCLOSED' },
@@ -30,6 +29,7 @@ export function StatusPicker({ id, status }: Props) {
   const [open, setOpen] = useState(false)
   const [coords, setCoords] = useState({ top: 0, left: 0 })
   const [pending, startTransition] = useTransition()
+  const [currentStatus, setCurrentStatus] = useState(status)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
 
@@ -61,13 +61,14 @@ export function StatusPicker({ id, status }: Props) {
 
   function pick(next: RequestStatus) {
     setOpen(false)
-    if (next === status) return
+    if (next === currentStatus) return
+    setCurrentStatus(next)
     startTransition(async () => {
       await updateRequestStatus(id, next)
     })
   }
 
-  const current = ALL_STATUS_DISPLAY[status]
+  const current = ALL_STATUS_DISPLAY[currentStatus]
 
   return (
     <>
@@ -108,7 +109,7 @@ export function StatusPicker({ id, status }: Props) {
               <span className={[styles.badge, styles[opt.cls as keyof typeof styles]].join(' ')}>
                 {opt.label}
               </span>
-              {opt.value === status && (
+              {opt.value === currentStatus && (
                 <span className={styles.statusPickerCheck} aria-hidden="true">✓</span>
               )}
             </button>

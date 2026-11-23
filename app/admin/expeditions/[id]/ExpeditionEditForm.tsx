@@ -1,20 +1,19 @@
 'use client'
 
-import { useState, useEffect, useTransition, useId } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useTransition, useId, useRef } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/buttons/Button'
 import { Modal } from '@/components/ui/modal/Modal'
-import { updateExpedition, publishExpedition, cancelExpedition, deleteExpedition } from '@/app/admin/expeditions/_actions'
+import { updateExpedition, publishExpedition, cancelExpedition, deleteExpedition, reactivateExpedition } from '@/app/admin/expeditions/_actions'
+import { CopyExpeditionButton } from './CopyExpeditionButton'
 import { ROUTES } from '@/utils/routes'
-import type { Guide } from '@/app/admin/walks/_sections/types'
+import type { Guide, TicketTypeRow } from '@/app/admin/walks/_sections/types'
 import { makeKey } from '@/app/admin/walks/_sections/types'
 import { WalkSectionMain } from '@/app/admin/walks/_sections/WalkSectionMain'
 import { WalkSectionDateTime } from '@/app/admin/walks/_sections/WalkSectionDateTime'
 import { WalkSectionCover } from '@/app/admin/walks/_sections/WalkSectionCover'
 import { WalkSectionGuides } from '@/app/admin/walks/_sections/WalkSectionGuides'
 import { WalkSectionTickets } from '@/app/admin/walks/_sections/WalkSectionTickets'
-import type { TicketTypeRow } from '@/app/admin/walks/_sections/types'
-import { makeKey as makeTicketKey } from '@/app/admin/walks/_sections/types'
 import { ImageUpload } from '@/components/admin/ImageUpload'
 import styles from '@/app/admin/walks/[id]/walk-edit.module.css'
 import { EventStatus } from '@/lib/enums'
@@ -66,6 +65,7 @@ function statusBadgeClass(status: string) {
 
 export function ExpeditionEditForm({ expedition, guides }: Props) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const isEditable = expedition.status === EventStatus.ACTIVE || expedition.status === EventStatus.DRAFT
 
   const [title, setTitle]             = useState(expedition.title)
@@ -84,35 +84,55 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
   const [tickets, setTickets]               = useState<TicketTypeRow[]>(
     expedition.ticketTypes.length > 0
       ? expedition.ticketTypes
-      : [{ key: makeTicketKey(), name: 'Стандартный', priceRub: '', capacity: '' }]
+      : [{ key: makeKey(), name: 'Стандартный', priceRub: '', capacity: '' }]
   )
   const [totalSpots, setTotalSpots]         = useState(String(expedition.totalSpots))
   const [spotsLeft, setSpotsLeft]     = useState(String(expedition.spotsLeft))
   const [guideIds, setGuideIds]       = useState<string[]>(expedition.guideIds)
-  const [days, setDays]               = useState<DayRow[]>(expedition.days)
+  const [days, setDays]               = useState<DayRow[]>(() => [...expedition.days].sort((a, b) => a.dayNumber - b.dayNumber))
   const [formTab, setFormTab]         = useState<'main' | 'days'>('main')
+  const [dragOverId, setDragOverId]   = useState<string | null>(null)
+  const [draggingId, setDraggingId]   = useState<string | null>(null)
+  const draggedIdRef                  = useRef<string | null>(null)
 
   const [isDirty, setIsDirty]               = useState(false)
   const [publishSuccess, setPublishSuccess] = useState(false)
   const [error, setError]                   = useState<string | null>(null)
   const [showLeaveConfirm, setShowLeaveConfirm]   = useState(false)
   const [showDangerConfirm, setShowDangerConfirm] = useState<'cancel' | 'delete' | null>(null)
-  const [saving, startSave]       = useTransition()
-  const [publishing, startPublish] = useTransition()
-  const [danger, startDanger]     = useTransition()
+  const [saving, startSave]           = useTransition()
+  const [publishing, startPublish]    = useTransition()
+  const [danger, startDanger]         = useTransition()
+  const [reactivating, startReactivate] = useTransition()
 
   const titleId    = useId()
   const requireAll = expedition.status === EventStatus.DRAFT || expedition.status === EventStatus.ACTIVE
+
+  function showError(msg: string) {
+    setError(msg)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   function markDirty() { setIsDirty(true) }
 
   function getPublishErrors(): string[] {
     const errors: string[] = []
-    if (!description.trim())          errors.push('Описание')
-    if (!startsAt)                    errors.push('Дата начала')
-    if (guideIds.length === 0)        errors.push('Хотя бы один гид')
-    if (!coverUrl.trim())             errors.push('Фото обложки')
-    if (!totalSpots || parseInt(totalSpots) < 1) errors.push('Количество мест')
+    if (!description.trim())                                   errors.push('Описание')
+    if (!startsAt)                                             errors.push('Дата начала')
+    if (!endsAt)                                               errors.push('Дата окончания')
+    if (!durationDays || parseInt(durationDays) < 1)           errors.push('Длительность')
+    if (!coverUrl.trim())                                      errors.push('Фото обложки')
+    if (guideIds.length === 0)                                 errors.push('Хотя бы один гид')
+    if (!aboutTitle.trim())                                    errors.push('Заголовок «О поездке»')
+    if (!aboutText.trim())                                     errors.push('Текст «О поездке»')
+    if (difficulty == null)                                    errors.push('Сложность')
+    if (!galleryItems.some(g => g.url.trim()))                 errors.push('Хотя бы одно фото в «Будем искать»')
+    if (!checklistItems.some(c => c.title.trim()))             errors.push('Хотя бы один пункт «Важно знать»')
+    if (!tickets.some(t => t.name.trim() && t.priceRub !== '' && t.capacity !== '')) errors.push('Хотя бы один тип билета')
+    if (!totalSpots || parseInt(totalSpots) < 1)               errors.push('Количество мест')
+    if (!includedItems.some(s => s.trim()))                    errors.push('Хотя бы один пункт «Включено в стоимость»')
+    if (!excludedItems.some(s => s.trim()))                    errors.push('Хотя бы один пункт «Не входит в стоимость»')
+    if (days.length === 0)                                     errors.push('Хотя бы один день программы')
     return errors
   }
 
@@ -125,6 +145,10 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
   }, [isDirty])
 
   function expeditionsListHref() {
+    const from = searchParams.get('from')
+    if (from === 'draft') return `${ROUTES.admin.expeditions}?tab=draft`
+    if (from === 'all')   return `${ROUTES.admin.expeditions}?tab=all`
+    if (from != null)     return ROUTES.admin.expeditions
     if (expedition.status === EventStatus.DRAFT)  return `${ROUTES.admin.expeditions}?tab=draft`
     if (expedition.status === EventStatus.ACTIVE) return ROUTES.admin.expeditions
     return `${ROUTES.admin.expeditions}?tab=all`
@@ -177,11 +201,11 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
 
   function handleSave() {
     setError(null)
-    if (!title.trim()) { setError('Название обязательно'); return }
-    if (startsAt && endsAt && endsAt <= startsAt) { setError('Дата окончания не может быть раньше даты начала'); setFormTab('main'); return }
+    if (!title.trim()) { showError('Название обязательно'); return }
+    if (startsAt && endsAt && endsAt <= startsAt) { showError('Дата окончания не может быть раньше даты начала'); setFormTab('main'); return }
     if (expedition.status === EventStatus.ACTIVE) {
       const errors = getPublishErrors()
-      if (errors.length > 0) { setError(`Не заполнены обязательные поля: ${errors.join(', ')}`); return }
+      if (errors.length > 0) { showError(`Не заполнены обязательные поля: ${errors.join(', ')}`); return }
     }
     startSave(async () => {
       try {
@@ -189,18 +213,18 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
         setIsDirty(false)
         router.push(expeditionsListHref())
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Ошибка при сохранении')
+        showError(e instanceof Error ? e.message : 'Ошибка при сохранении')
       }
     })
   }
 
   function handlePublish() {
     setError(null)
-    if (!title.trim()) { setError('Название обязательно'); return }
-    if (startsAt && endsAt && endsAt <= startsAt) { setError('Дата окончания не может быть раньше даты начала'); setFormTab('main'); return }
+    if (!title.trim()) { showError('Название обязательно'); return }
+    if (startsAt && endsAt && endsAt <= startsAt) { showError('Дата окончания не может быть раньше даты начала'); setFormTab('main'); return }
     const errors = getPublishErrors()
     if (errors.length > 0) {
-      setError(`Нельзя опубликовать: не заполнены — ${errors.join(', ')}`)
+      showError(`Нельзя опубликовать: не заполнены — ${errors.join(', ')}`)
       return
     }
     startPublish(async () => {
@@ -209,7 +233,7 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
         setPublishSuccess(true)
         router.refresh()
       } catch (e) {
-        setError('Экспедиция не опубликована: ' + (e instanceof Error ? e.message : 'неизвестная ошибка'))
+        showError('Экспедиция не опубликована: ' + (e instanceof Error ? e.message : 'неизвестная ошибка'))
       }
     })
   }
@@ -223,7 +247,7 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
         else await deleteExpedition(expedition.id)
         router.push(ROUTES.admin.expeditions)
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Ошибка')
+        showError(e instanceof Error ? e.message : 'Ошибка')
       }
     })
   }
@@ -264,9 +288,21 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
     markDirty()
   }
 
+  function sortedDays(list: DayRow[]) {
+    return [...list].sort((a, b) => a.dayNumber - b.dayNumber)
+  }
+
   function addDay() {
-    const maxNum = days.reduce((m, d) => Math.max(m, d.dayNumber), 0)
-    setDays(prev => [...prev, { clientId: makeKey(), dayNumber: maxNum + 1, title: '', description: '' }])
+    setDays(prev => {
+      const sorted = sortedDays(prev)
+      const maxNum = sorted.length > 0 ? sorted[sorted.length - 1].dayNumber : 0
+      return sortedDays([...prev, { clientId: makeKey(), dayNumber: maxNum + 1, title: '', description: '' }])
+    })
+    markDirty()
+  }
+
+  function addDayZero() {
+    setDays(prev => sortedDays([...prev, { clientId: makeKey(), dayNumber: 0, title: '', description: '' }]))
     markDirty()
   }
 
@@ -275,17 +311,66 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
     markDirty()
   }
 
-  function updateDayNumber(clientId: string, value: string) {
-    const n = parseInt(value, 10)
-    if (isNaN(n) || n < 0) return
-    setDays(prev => prev.map(d => d.clientId === clientId ? { ...d, dayNumber: n } : d))
+  function removeDay(clientId: string) {
+    setDays(prev => {
+      const remaining = sortedDays(prev.filter(d => d.clientId !== clientId))
+      if (remaining.length === 0) return remaining
+      const startNum = remaining[0].dayNumber === 0 ? 0 : 1
+      return remaining.map((d, i) => ({ ...d, dayNumber: startNum + i }))
+    })
     markDirty()
   }
 
-  function removeDay(clientId: string) {
-    setDays(prev => prev.filter(d => d.clientId !== clientId))
+  function handleDragStart(clientId: string) {
+    draggedIdRef.current = clientId
+    setDraggingId(clientId)
+  }
+
+  function handleDragOver(e: React.DragEvent, clientId: string) {
+    e.preventDefault()
+    setDragOverId(clientId)
+  }
+
+  function handleDrop(targetClientId: string) {
+    const draggedId = draggedIdRef.current
+    setDragOverId(null)
+    setDraggingId(null)
+    draggedIdRef.current = null
+    if (!draggedId || draggedId === targetClientId) return
+    setDays(prev => {
+      const sorted = sortedDays(prev)
+      const hasZero = sorted[0]?.dayNumber === 0
+      const fromIdx = sorted.findIndex(d => d.clientId === draggedId)
+      const toIdx   = sorted.findIndex(d => d.clientId === targetClientId)
+      if (fromIdx === -1 || toIdx === -1) return prev
+      const reordered = [...sorted]
+      const [item] = reordered.splice(fromIdx, 1)
+      reordered.splice(toIdx, 0, item)
+      const startNum = hasZero ? 0 : 1
+      return reordered.map((d, i) => ({ ...d, dayNumber: startNum + i }))
+    })
     markDirty()
   }
+
+  function handleDragEnd() {
+    draggedIdRef.current = null
+    setDraggingId(null)
+    setDragOverId(null)
+  }
+
+  function handleReactivate() {
+    setError(null)
+    startReactivate(async () => {
+      try {
+        await reactivateExpedition(expedition.id)
+        router.refresh()
+      } catch (e) {
+        showError(e instanceof Error ? e.message : 'Ошибка')
+      }
+    })
+  }
+
+  const canReactivate = expedition.status === EventStatus.CANCELLED && new Date(expedition.startsAt) > new Date()
 
   return (
     <div className={styles.page}>
@@ -299,6 +384,12 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
             {STATUS_LABELS[expedition.status] ?? expedition.status}
           </span>
           {isDirty && <span className={styles.dirtyHint}>Несохранённые изменения</span>}
+          <CopyExpeditionButton expeditionId={expedition.id} disabled={saving} onError={showError} onSuccess={() => router.push(`${ROUTES.admin.expeditions}?tab=draft`)} />
+          {canReactivate && (
+            <Button size="sm" variant="outline" onClick={handleReactivate} disabled={reactivating}>
+              {reactivating ? 'Возврат…' : 'Вернуть в активные'}
+            </Button>
+          )}
           {expedition.status === EventStatus.DRAFT && (
             <Button
               size="sm"
@@ -629,20 +720,27 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
             <p className={styles.emailNote}>Программа не добавлена</p>
           )}
           {days.map(day => (
-            <section key={day.clientId} className={styles.section}>
+            <section
+              key={day.clientId}
+              className={[
+                styles.section,
+                styles.dayCard,
+                draggingId === day.clientId ? styles.dayDragging : '',
+                dragOverId === day.clientId ? styles.dayDragOver : '',
+              ].filter(Boolean).join(' ')}
+              draggable={isEditable}
+              onDragStart={() => handleDragStart(day.clientId)}
+              onDragOver={e => handleDragOver(e, day.clientId)}
+              onDrop={() => handleDrop(day.clientId)}
+              onDragEnd={handleDragEnd}
+            >
               <div className={styles.topBar} style={{ marginBottom: 0 }}>
-                <h2 className={styles.sectionTitle}>
-                  День{' '}
-                  <input
-                    className={styles.dayNumberInput}
-                    type="number"
-                    min="0"
-                    value={day.dayNumber}
-                    onChange={e => updateDayNumber(day.clientId, e.target.value)}
-                    disabled={!isEditable}
-                    aria-label="Номер дня"
-                  />
-                </h2>
+                <div className={styles.dayHeaderLeft}>
+                  {isEditable && (
+                    <span className={styles.dayHandle} aria-hidden>⠿</span>
+                  )}
+                  <h2 className={styles.sectionTitle}>День {day.dayNumber}</h2>
+                </div>
                 {isEditable && (
                   <button
                     type="button"
@@ -678,9 +776,16 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
             </section>
           ))}
           {isEditable && (
-            <button type="button" className={styles.addGuideBtn} onClick={addDay}>
-              + Добавить день
-            </button>
+            <div className={styles.dayAddButtons}>
+              {!days.some(d => d.dayNumber === 0) && (
+                <button type="button" className={styles.addGuideBtn} onClick={addDayZero}>
+                  + Добавить день 0
+                </button>
+              )}
+              <button type="button" className={styles.addGuideBtn} onClick={addDay}>
+                + Добавить день
+              </button>
+            </div>
           )}
         </div>
       )}

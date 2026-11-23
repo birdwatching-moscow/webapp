@@ -31,7 +31,7 @@ export type UpdateWalkFullData = {
 }
 
 export async function updateWalkFull(id: string, data: UpdateWalkFullData): Promise<void> {
-  await requireAdmin()
+  const session = await requireAdmin()
   const capacity = data.ticketTypes.reduce((sum, t) => sum + t.capacity, 0)
   const priceKopecks = data.ticketTypes[0]?.priceKopecks ?? 0
   await prisma.$transaction([
@@ -54,6 +54,7 @@ export async function updateWalkFull(id: string, data: UpdateWalkFullData): Prom
         emailSubject: data.emailSubject ?? null,
         emailBody: data.emailBody ?? null,
         reminderDaysBefore: data.reminderDaysBefore ?? null,
+        updatedBy: session.user.email ?? null,
       },
     }),
     prisma.ticketType.deleteMany({ where: { walkId: id } }),
@@ -73,21 +74,6 @@ async function requireAdmin() {
   const session = await auth()
   if (!session || !isAdmin(session.user.role)) throw new Error('Недостаточно прав')
   return session
-}
-
-type WalkInput = {
-  type: 'WALK'
-  title: string
-  description: string
-  startsAt: string
-  location: string
-  coverPhotoUrl: string
-  galleryUrl?: string
-  priceKopecks: number
-  capacity: number
-  guideId: number
-  slug?: string
-  endsAt?: string
 }
 
 export async function createWalkFull(data: UpdateWalkFullData): Promise<string> {
@@ -134,49 +120,6 @@ export async function createWalkFull(data: UpdateWalkFullData): Promise<string> 
   return walk.id
 }
 
-export async function createWalk(input: WalkInput): Promise<string> {
-  await requireAdmin()
-  const slug = input.slug ?? await ensureUniqueSlug(input.title, async (s) => {
-    const existing = await prisma.walk.findFirst({ where: { slug: s } })
-    return existing != null
-  })
-  const walk = await prisma.walk.create({
-    data: {
-      slug,
-      title: input.title,
-      description: input.description,
-      startsAt: new Date(input.startsAt),
-      endsAt: input.endsAt ? new Date(input.endsAt) : null,
-      location: input.location,
-      coverPhotoUrl: input.coverPhotoUrl,
-      galleryUrl: input.galleryUrl ?? null,
-      priceKopecks: input.priceKopecks,
-      capacity: input.capacity,
-      guideId: input.guideId,
-    },
-  })
-  return walk.id
-}
-
-export async function updateWalk(id: string, input: WalkInput): Promise<void> {
-  await requireAdmin()
-  await prisma.walk.update({
-    where: { id },
-    data: {
-      title: input.title,
-      description: input.description,
-      startsAt: new Date(input.startsAt),
-      endsAt: input.endsAt ? new Date(input.endsAt) : null,
-      location: input.location,
-      coverPhotoUrl: input.coverPhotoUrl,
-      galleryUrl: input.galleryUrl ?? null,
-      priceKopecks: input.priceKopecks,
-      capacity: input.capacity,
-      guideId: input.guideId,
-    },
-  })
-}
-
 export async function publishWalk(id: string): Promise<void> {
   const session = await requireAdmin()
   const walk = await prisma.walk.findFirst({ where: { id } })
@@ -205,22 +148,13 @@ export async function cancelWalk(id: string): Promise<void> {
   await prisma.walk.update({ where: { id }, data: { status: EventStatus.CANCELLED } })
 }
 
-export async function restoreWalk(id: string, newStartsAt?: string): Promise<void> {
+export async function reactivateWalk(id: string): Promise<void> {
   await requireAdmin()
   const walk = await prisma.walk.findFirst({ where: { id } })
   if (!walk) throw new Error('Прогулка не найдена')
-  const startsAt = new Date(walk.startsAt)
-  if (startsAt < new Date() && !newStartsAt) {
-    throw new Error('Укажите новую дату: дата прогулки в прошлом')
-  }
-  const resolvedStartsAt = newStartsAt ? new Date(newStartsAt) : startsAt
-  if (newStartsAt && resolvedStartsAt < new Date()) {
-    throw new Error('Новая дата должна быть в будущем')
-  }
-  await prisma.walk.update({
-    where: { id },
-    data: { status: EventStatus.DRAFT, startsAt: resolvedStartsAt },
-  })
+  if (walk.status !== EventStatus.CANCELLED) throw new Error('Прогулка не отменена')
+  if (walk.startsAt <= new Date()) throw new Error('Нельзя вернуть в активные: время прогулки уже прошло')
+  await prisma.walk.update({ where: { id }, data: { status: EventStatus.ACTIVE } })
 }
 
 export async function deleteWalk(id: string): Promise<void> {
@@ -296,14 +230,7 @@ export async function copyWalk(id: string): Promise<string> {
   return newWalk.id
 }
 
-export async function deleteTicket(ticketId: string): Promise<void> {
-  await requireAdmin()
-  const ticket = await prisma.ticket.findFirst({ where: { id: ticketId } })
-  if (!ticket) throw new Error('Билет не найден')
-  await prisma.ticket.delete({ where: { id: ticketId } })
-}
-
-export async function exportWalkParticipants(walkId: string): Promise<{ b64: string; filename: string }> {
+export async function exportWalkParticipants(walkId: string, timeZone?: string): Promise<{ b64: string; filename: string }> {
   await requireAdmin()
 
   const walk = await prisma.walk.findFirst({
@@ -336,13 +263,23 @@ export async function exportWalkParticipants(walkId: string): Promise<{ b64: str
   const wb = new ExcelJS.Workbook()
   const ws = wb.addWorksheet('Участники')
 
+  const tz = timeZone ?? 'UTC'
+
+  function formatDateTz(date: Date) {
+    return date.toLocaleString('ru-RU', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+      timeZone: tz,
+    })
+  }
+
   ws.columns = [
-    { header: 'Имя',          key: 'name',         width: 30 },
-    { header: 'Email',        key: 'email',        width: 36 },
-    { header: 'Статус',       key: 'status',       width: 18 },
-    { header: 'Сумма (₽)',    key: 'price',        width: 14 },
-    { header: 'Дата покупки', key: 'date',         width: 20 },
-    { header: 'Бинокль',      key: 'binoculars',   width: 12 },
+    { header: 'Имя',                        key: 'name',         width: 30 },
+    { header: 'Email',                       key: 'email',        width: 36 },
+    { header: 'Статус',                      key: 'status',       width: 18 },
+    { header: 'Сумма (₽)',                   key: 'price',        width: 14 },
+    { header: `Дата покупки (${tz})`,        key: 'date',         width: 26 },
+    { header: 'Бинокль',                     key: 'binoculars',   width: 12 },
   ]
   ws.getRow(1).font = { bold: true }
 
@@ -358,7 +295,7 @@ export async function exportWalkParticipants(walkId: string): Promise<{ b64: str
       email:      t.user.email,
       status:     STATUS_LABELS[t.order.status] ?? t.order.status,
       price:      kopecks != null ? kopecks / 100 : '',
-      date:       t.order.paidAt ?? t.createdAt,
+      date:       formatDateTz(t.order.paidAt ?? t.createdAt),
       binoculars: t.hasBinoculars == null ? '—' : t.hasBinoculars ? 'Да' : 'Нет',
     })
   }

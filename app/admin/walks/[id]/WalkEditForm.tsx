@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect, useTransition, useId } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/buttons/Button'
 import { Modal } from '@/components/ui/modal/Modal'
-import { updateWalkFull, publishWalk, cancelWalk, deleteWalk } from '@/app/admin/walks/_actions'
+import { updateWalkFull, publishWalk, cancelWalk, deleteWalk, reactivateWalk } from '@/app/admin/walks/_actions'
 import { CopyWalkButton } from './CopyWalkButton'
 import { ROUTES } from '@/utils/routes'
 import type { Guide, TicketTypeRow } from '@/app/admin/walks/_sections/types'
@@ -70,6 +70,7 @@ function initialTickets(types: WalkData['ticketTypes']): TicketTypeRow[] {
 
 export function WalkEditForm({ walk, guides }: Props) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const isEditable = walk.status === EventStatus.ACTIVE || walk.status === EventStatus.DRAFT
 
   const [title, setTitle]       = useState(walk.title)
@@ -90,17 +91,22 @@ export function WalkEditForm({ walk, guides }: Props) {
   const [formTab, setFormTab]           = useState<'walk' | 'email' | 'tickets'>('walk')
 
   const [isDirty, setIsDirty]       = useState(false)
-  const [copied, setCopied]         = useState(false)
   const [publishSuccess, setPublishSuccess] = useState(false)
   const [error, setError]           = useState<string | null>(null)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
   const [showDangerConfirm, setShowDangerConfirm] = useState<'cancel' | 'delete' | null>(null)
-  const [saving, startSave]     = useTransition()
-  const [publishing, startPublish] = useTransition()
-  const [danger, startDanger]   = useTransition()
+  const [saving, startSave]         = useTransition()
+  const [publishing, startPublish]  = useTransition()
+  const [danger, startDanger]       = useTransition()
+  const [reactivating, startReactivate] = useTransition()
 
   const titleId = useId()
   const requireAll = walk.status === EventStatus.ACTIVE
+
+  function showError(msg: string) {
+    setError(msg)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   function markDirty() { setIsDirty(true) }
 
@@ -128,7 +134,11 @@ export function WalkEditForm({ walk, guides }: Props) {
   }, [isDirty])
 
   function walksListHref() {
-    if (walk.status === EventStatus.DRAFT) return `${ROUTES.admin.walks}?tab=draft`
+    const from = searchParams.get('from')
+    if (from === 'draft') return `${ROUTES.admin.walks}?tab=draft`
+    if (from === 'all')   return `${ROUTES.admin.walks}?tab=all`
+    if (from != null)     return ROUTES.admin.walks
+    if (walk.status === EventStatus.DRAFT)  return `${ROUTES.admin.walks}?tab=draft`
     if (walk.status === EventStatus.ACTIVE) return ROUTES.admin.walks
     return `${ROUTES.admin.walks}?tab=all`
   }
@@ -178,17 +188,17 @@ export function WalkEditForm({ walk, guides }: Props) {
 
   function handleSave() {
     setError(null)
-    if (startsAt && endsAt && endsAt <= startsAt) { setError('Дата окончания не может быть раньше даты начала'); setFormTab('walk'); return }
+    if (startsAt && endsAt && endsAt <= startsAt) { showError('Дата окончания не может быть раньше даты начала'); setFormTab('walk'); return }
     const emailErrors = getEmailPairErrors()
-    if (emailErrors.length > 0) { setError(emailErrors[0]); setFormTab('email'); return }
+    if (emailErrors.length > 0) { showError(emailErrors[0]); setFormTab('email'); return }
     if (walk.status === EventStatus.ACTIVE) {
       const errors = getPublishErrors()
       if (errors.length > 0) {
-        setError(`Не заполнены обязательные поля: ${errors.join(', ')}`)
+        showError(`Не заполнены обязательные поля: ${errors.join(', ')}`)
         return
       }
     } else {
-      if (!title.trim()) { setError('Название обязательно'); return }
+      if (!title.trim()) { showError('Название обязательно'); return }
     }
     startSave(async () => {
       try {
@@ -196,20 +206,20 @@ export function WalkEditForm({ walk, guides }: Props) {
         setIsDirty(false)
         router.push(walksListHref())
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Ошибка при сохранении')
+        showError(e instanceof Error ? e.message : 'Ошибка при сохранении')
       }
     })
   }
 
   function handlePublish() {
     setError(null)
-    if (!title.trim()) { setError('Название обязательно'); return }
-    if (startsAt && endsAt && endsAt <= startsAt) { setError('Дата окончания не может быть раньше даты начала'); setFormTab('walk'); return }
+    if (!title.trim()) { showError('Название обязательно'); return }
+    if (startsAt && endsAt && endsAt <= startsAt) { showError('Дата окончания не может быть раньше даты начала'); setFormTab('walk'); return }
     const emailErrors = getEmailPairErrors()
-    if (emailErrors.length > 0) { setError(emailErrors[0]); setFormTab('email'); return }
+    if (emailErrors.length > 0) { showError(emailErrors[0]); setFormTab('email'); return }
     const errors = getPublishErrors()
     if (errors.length > 0) {
-      setError(`Нельзя опубликовать: не заполнены — ${errors.join(', ')}`)
+      showError(`Нельзя опубликовать: не заполнены — ${errors.join(', ')}`)
       return
     }
     startPublish(async () => {
@@ -218,7 +228,7 @@ export function WalkEditForm({ walk, guides }: Props) {
         setPublishSuccess(true)
         router.refresh()
       } catch (e) {
-        setError('Прогулка не опубликована: ' + (e instanceof Error ? e.message : 'неизвестная ошибка'))
+        showError('Прогулка не опубликована: ' + (e instanceof Error ? e.message : 'неизвестная ошибка'))
       }
     })
   }
@@ -232,10 +242,24 @@ export function WalkEditForm({ walk, guides }: Props) {
         else await deleteWalk(walk.id)
         router.push(ROUTES.admin.walks)
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Ошибка')
+        showError(e instanceof Error ? e.message : 'Ошибка')
       }
     })
   }
+
+  function handleReactivate() {
+    setError(null)
+    startReactivate(async () => {
+      try {
+        await reactivateWalk(walk.id)
+        router.refresh()
+      } catch (e) {
+        showError(e instanceof Error ? e.message : 'Ошибка')
+      }
+    })
+  }
+
+  const canReactivate = walk.status === EventStatus.CANCELLED && new Date(walk.startsAt) > new Date()
 
   return (
     <div className={styles.page}>
@@ -250,7 +274,7 @@ export function WalkEditForm({ walk, guides }: Props) {
             {STATUS_LABELS[walk.status] ?? walk.status}
           </span>
           {isDirty && <span className={styles.dirtyHint}>Несохранённые изменения</span>}
-          <CopyWalkButton walkId={walk.id} disabled={saving} onError={setError} onSuccess={() => setCopied(true)} />
+          <CopyWalkButton walkId={walk.id} disabled={saving} onError={setError} onSuccess={() => router.push(`${ROUTES.admin.walks}?tab=draft`)} />
           {walk.status === EventStatus.DRAFT && (
             <Button
               size="sm"
@@ -264,12 +288,6 @@ export function WalkEditForm({ walk, guides }: Props) {
         </div>
       </div>
 
-      {copied && (
-        <div className={styles.readonlyBanner} style={{ color: 'var(--color-success, #1f7a3b)', borderColor: 'var(--color-success, #1f7a3b)' }}>
-          Копия сохранена в Черновиках
-        </div>
-      )}
-
       {publishSuccess && (
         <div className={styles.readonlyBanner} style={{ color: 'var(--color-success, #1f7a3b)', borderColor: 'var(--color-success, #1f7a3b)' }}>
           Прогулка успешно опубликована
@@ -279,6 +297,14 @@ export function WalkEditForm({ walk, guides }: Props) {
       {!isEditable && (
         <div className={styles.readonlyBanner}>
           Эта прогулка доступна только для просмотра — редактирование возможно только в статусах «Черновик» и «Активна».
+        </div>
+      )}
+
+      {canReactivate && (
+        <div className={styles.formActions}>
+          <Button fullWidth onClick={handleReactivate} disabled={reactivating}>
+            {reactivating ? 'Возвращаем…' : 'Вернуть в активные'}
+          </Button>
         </div>
       )}
 
@@ -377,7 +403,7 @@ export function WalkEditForm({ walk, guides }: Props) {
         />
       )}
 
-      {isEditable && (
+      {isEditable && formTab !== 'tickets' && (
         <div className={styles.formActions}>
           <Button fullWidth onClick={handleSave} disabled={saving || !isDirty}>
             {saving ? 'Сохранение…' : 'Сохранить'}

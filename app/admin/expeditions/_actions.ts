@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { isAdmin } from '@/lib/auth/permissions'
 import { ensureUniqueSlug } from '@/lib/admin/slug'
-import { EventStatus } from '@/generated/prisma/client'
+import { EventStatus, Prisma } from '@/generated/prisma/client'
 
 const MAX_EXPEDITION_GALLERY = 3
 
@@ -97,7 +97,7 @@ export async function createExpedition(input: ExpeditionInput): Promise<string> 
 }
 
 export async function updateExpedition(id: string, input: ExpeditionInput): Promise<void> {
-  await requireAdmin()
+  const session = await requireAdmin()
   validateGallery(input.galleryItems)
 
   await Promise.all([
@@ -122,6 +122,7 @@ export async function updateExpedition(id: string, input: ExpeditionInput): Prom
       excludedItems:  input.excludedItems ?? [],
       totalSpots:     input.totalSpots,
       spotsLeft:      input.spotsLeft,
+      updatedBy:      session.user.email ?? null,
       guides: { set: input.guideIds.map((gid) => ({ id: parseInt(gid, 10) })) },
       days: {
         create: input.days.map((d) => ({
@@ -170,22 +171,86 @@ export async function cancelExpedition(id: string): Promise<void> {
   await prisma.expedition.update({ where: { id }, data: { status: EventStatus.CANCELLED } })
 }
 
-export async function restoreExpedition(id: string, newStartsAt?: string): Promise<void> {
+export async function reactivateExpedition(id: string): Promise<void> {
   await requireAdmin()
   const expedition = await prisma.expedition.findFirst({ where: { id } })
   if (!expedition) throw new Error('Экспедиция не найдена')
-  const startsAt = new Date(expedition.startsAt)
-  if (startsAt < new Date() && !newStartsAt) {
-    throw new Error('Укажите новую дату: дата экспедиции в прошлом')
-  }
-  const resolvedStartsAt = newStartsAt ? new Date(newStartsAt) : startsAt
-  if (newStartsAt && resolvedStartsAt < new Date()) {
-    throw new Error('Новая дата должна быть в будущем')
-  }
-  await prisma.expedition.update({
+  if (expedition.status !== EventStatus.CANCELLED) throw new Error('Экспедиция не отменена')
+  if (expedition.startsAt <= new Date()) throw new Error('Нельзя вернуть в активные: время экспедиции уже прошло')
+  await prisma.expedition.update({ where: { id }, data: { status: EventStatus.ACTIVE } })
+}
+
+export async function copyExpedition(id: string): Promise<string> {
+  const session = await requireAdmin()
+  const expedition = await prisma.expedition.findFirst({
     where: { id },
-    data: { status: EventStatus.DRAFT, startsAt: resolvedStartsAt },
+    include: {
+      guides:      { select: { id: true } },
+      days:        { orderBy: { dayNumber: 'asc' } },
+      ticketTypes: { orderBy: { sortOrder: 'asc' } },
+    },
   })
+  if (!expedition) throw new Error('Экспедиция не найдена')
+
+  const now = new Date()
+  const newStartsAt = new Date(expedition.startsAt)
+  newStartsAt.setFullYear(now.getFullYear(), now.getMonth(), now.getDate() + 7)
+
+  let newEndsAt: Date | null = null
+  if (expedition.endsAt) {
+    const duration = expedition.endsAt.getTime() - expedition.startsAt.getTime()
+    newEndsAt = new Date(newStartsAt.getTime() + duration)
+  }
+
+  const slug = await ensureUniqueSlug(expedition.title, async (s) => {
+    const existing = await prisma.expedition.findFirst({ where: { slug: s } })
+    return existing != null
+  })
+
+  const copy = await prisma.expedition.create({
+    data: {
+      slug,
+      title:          expedition.title,
+      description:    expedition.description,
+      startsAt:       newStartsAt,
+      endsAt:         newEndsAt,
+      coverPhotoUrl:  expedition.coverPhotoUrl,
+      galleryItems:   expedition.galleryItems as Prisma.InputJsonValue,
+      checklistItems: expedition.checklistItems as Prisma.InputJsonValue,
+      durationDays:   expedition.durationDays,
+      aboutTitle:     expedition.aboutTitle,
+      aboutText:      expedition.aboutText,
+      difficulty:     expedition.difficulty,
+      includedItems:  expedition.includedItems,
+      excludedItems:  expedition.excludedItems,
+      totalSpots:     expedition.totalSpots,
+      spotsLeft:      expedition.totalSpots,
+      status:         'DRAFT',
+      createdBy:      session.user.email ?? null,
+      guides: { connect: expedition.guides.map(g => ({ id: g.id })) },
+      days: {
+        create: expedition.days.map(d => ({
+          dayNumber:   d.dayNumber,
+          title:       d.title,
+          description: d.description,
+        })),
+      },
+    },
+  })
+
+  if (expedition.ticketTypes.length > 0) {
+    await prisma.expeditionTicketType.createMany({
+      data: expedition.ticketTypes.map((t, i) => ({
+        expeditionId: copy.id,
+        name:         t.name,
+        priceKopecks: t.priceKopecks,
+        capacity:     t.capacity,
+        sortOrder:    i,
+      })),
+    })
+  }
+
+  return copy.id
 }
 
 export async function deleteExpedition(id: string): Promise<void> {

@@ -5,6 +5,7 @@ import { SORT_ASC } from '@/lib/constants'
 import { ROUTES, API_ROUTES } from '@/utils/routes'
 import { Button } from '@/components/ui/buttons/Button'
 import { buildWalksWhere } from '@/lib/admin/walksWhere'
+import { getStatusInfo, filtersToSearchParams, getPageSlots, type AllFilters } from '../_shared/listUtils'
 import { WalksFilters } from './WalksFilters'
 import { ExportButton } from './ExportButton'
 import { WalksTable } from './WalksTable'
@@ -26,19 +27,6 @@ const EMPTY_LABEL: Record<Tab, string> = {
   all:    'Нет прогулок',
 }
 
-type StatusKey = typeof EventStatus.ACTIVE | typeof EventStatus.DRAFT | typeof EventStatus.PAST | typeof EventStatus.CANCELLED
-
-const STATUS_INFO: Record<StatusKey, { label: string; cls: string }> = {
-  ACTIVE:    { label: 'Активна',   cls: 'badgeACTIVE' },
-  DRAFT:     { label: 'Черновик',  cls: 'badgeDRAFT' },
-  PAST:      { label: 'Завершена', cls: 'badgePAST' },
-  CANCELLED: { label: 'Отменена',  cls: 'badgeCANCELLED' },
-}
-
-function getStatusInfo(status: string) {
-  return STATUS_INFO[status as StatusKey] ?? { label: status, cls: 'badgeACTIVE' }
-}
-
 function tabHref(tab: Tab, page?: number) {
   const params = new URLSearchParams()
   if (tab !== 'active') params.set('tab', tab)
@@ -47,39 +35,11 @@ function tabHref(tab: Tab, page?: number) {
   return qs ? `${ROUTES.admin.walks}?${qs}` : ROUTES.admin.walks
 }
 
-type AllFilters = { q: string; from: string; to: string; statuses: string[]; guides: string[] }
-
-function filtersToSearchParams(filters: AllFilters): URLSearchParams {
-  const p = new URLSearchParams()
-  if (filters.q) p.set('q', filters.q)
-  if (filters.from) p.set('from', filters.from)
-  if (filters.to) p.set('to', filters.to)
-  filters.statuses.forEach(s => p.append('status', s))
-  filters.guides.forEach(g => p.append('guide', g))
-  return p
-}
-
 function allTabHref(filters: AllFilters, page?: number) {
   const params = filtersToSearchParams(filters)
   params.set('tab', 'all')
   if (page && page > 1) params.set('page', String(page))
   return `${ROUTES.admin.walks}?${params.toString()}`
-}
-
-function getPageSlots(current: number, total: number): (number | null)[] {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
-
-  const slots: (number | null)[] = [1]
-  if (current > 4) slots.push(null)
-
-  const start = Math.max(2, current - 2)
-  const end = Math.min(total - 1, current + 2)
-  for (let i = start; i <= end; i++) slots.push(i)
-
-  if (current < total - 3) slots.push(null)
-  slots.push(total)
-
-  return slots
 }
 
 export default async function WalksPage({
@@ -135,6 +95,7 @@ export default async function WalksPage({
       select: {
         id: true, title: true, startsAt: true, endsAt: true,
         status: true, capacity: true, createdBy: true,
+        updatedAt: true, updatedBy: true,
         _count: { select: { tickets: true } },
         guide: { select: { name: true } },
       },
@@ -167,6 +128,8 @@ export default async function WalksPage({
       statusLabel:   statusInfo.label,
       statusCls:     statusInfo.cls,
       createdBy:     w.createdBy,
+      updatedAt:     w.updatedAt.toISOString(),
+      updatedBy:     w.updatedBy,
     }
   })
 
@@ -223,7 +186,7 @@ export default async function WalksPage({
         <p className={styles.empty}>{EMPTY_LABEL[activeTab]}</p>
       ) : (
         <>
-          <WalksTable rows={rows} showStatus={showStatus} />
+          <WalksTable rows={rows} showStatus={showStatus} fromTab={activeTab} />
 
           {activeTab === 'all' && (
             <p className={styles.countLine}>

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { RequestStatus } from '@/generated/prisma/client'
 import { prisma } from '@/lib/prisma'
 import { ROUTES, API_ROUTES } from '@/utils/routes'
+import { getPageSlots } from '../_shared/listUtils'
 import { ExportButton } from '../walks/ExportButton'
 import { RequestsFilters } from './RequestsFilters'
 import { RequestsTable } from './RequestsTable'
@@ -10,18 +11,6 @@ import styles from './requests.module.css'
 const PAGE_SIZE = 25
 
 const VALID_STATUSES = new Set<string>(['NEW', 'WAITLIST', 'OPEN', 'IN_PROGRESS', 'CLOSED'])
-
-function getPageSlots(current: number, total: number): (number | null)[] {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
-  const slots: (number | null)[] = [1]
-  if (current > 4) slots.push(null)
-  const start = Math.max(2, current - 2)
-  const end   = Math.min(total - 1, current + 2)
-  for (let i = start; i <= end; i++) slots.push(i)
-  if (current < total - 3) slots.push(null)
-  slots.push(total)
-  return slots
-}
 
 function buildWhere(q: string, statuses: RequestStatus[]) {
   const conditions: object[] = []
