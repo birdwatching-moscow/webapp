@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect, useTransition, useId, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/buttons/Button'
 import { Modal } from '@/components/ui/modal/Modal'
-import { updateExpedition, publishExpedition, cancelExpedition, deleteExpedition } from '@/app/admin/expeditions/_actions'
+import { updateExpedition, publishExpedition, cancelExpedition, deleteExpedition, reactivateExpedition } from '@/app/admin/expeditions/_actions'
+import { CopyExpeditionButton } from './CopyExpeditionButton'
 import { ROUTES } from '@/utils/routes'
 import type { Guide } from '@/app/admin/walks/_sections/types'
 import { makeKey } from '@/app/admin/walks/_sections/types'
@@ -66,6 +67,7 @@ function statusBadgeClass(status: string) {
 
 export function ExpeditionEditForm({ expedition, guides }: Props) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const isEditable = expedition.status === EventStatus.ACTIVE || expedition.status === EventStatus.DRAFT
 
   const [title, setTitle]             = useState(expedition.title)
@@ -100,12 +102,18 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
   const [error, setError]                   = useState<string | null>(null)
   const [showLeaveConfirm, setShowLeaveConfirm]   = useState(false)
   const [showDangerConfirm, setShowDangerConfirm] = useState<'cancel' | 'delete' | null>(null)
-  const [saving, startSave]       = useTransition()
-  const [publishing, startPublish] = useTransition()
-  const [danger, startDanger]     = useTransition()
+  const [saving, startSave]           = useTransition()
+  const [publishing, startPublish]    = useTransition()
+  const [danger, startDanger]         = useTransition()
+  const [reactivating, startReactivate] = useTransition()
 
   const titleId    = useId()
   const requireAll = expedition.status === EventStatus.DRAFT || expedition.status === EventStatus.ACTIVE
+
+  function showError(msg: string) {
+    setError(msg)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   function markDirty() { setIsDirty(true) }
 
@@ -139,6 +147,10 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
   }, [isDirty])
 
   function expeditionsListHref() {
+    const from = searchParams.get('from')
+    if (from === 'draft') return `${ROUTES.admin.expeditions}?tab=draft`
+    if (from === 'all')   return `${ROUTES.admin.expeditions}?tab=all`
+    if (from != null)     return ROUTES.admin.expeditions
     if (expedition.status === EventStatus.DRAFT)  return `${ROUTES.admin.expeditions}?tab=draft`
     if (expedition.status === EventStatus.ACTIVE) return ROUTES.admin.expeditions
     return `${ROUTES.admin.expeditions}?tab=all`
@@ -191,11 +203,11 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
 
   function handleSave() {
     setError(null)
-    if (!title.trim()) { setError('Название обязательно'); return }
-    if (startsAt && endsAt && endsAt <= startsAt) { setError('Дата окончания не может быть раньше даты начала'); setFormTab('main'); return }
+    if (!title.trim()) { showError('Название обязательно'); return }
+    if (startsAt && endsAt && endsAt <= startsAt) { showError('Дата окончания не может быть раньше даты начала'); setFormTab('main'); return }
     if (expedition.status === EventStatus.ACTIVE) {
       const errors = getPublishErrors()
-      if (errors.length > 0) { setError(`Не заполнены обязательные поля: ${errors.join(', ')}`); return }
+      if (errors.length > 0) { showError(`Не заполнены обязательные поля: ${errors.join(', ')}`); return }
     }
     startSave(async () => {
       try {
@@ -203,18 +215,18 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
         setIsDirty(false)
         router.push(expeditionsListHref())
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Ошибка при сохранении')
+        showError(e instanceof Error ? e.message : 'Ошибка при сохранении')
       }
     })
   }
 
   function handlePublish() {
     setError(null)
-    if (!title.trim()) { setError('Название обязательно'); return }
-    if (startsAt && endsAt && endsAt <= startsAt) { setError('Дата окончания не может быть раньше даты начала'); setFormTab('main'); return }
+    if (!title.trim()) { showError('Название обязательно'); return }
+    if (startsAt && endsAt && endsAt <= startsAt) { showError('Дата окончания не может быть раньше даты начала'); setFormTab('main'); return }
     const errors = getPublishErrors()
     if (errors.length > 0) {
-      setError(`Нельзя опубликовать: не заполнены — ${errors.join(', ')}`)
+      showError(`Нельзя опубликовать: не заполнены — ${errors.join(', ')}`)
       return
     }
     startPublish(async () => {
@@ -223,7 +235,7 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
         setPublishSuccess(true)
         router.refresh()
       } catch (e) {
-        setError('Экспедиция не опубликована: ' + (e instanceof Error ? e.message : 'неизвестная ошибка'))
+        showError('Экспедиция не опубликована: ' + (e instanceof Error ? e.message : 'неизвестная ошибка'))
       }
     })
   }
@@ -237,7 +249,7 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
         else await deleteExpedition(expedition.id)
         router.push(ROUTES.admin.expeditions)
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Ошибка')
+        showError(e instanceof Error ? e.message : 'Ошибка')
       }
     })
   }
@@ -348,6 +360,20 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
     setDragOverId(null)
   }
 
+  function handleReactivate() {
+    setError(null)
+    startReactivate(async () => {
+      try {
+        await reactivateExpedition(expedition.id)
+        router.refresh()
+      } catch (e) {
+        showError(e instanceof Error ? e.message : 'Ошибка')
+      }
+    })
+  }
+
+  const canReactivate = expedition.status === EventStatus.CANCELLED && new Date(expedition.startsAt) > new Date()
+
   return (
     <div className={styles.page}>
 
@@ -360,6 +386,12 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
             {STATUS_LABELS[expedition.status] ?? expedition.status}
           </span>
           {isDirty && <span className={styles.dirtyHint}>Несохранённые изменения</span>}
+          <CopyExpeditionButton expeditionId={expedition.id} disabled={saving} onError={showError} onSuccess={() => router.push(`${ROUTES.admin.expeditions}?tab=draft`)} />
+          {canReactivate && (
+            <Button size="sm" variant="outline" onClick={handleReactivate} disabled={reactivating}>
+              {reactivating ? 'Возврат…' : 'Вернуть в активные'}
+            </Button>
+          )}
           {expedition.status === EventStatus.DRAFT && (
             <Button
               size="sm"

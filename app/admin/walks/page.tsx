@@ -135,6 +135,7 @@ export default async function WalksPage({
       select: {
         id: true, title: true, startsAt: true, endsAt: true,
         status: true, capacity: true, createdBy: true,
+        updatedAt: true, updatedBy: true,
         _count: { select: { tickets: true } },
         guide: { select: { name: true } },
       },
@@ -167,6 +168,8 @@ export default async function WalksPage({
       statusLabel:   statusInfo.label,
       statusCls:     statusInfo.cls,
       createdBy:     w.createdBy,
+      updatedAt:     w.updatedAt.toISOString(),
+      updatedBy:     w.updatedBy,
     }
   })
 
@@ -223,7 +226,7 @@ export default async function WalksPage({
         <p className={styles.empty}>{EMPTY_LABEL[activeTab]}</p>
       ) : (
         <>
-          <WalksTable rows={rows} showStatus={showStatus} />
+          <WalksTable rows={rows} showStatus={showStatus} fromTab={activeTab} />
 
           {activeTab === 'all' && (
             <p className={styles.countLine}>

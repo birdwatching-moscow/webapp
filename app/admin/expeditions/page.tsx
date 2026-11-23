@@ -138,6 +138,8 @@ export default async function ExpeditionsPage({
         spotsLeft:  true,
         status:     true,
         createdBy:  true,
+        updatedAt:  true,
+        updatedBy:  true,
         guides:     { select: { name: true } },
       },
       orderBy: orderByClause,
@@ -169,6 +171,8 @@ export default async function ExpeditionsPage({
       statusLabel:   statusInfo.label,
       statusCls:     statusInfo.cls,
       createdBy:     e.createdBy,
+      updatedAt:     e.updatedAt.toISOString(),
+      updatedBy:     e.updatedBy,
     }
   })
 
@@ -222,6 +226,7 @@ export default async function ExpeditionsPage({
             rows={rows}
             showStatus={showStatus}
             basePath={ROUTES.admin.expeditions}
+            fromTab={activeTab}
           />
 
           {activeTab === 'all' && (

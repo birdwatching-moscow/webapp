@@ -96,6 +96,8 @@ model Walk {
   publishedBy   String?
   createdBy     String?     @db.VarChar(254)
   createdAt     DateTime    @default(now()) @db.Timestamptz
+  updatedAt     DateTime    @updatedAt @db.Timestamptz
+  updatedBy     String?     @db.VarChar(254)
 
   guide       TeamMember  @relation("WalkPrimaryGuide",   fields: [guideId],  references: [id])
   publisher   User?       @relation("WalkPublisher", fields: [publishedBy], references: [id])
@@ -142,6 +144,8 @@ model Expedition {
   publishedBy   String?
   createdBy     String?   @db.VarChar(254)
   createdAt     DateTime    @default(now()) @db.Timestamptz
+  updatedAt     DateTime    @updatedAt @db.Timestamptz
+  updatedBy     String?     @db.VarChar(254)
 
   guides      TeamMember[]
   publisher   User?                   @relation("ExpeditionPublisher", fields: [publishedBy], references: [id])

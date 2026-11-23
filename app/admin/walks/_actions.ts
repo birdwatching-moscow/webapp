@@ -31,7 +31,7 @@ export type UpdateWalkFullData = {
 }
 
 export async function updateWalkFull(id: string, data: UpdateWalkFullData): Promise<void> {
-  await requireAdmin()
+  const session = await requireAdmin()
   const capacity = data.ticketTypes.reduce((sum, t) => sum + t.capacity, 0)
   const priceKopecks = data.ticketTypes[0]?.priceKopecks ?? 0
   await prisma.$transaction([
@@ -54,6 +54,7 @@ export async function updateWalkFull(id: string, data: UpdateWalkFullData): Prom
         emailSubject: data.emailSubject ?? null,
         emailBody: data.emailBody ?? null,
         reminderDaysBefore: data.reminderDaysBefore ?? null,
+        updatedBy: session.user.email ?? null,
       },
     }),
     prisma.ticketType.deleteMany({ where: { walkId: id } }),

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useTransition, useId } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/buttons/Button'
 import { Modal } from '@/components/ui/modal/Modal'
 import { updateWalkFull, publishWalk, cancelWalk, deleteWalk, reactivateWalk } from '@/app/admin/walks/_actions'
@@ -70,6 +70,7 @@ function initialTickets(types: WalkData['ticketTypes']): TicketTypeRow[] {
 
 export function WalkEditForm({ walk, guides }: Props) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const isEditable = walk.status === EventStatus.ACTIVE || walk.status === EventStatus.DRAFT
 
   const [title, setTitle]       = useState(walk.title)
@@ -90,7 +91,6 @@ export function WalkEditForm({ walk, guides }: Props) {
   const [formTab, setFormTab]           = useState<'walk' | 'email' | 'tickets'>('walk')
 
   const [isDirty, setIsDirty]       = useState(false)
-  const [copied, setCopied]         = useState(false)
   const [publishSuccess, setPublishSuccess] = useState(false)
   const [error, setError]           = useState<string | null>(null)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
@@ -102,6 +102,11 @@ export function WalkEditForm({ walk, guides }: Props) {
 
   const titleId = useId()
   const requireAll = walk.status === EventStatus.ACTIVE
+
+  function showError(msg: string) {
+    setError(msg)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   function markDirty() { setIsDirty(true) }
 
@@ -129,7 +134,11 @@ export function WalkEditForm({ walk, guides }: Props) {
   }, [isDirty])
 
   function walksListHref() {
-    if (walk.status === EventStatus.DRAFT) return `${ROUTES.admin.walks}?tab=draft`
+    const from = searchParams.get('from')
+    if (from === 'draft') return `${ROUTES.admin.walks}?tab=draft`
+    if (from === 'all')   return `${ROUTES.admin.walks}?tab=all`
+    if (from != null)     return ROUTES.admin.walks
+    if (walk.status === EventStatus.DRAFT)  return `${ROUTES.admin.walks}?tab=draft`
     if (walk.status === EventStatus.ACTIVE) return ROUTES.admin.walks
     return `${ROUTES.admin.walks}?tab=all`
   }
@@ -179,17 +188,17 @@ export function WalkEditForm({ walk, guides }: Props) {
 
   function handleSave() {
     setError(null)
-    if (startsAt && endsAt && endsAt <= startsAt) { setError('Дата окончания не может быть раньше даты начала'); setFormTab('walk'); return }
+    if (startsAt && endsAt && endsAt <= startsAt) { showError('Дата окончания не может быть раньше даты начала'); setFormTab('walk'); return }
     const emailErrors = getEmailPairErrors()
-    if (emailErrors.length > 0) { setError(emailErrors[0]); setFormTab('email'); return }
+    if (emailErrors.length > 0) { showError(emailErrors[0]); setFormTab('email'); return }
     if (walk.status === EventStatus.ACTIVE) {
       const errors = getPublishErrors()
       if (errors.length > 0) {
-        setError(`Не заполнены обязательные поля: ${errors.join(', ')}`)
+        showError(`Не заполнены обязательные поля: ${errors.join(', ')}`)
         return
       }
     } else {
-      if (!title.trim()) { setError('Название обязательно'); return }
+      if (!title.trim()) { showError('Название обязательно'); return }
     }
     startSave(async () => {
       try {
@@ -197,20 +206,20 @@ export function WalkEditForm({ walk, guides }: Props) {
         setIsDirty(false)
         router.push(walksListHref())
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Ошибка при сохранении')
+        showError(e instanceof Error ? e.message : 'Ошибка при сохранении')
       }
     })
   }
 
   function handlePublish() {
     setError(null)
-    if (!title.trim()) { setError('Название обязательно'); return }
-    if (startsAt && endsAt && endsAt <= startsAt) { setError('Дата окончания не может быть раньше даты начала'); setFormTab('walk'); return }
+    if (!title.trim()) { showError('Название обязательно'); return }
+    if (startsAt && endsAt && endsAt <= startsAt) { showError('Дата окончания не может быть раньше даты начала'); setFormTab('walk'); return }
     const emailErrors = getEmailPairErrors()
-    if (emailErrors.length > 0) { setError(emailErrors[0]); setFormTab('email'); return }
+    if (emailErrors.length > 0) { showError(emailErrors[0]); setFormTab('email'); return }
     const errors = getPublishErrors()
     if (errors.length > 0) {
-      setError(`Нельзя опубликовать: не заполнены — ${errors.join(', ')}`)
+      showError(`Нельзя опубликовать: не заполнены — ${errors.join(', ')}`)
       return
     }
     startPublish(async () => {
@@ -219,7 +228,7 @@ export function WalkEditForm({ walk, guides }: Props) {
         setPublishSuccess(true)
         router.refresh()
       } catch (e) {
-        setError('Прогулка не опубликована: ' + (e instanceof Error ? e.message : 'неизвестная ошибка'))
+        showError('Прогулка не опубликована: ' + (e instanceof Error ? e.message : 'неизвестная ошибка'))
       }
     })
   }
@@ -233,7 +242,7 @@ export function WalkEditForm({ walk, guides }: Props) {
         else await deleteWalk(walk.id)
         router.push(ROUTES.admin.walks)
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Ошибка')
+        showError(e instanceof Error ? e.message : 'Ошибка')
       }
     })
   }
@@ -245,7 +254,7 @@ export function WalkEditForm({ walk, guides }: Props) {
         await reactivateWalk(walk.id)
         router.refresh()
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Ошибка')
+        showError(e instanceof Error ? e.message : 'Ошибка')
       }
     })
   }
@@ -265,7 +274,7 @@ export function WalkEditForm({ walk, guides }: Props) {
             {STATUS_LABELS[walk.status] ?? walk.status}
           </span>
           {isDirty && <span className={styles.dirtyHint}>Несохранённые изменения</span>}
-          <CopyWalkButton walkId={walk.id} disabled={saving} onError={setError} onSuccess={() => setCopied(true)} />
+          <CopyWalkButton walkId={walk.id} disabled={saving} onError={setError} onSuccess={() => router.push(`${ROUTES.admin.walks}?tab=draft`)} />
           {walk.status === EventStatus.DRAFT && (
             <Button
               size="sm"
@@ -278,12 +287,6 @@ export function WalkEditForm({ walk, guides }: Props) {
           )}
         </div>
       </div>
-
-      {copied && (
-        <div className={styles.readonlyBanner} style={{ color: 'var(--color-success, #1f7a3b)', borderColor: 'var(--color-success, #1f7a3b)' }}>
-          Копия сохранена в Черновиках
-        </div>
-      )}
 
       {publishSuccess && (
         <div className={styles.readonlyBanner} style={{ color: 'var(--color-success, #1f7a3b)', borderColor: 'var(--color-success, #1f7a3b)' }}>
