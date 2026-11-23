@@ -377,7 +377,7 @@ export function WalkEditForm({ walk, guides }: Props) {
         />
       )}
 
-      {isEditable && (
+      {isEditable && formTab !== 'tickets' && (
         <div className={styles.formActions}>
           <Button fullWidth onClick={handleSave} disabled={saving || !isDirty}>
             {saving ? 'Сохранение…' : 'Сохранить'}

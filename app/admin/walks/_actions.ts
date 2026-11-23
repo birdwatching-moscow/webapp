@@ -303,7 +303,7 @@ export async function deleteTicket(ticketId: string): Promise<void> {
   await prisma.ticket.delete({ where: { id: ticketId } })
 }
 
-export async function exportWalkParticipants(walkId: string): Promise<{ b64: string; filename: string }> {
+export async function exportWalkParticipants(walkId: string, timeZone?: string): Promise<{ b64: string; filename: string }> {
   await requireAdmin()
 
   const walk = await prisma.walk.findFirst({
@@ -336,13 +336,23 @@ export async function exportWalkParticipants(walkId: string): Promise<{ b64: str
   const wb = new ExcelJS.Workbook()
   const ws = wb.addWorksheet('Участники')
 
+  const tz = timeZone ?? 'UTC'
+
+  function formatDateTz(date: Date) {
+    return date.toLocaleString('ru-RU', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+      timeZone: tz,
+    })
+  }
+
   ws.columns = [
-    { header: 'Имя',          key: 'name',         width: 30 },
-    { header: 'Email',        key: 'email',        width: 36 },
-    { header: 'Статус',       key: 'status',       width: 18 },
-    { header: 'Сумма (₽)',    key: 'price',        width: 14 },
-    { header: 'Дата покупки', key: 'date',         width: 20 },
-    { header: 'Бинокль',      key: 'binoculars',   width: 12 },
+    { header: 'Имя',                        key: 'name',         width: 30 },
+    { header: 'Email',                       key: 'email',        width: 36 },
+    { header: 'Статус',                      key: 'status',       width: 18 },
+    { header: 'Сумма (₽)',                   key: 'price',        width: 14 },
+    { header: `Дата покупки (${tz})`,        key: 'date',         width: 26 },
+    { header: 'Бинокль',                     key: 'binoculars',   width: 12 },
   ]
   ws.getRow(1).font = { bold: true }
 
@@ -358,7 +368,7 @@ export async function exportWalkParticipants(walkId: string): Promise<{ b64: str
       email:      t.user.email,
       status:     STATUS_LABELS[t.order.status] ?? t.order.status,
       price:      kopecks != null ? kopecks / 100 : '',
-      date:       t.order.paidAt ?? t.createdAt,
+      date:       formatDateTz(t.order.paidAt ?? t.createdAt),
       binoculars: t.hasBinoculars == null ? '—' : t.hasBinoculars ? 'Да' : 'Нет',
     })
   }
