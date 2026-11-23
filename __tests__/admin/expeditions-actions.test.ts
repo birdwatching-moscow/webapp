@@ -25,6 +25,7 @@ import {
   publishExpedition,
   cancelExpedition,
   deleteExpedition,
+  reactivateExpedition,
 } from '@/app/admin/expeditions/_actions'
 import { EventStatus } from '@/generated/prisma/client'
 
@@ -123,6 +124,27 @@ describe('cancelExpedition', () => {
     await cancelExpedition('exp-1')
     expect(expeditionMock.update).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ status: EventStatus.CANCELLED }) })
+    )
+  })
+})
+
+describe('reactivateExpedition', () => {
+  it('throws when expedition is not CANCELLED', async () => {
+    expeditionMock.findFirst.mockResolvedValue(DRAFT_EXPEDITION)
+    await expect(reactivateExpedition('exp-1')).rejects.toThrow('Экспедиция не отменена')
+  })
+
+  it('throws when start time is in the past', async () => {
+    expeditionMock.findFirst.mockResolvedValue(PAST_EXPEDITION)
+    await expect(reactivateExpedition('exp-1')).rejects.toThrow(/время экспедиции уже прошло/)
+  })
+
+  it('sets status to ACTIVE when CANCELLED and start time is in the future', async () => {
+    expeditionMock.findFirst.mockResolvedValue(CANCELLED_EXPEDITION)
+    expeditionMock.update.mockResolvedValue({})
+    await reactivateExpedition('exp-1')
+    expect(expeditionMock.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ status: EventStatus.ACTIVE }) })
     )
   })
 })

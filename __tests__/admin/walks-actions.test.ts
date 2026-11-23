@@ -21,6 +21,7 @@ import {
   cancelWalk,
   publishWalk,
   deleteWalk,
+  reactivateWalk,
 } from '@/app/admin/walks/_actions'
 import { EventStatus } from '@/generated/prisma/client'
 
@@ -72,6 +73,27 @@ describe('cancelWalk', () => {
     await cancelWalk('walk-1')
     expect(walkMock.update).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ status: EventStatus.CANCELLED }) })
+    )
+  })
+})
+
+describe('reactivateWalk', () => {
+  it('throws when walk status is not CANCELLED', async () => {
+    walkMock.findFirst.mockResolvedValue({ id: 'walk-1', status: EventStatus.DRAFT, startsAt: new Date(FUTURE) })
+    await expect(reactivateWalk('walk-1')).rejects.toThrow('Прогулка не отменена')
+  })
+
+  it('throws when start time is in the past', async () => {
+    walkMock.findFirst.mockResolvedValue({ id: 'walk-1', status: EventStatus.CANCELLED, startsAt: new Date(PAST) })
+    await expect(reactivateWalk('walk-1')).rejects.toThrow(/время прогулки уже прошло/)
+  })
+
+  it('sets status to ACTIVE when CANCELLED and start time is in the future', async () => {
+    walkMock.findFirst.mockResolvedValue({ id: 'walk-1', status: EventStatus.CANCELLED, startsAt: new Date(FUTURE) })
+    walkMock.update.mockResolvedValue({})
+    await reactivateWalk('walk-1')
+    expect(walkMock.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ status: EventStatus.ACTIVE }) })
     )
   })
 })
