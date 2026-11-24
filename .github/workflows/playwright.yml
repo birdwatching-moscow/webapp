@@ -44,6 +44,7 @@ jobs:
           STAGING_USER: ${{ secrets.STAGING_USER }}
           STAGING_PASS: ${{ secrets.STAGING_PASS }}
           E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
+          E2E_USER_ID: ${{ secrets.E2E_USER_ID }}
           AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
 
       - name: Upload blob report
