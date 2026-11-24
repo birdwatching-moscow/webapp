@@ -42,3 +42,11 @@ docker run --rm -v "<absolute-path-to-repo>/k6:/scripts" grafana/k6 run /scripts
 
 On CI: GitHub Actions → k6 Load Test → Run workflow → choose scenario (smoke/load/boundary).
 Thresholds: p(95) < 300ms on successful responses, server errors < 1%, rate-limited requests < 5% (load only).
+
+When to run each scenario:
+- smoke   — run manually before a release to verify the endpoint is alive
+- load    — run manually when changing auth logic, rate limiting, or DB queries on this endpoint
+- boundary — run manually when adjusting rate limit thresholds to understand the new limit
+
+k6 tests are NOT triggered automatically on push or PR — load tests generate real traffic against
+staging and would interfere with parallel Playwright runs. Launch them on demand via Run workflow.
