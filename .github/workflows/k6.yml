@@ -1,0 +1,32 @@
+name: k6 Load Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: 'Test scenario'
+        required: true
+        default: 'smoke'
+        type: choice
+        options:
+          - smoke
+          - load
+          - boundary
+
+jobs:
+  k6:
+    name: k6 (${{ inputs.scenario }})
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run k6
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: k6/check-email.js
+        env:
+          BASE_URL: ${{ secrets.STAGING_URL }}
+          STAGING_USER: ${{ secrets.STAGING_USER }}
+          STAGING_PASS: ${{ secrets.STAGING_PASS }}
+          SCENARIO: ${{ inputs.scenario }}
