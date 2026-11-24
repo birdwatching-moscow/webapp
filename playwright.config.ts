@@ -27,6 +27,7 @@ export default defineConfig({
     },
     {
       name: 'chromium',
+      testIgnore: /api\/.+\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
         storageState: 'e2e/.auth/user.json',
