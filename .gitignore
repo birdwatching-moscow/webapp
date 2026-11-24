@@ -8,6 +8,12 @@ package-lock.json
 /coverage
 .playwright-mcp/
 
+# playwright
+/e2e/.auth/*.json
+/blob-report/
+/playwright-report/
+/test-results/
+
 # next.js
 /.next/
 /out/
