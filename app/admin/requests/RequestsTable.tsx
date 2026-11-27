@@ -97,7 +97,12 @@ export function RequestsTable({ requests: initialRequests }: Props) {
               >
                 <td className={styles.nameCell}>{r.name}</td>
                 <td className={styles.emailCell}>{r.email}</td>
-                <td>{TYPE_LABELS[r.type] ?? r.type}</td>
+                <td>
+                  <span>{TYPE_LABELS[r.type] ?? r.type}</span>
+                  {r.expeditionTitle && (
+                    <span className={styles.expeditionHint}>{r.expeditionTitle}</span>
+                  )}
+                </td>
                 <td onClick={e => e.stopPropagation()} data-status-picker="">
                   <StatusPicker id={r.id} status={r.status} />
                 </td>

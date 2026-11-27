@@ -13,7 +13,7 @@ async function requireAdmin() {
   return session
 }
 
-type DayInput = { clientId: string; dayNumber: number; title: string; description: string }
+type DayInput = { clientId: string; dayNumber: number; title: string; description: string; photoUrl: string; photoCredit: string }
 export type ChecklistItem = { title: string; text: string }
 export type GalleryItem = { url: string; info: string }
 export type TicketTypeInput = { name: string; priceKopecks: number | null; capacity: number }
@@ -80,9 +80,11 @@ export async function createExpedition(input: ExpeditionInput): Promise<string> 
       guides: { connect: input.guideIds.map((id) => ({ id: parseInt(id, 10) })) },
       days: {
         create: input.days.map((d) => ({
-          dayNumber: d.dayNumber,
-          title: d.title,
+          dayNumber:   d.dayNumber,
+          title:       d.title,
           description: d.description,
+          photoUrl:    d.photoUrl || null,
+          photoCredit: d.photoCredit || null,
         })),
       },
       ticketTypes: {
@@ -129,9 +131,11 @@ export async function updateExpedition(id: string, input: ExpeditionInput): Prom
       guides: { set: input.guideIds.map((gid) => ({ id: parseInt(gid, 10) })) },
       days: {
         create: input.days.map((d) => ({
-          dayNumber: d.dayNumber,
-          title: d.title,
+          dayNumber:   d.dayNumber,
+          title:       d.title,
           description: d.description,
+          photoUrl:    d.photoUrl || null,
+          photoCredit: d.photoCredit || null,
         })),
       },
       ticketTypes: {
@@ -237,6 +241,8 @@ export async function copyExpedition(id: string): Promise<string> {
           dayNumber:   d.dayNumber,
           title:       d.title,
           description: d.description,
+          photoUrl:    d.photoUrl ?? null,
+          photoCredit: d.photoCredit ?? null,
         })),
       },
     },

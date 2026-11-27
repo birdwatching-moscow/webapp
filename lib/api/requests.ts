@@ -5,6 +5,7 @@ const client = axios.create()
 
 type ContactRequestPayload = {
   type: 'EXPEDITION' | 'CERTIFICATE' | 'QUESTION' | 'PRIVATE_EVENT'
+  expeditionId?: string
   name: string
   email: string
   message: string

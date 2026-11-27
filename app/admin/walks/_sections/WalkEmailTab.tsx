@@ -51,7 +51,7 @@ export function WalkEmailTab({
 
       {subTab === 'purchase' && (
         <section className={styles.section}>
-          <p className={styles.emailNote}>
+          <p className={styles.leaveModalText}>
             Письмо отправляется участнику сразу после покупки билета.
           </p>
           <div className={styles.field}>
@@ -80,7 +80,7 @@ export function WalkEmailTab({
 
       {subTab === 'reminder' && (
         <section className={styles.section}>
-          <p className={styles.emailNote}>
+          <p className={styles.leaveModalText}>
             Напоминание отправляется за указанное количество дней до начала прогулки. Письмо отправляется только если заполнены и тема, и текст.
           </p>
           <div className={emailStyles.reminderDaysRow}>

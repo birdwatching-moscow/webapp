@@ -45,6 +45,33 @@
   color: var(--color-muted-foreground);
 }
 
+.tooltipWrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.tooltipWrap::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  right: 0;
+  background: var(--color-foreground);
+  color: var(--color-background);
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm, 4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  z-index: 10;
+}
+
+.tooltipWrap:hover::after {
+  opacity: 1;
+}
+
 /* ── Status badges ───────────────────────────────── */
 
 .badge {
@@ -155,10 +182,6 @@
   .fieldFullWidth { grid-column: 1 / -1; }
 }
 
-.photoUrlField {
-  flex: 1;
-}
-
 .field {
   display: flex;
   flex-direction: column;
@@ -229,13 +252,6 @@
 
 /* ── Guides ──────────────────────────────────────── */
 
-.guidesRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: var(--space-3);
-}
-
 .guideField {
   flex: 1;
   min-width: 200px;
@@ -244,7 +260,8 @@
   gap: var(--space-1);
 }
 
-.addGuideBtn {
+.addGuideBtn,
+.addTicketBtn {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
@@ -261,49 +278,55 @@
   transition: background 0.15s;
 }
 
-.addGuideBtn:hover {
+.addGuideBtn:hover,
+.addTicketBtn:hover {
   background: color-mix(in srgb, var(--color-primary) 6%, transparent);
 }
 
-.removeGuideBtn {
-  flex-shrink: 0;
+.addTicketBtn {
+  align-self: flex-start;
+}
+
+.addTicketBtn:disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.removeGuideBtn,
+.removeTicketBtn,
+.removeGalleryBtn {
   width: var(--size-control-sm);
   height: var(--size-control-sm);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--font-size-base);
   color: var(--color-muted-foreground);
   background: none;
-  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s;
 }
 
-.removeGuideBtn:hover {
+.removeGuideBtn:hover,
+.removeTicketBtn:hover,
+.removeGalleryBtn:hover {
   color: var(--color-error);
   border-color: var(--color-error);
 }
 
-/* ── Photo placeholder ───────────────────────────── */
-
-.photoPlaceholder {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  flex-wrap: wrap;
-}
-
-.photoThumb {
-  width: 100px;
-  height: 68px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
-  object-fit: cover;
+.removeGuideBtn {
   flex-shrink: 0;
-  background: color-mix(in srgb, var(--color-border) 30%, transparent);
+  font-size: var(--font-size-base);
+  border: 1px solid var(--color-border);
 }
+
+.removeTicketBtn,
+.removeGalleryBtn {
+  font-size: var(--font-size-sm);
+  border: 1px solid transparent;
+}
+
+/* ── Photo note ──────────────────────────────────── */
 
 .photoNote {
   font-size: var(--font-size-xs);
@@ -347,64 +370,10 @@
   gap: var(--space-2);
 }
 
-.removeTicketBtn {
-  width: var(--size-control-sm);
-  height: var(--size-control-sm);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--font-size-sm);
-  color: var(--color-muted-foreground);
-  background: none;
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
-}
-
-.removeTicketBtn:hover {
-  color: var(--color-error);
-  border-color: var(--color-error);
-}
-
-.removeTicketBtn:disabled {
+.removeTicketBtn:disabled,
+.removeGalleryBtn:disabled {
   opacity: var(--opacity-disabled);
   cursor: not-allowed;
-}
-
-.addTicketBtn {
-  align-self: flex-start;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  height: var(--size-control-sm);
-  padding: 0 var(--space-3);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  color: var(--color-primary);
-  background: none;
-  border: 1px dashed var(--color-primary);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.addTicketBtn:hover {
-  background: color-mix(in srgb, var(--color-primary) 6%, transparent);
-}
-
-.addTicketBtn:disabled {
-  opacity: var(--opacity-disabled);
-  cursor: not-allowed;
-}
-
-/* ── Email tab ───────────────────────────────────── */
-
-.emailNote {
-  font-size: var(--font-size-sm);
-  color: var(--color-muted-foreground);
-  line-height: 1.5;
-  margin: 0;
 }
 
 /* ── Form actions ────────────────────────────────── */
@@ -469,22 +438,6 @@
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-}
-
-.dayNumberInput {
-  display: inline-block;
-  width: 4rem;
-  padding: 0 var(--space-2);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-input-bg, var(--color-bg));
-  color: inherit;
-  font: inherit;
-  font-size: inherit;
-  font-weight: inherit;
-  line-height: 1.6;
-  text-align: center;
-  vertical-align: baseline;
 }
 
 /* ── Day drag-and-drop ───────────────────────────── */
@@ -561,10 +514,6 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-}
-
-.galleryRowInput {
-  flex: 1;
 }
 
 .galleryItemBlock {
