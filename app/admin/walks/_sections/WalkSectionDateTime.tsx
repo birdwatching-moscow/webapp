@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import styles from '../[id]/walk-edit.module.css'
 
 interface Props {
@@ -25,6 +26,16 @@ export function WalkSectionDateTime({
   const startRequired = requireAll || requireStartsAt
   const inputType = dateOnly ? 'date' : 'datetime-local'
   const dateOrderError = startsAt && endsAt && endsAt <= startsAt
+
+  useEffect(() => {
+    if (!dateOnly || !onDurationDays || !startsAt || !endsAt) return
+    const start = new Date(startsAt)
+    const end   = new Date(endsAt)
+    if (isNaN(start.getTime()) || isNaN(end.getTime()) || end <= start) return
+    const days = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1
+    onDurationDays(String(days))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startsAt, endsAt])
 
   return (
     <section className={styles.section}>
@@ -55,7 +66,7 @@ export function WalkSectionDateTime({
         </div>
         {onDurationDays !== undefined && (
           <div className={styles.field}>
-            <label className={styles.label}>Длительность (дней)</label>
+            <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Длительность (дней)</label>
             <input
               className={styles.input}
               type="number"

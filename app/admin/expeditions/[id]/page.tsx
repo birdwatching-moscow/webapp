@@ -77,6 +77,8 @@ export default async function EditExpeditionPage({ params }: { params: Promise<{
           dayNumber:   d.dayNumber,
           title:       d.title,
           description: d.description,
+          photoUrl:    d.photoUrl ?? '',
+          photoCredit: d.photoCredit ?? '',
         })),
       }}
       guides={guides}

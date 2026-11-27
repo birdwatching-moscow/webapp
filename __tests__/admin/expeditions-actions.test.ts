@@ -46,7 +46,7 @@ const VALID_EXPEDITION_INPUT = {
   totalSpots: 10,
   spotsLeft: 10,
   guideIds: ['1', '2'],
-  days: [{ clientId: 'day-1', dayNumber: 1, title: 'Day 1', description: 'Desc' }],
+  days: [{ clientId: 'day-1', dayNumber: 1, title: 'Day 1', description: 'Desc', photoUrl: '', photoCredit: '' }],
 }
 
 beforeEach(() => {

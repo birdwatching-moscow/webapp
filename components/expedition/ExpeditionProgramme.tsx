@@ -9,9 +9,20 @@ type Props = {
   days: ExpeditionDayRow[]
   coverPhotoUrl: string
   title: string
+  startsAt: Date
 }
 
-export const ExpeditionProgramme = ({ days, coverPhotoUrl, title }: Props) => {
+const RU_LOCALE = 'ru-RU'
+
+function formatDayLabel(startsAt: Date, dayNumber: number): string {
+  const date = new Date(startsAt)
+  date.setDate(date.getDate() + dayNumber - 1)
+  const datePart = date.toLocaleDateString(RU_LOCALE, { day: 'numeric', month: 'long' })
+  const weekday = date.toLocaleDateString(RU_LOCALE, { weekday: 'long' })
+  return `${datePart}, ${weekday}`
+}
+
+export const ExpeditionProgramme = ({ days, coverPhotoUrl, title, startsAt }: Props) => {
   const [activeIdx, setActiveIdx] = useState(0)
 
   if (days.length === 0) return null
@@ -39,7 +50,7 @@ export const ExpeditionProgramme = ({ days, coverPhotoUrl, title }: Props) => {
       <div className={styles.content} role="tabpanel">
         <div className={styles.dayText}>
           <p className={`text-label ${styles.dayNumber}`}>
-            {`${activeDay.dayNumber} день`}
+            {formatDayLabel(startsAt, activeDay.dayNumber)}
           </p>
           <h3 className={`text-h2 ${styles.dayTitle}`}>{activeDay.title}</h3>
           <p className={`text-body-l ${styles.dayDescription}`}>{activeDay.description}</p>

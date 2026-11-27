@@ -1,10 +1,14 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { cache } from 'react'
+import { auth } from '@/lib/auth'
 import { getExpeditionTitle, getExpeditionBySlug } from '@/lib/expeditions'
 import { NoticeBanner } from '@/components/NoticeBanner/NoticeBanner'
+import { ExpeditionContactForm } from '@/components/expedition/ExpeditionContactForm'
 import { ExpeditionHero } from '@/components/expedition/ExpeditionHero'
 import { ExpeditionBirds } from '@/components/expedition/ExpeditionBirds'
+import { ExpeditionFaq } from '@/components/expedition/ExpeditionFaq'
+import { ExpeditionGuides } from '@/components/expedition/ExpeditionGuides'
 import { ExpeditionProgramme } from '@/components/expedition/ExpeditionProgramme'
 import styles from './expedition.module.css'
 
@@ -20,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ExpeditionPage({ params }: Props) {
   const { slug } = await params
-  const expedition = await getExpeditionBySlug(slug)
+  const [expedition, session] = await Promise.all([getExpeditionBySlug(slug), auth()])
   if (!expedition) notFound()
 
   const isSoldOut = expedition.spotsLeft <= 0
@@ -70,8 +74,23 @@ export default async function ExpeditionPage({ params }: Props) {
           days={expedition.days}
           coverPhotoUrl={expedition.coverPhotoUrl}
           title={expedition.title}
+          startsAt={expedition.startsAt}
         />
       )}
+
+      {expedition.guides.length > 0 && (
+        <ExpeditionGuides guides={expedition.guides} />
+      )}
+
+      {expedition.checklistItems.length > 0 && (
+        <ExpeditionFaq items={expedition.checklistItems} />
+      )}
+
+      <ExpeditionContactForm
+        expeditionId={expedition.id}
+        initialName={session?.user?.name ?? ''}
+        initialEmail={session?.user?.email ?? ''}
+      />
     </main>
   )
 }

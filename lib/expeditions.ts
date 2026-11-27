@@ -20,6 +20,8 @@ export type ExpeditionDayRow = {
   dayNumber: number
   title: string
   description: string
+  photoUrl: string | null
+  photoCredit: string | null
 }
 
 export type ExpeditionGuideRow = {
@@ -124,7 +126,7 @@ export async function getExpeditionBySlug(slug: string): Promise<ExpeditionPageR
         orderBy: { sortOrder: 'asc' },
       },
       days: {
-        select: { id: true, dayNumber: true, title: true, description: true },
+        select: { id: true, dayNumber: true, title: true, description: true, photoUrl: true, photoCredit: true },
         orderBy: { dayNumber: 'asc' },
       },
       ticketTypes: {
@@ -166,6 +168,8 @@ export async function getExpeditionBySlug(slug: string): Promise<ExpeditionPageR
       dayNumber: d.dayNumber,
       title: d.title,
       description: d.description,
+      photoUrl: d.photoUrl,
+      photoCredit: d.photoCredit,
     })),
     ticketTypes: row.ticketTypes.map(t => ({
       id: t.id,

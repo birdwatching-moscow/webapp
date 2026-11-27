@@ -1,0 +1,63 @@
+/* ─── Mobile first ─────────────────────────────────────────────────────────── */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-top: var(--space-8);
+}
+
+.title {
+  margin: 0;
+}
+
+/* Horizontal scroll carousel on mobile */
+.list {
+  display: flex;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.list::-webkit-scrollbar {
+  display: none;
+}
+
+.item {
+  flex: 0 0 220px;
+  scroll-snap-align: start;
+}
+
+/* ─── Desktop ──────────────────────────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .section {
+    padding-top: var(--space-10);
+  }
+
+  .list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    overflow-x: visible;
+    scroll-snap-type: none;
+  }
+
+  /* Fewer than 3 guides: center them */
+  .listCentered {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-6);
+  }
+
+  .listCentered .item {
+    flex: 0 0 260px;
+  }
+
+  .item {
+    flex: unset;
+  }
+}

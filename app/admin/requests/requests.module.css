@@ -578,3 +578,10 @@
   font-size: var(--font-size-sm);
   user-select: none;
 }
+
+.expeditionHint {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--color-muted-foreground);
+  margin-top: 2px;
+}

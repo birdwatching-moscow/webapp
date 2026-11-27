@@ -7,11 +7,12 @@ const MOS_TZ = 'Europe/Moscow'
 function formatDateRange(startsAt: Date, endsAt: Date | null): string {
   const startDay = startsAt.toLocaleDateString('ru-RU', { day: 'numeric', timeZone: MOS_TZ })
   const startMonth = startsAt.toLocaleDateString('ru-RU', { month: 'long', timeZone: MOS_TZ })
-  if (!endsAt) return `${startDay} ${startMonth}`
+  const year = (endsAt ?? startsAt).toLocaleDateString('ru-RU', { year: 'numeric', timeZone: MOS_TZ })
+  if (!endsAt) return `${startDay} ${startMonth} ${year}`
   const endDay = endsAt.toLocaleDateString('ru-RU', { day: 'numeric', timeZone: MOS_TZ })
   const endMonth = endsAt.toLocaleDateString('ru-RU', { month: 'long', timeZone: MOS_TZ })
-  if (startMonth === endMonth) return `${startDay}–${endDay} ${startMonth}`
-  return `${startDay} ${startMonth} – ${endDay} ${endMonth}`
+  if (startMonth === endMonth) return `${startDay}–${endDay} ${startMonth} ${year}`
+  return `${startDay} ${startMonth} – ${endDay} ${endMonth} ${year}`
 }
 
 type Props = {

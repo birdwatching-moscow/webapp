@@ -1,0 +1,146 @@
+/* ─── Honeypot (hidden from humans, visible to bots) ───────────────────────── */
+
+.honeypot {
+  display: none;
+}
+
+/* ─── States (rate-limit / success) ────────────────────────────────────────── */
+
+.stateBox {
+  display: flex;
+  flex-direction: column;
+}
+
+.stateTitle {
+  margin: 0;
+  font-size: 20px;
+  color: var(--color-foreground);
+}
+
+.stateText {
+  margin: 0;
+  color: var(--color-muted-foreground);
+}
+
+.fallbackLink {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.fallbackLink:hover {
+  text-decoration: underline;
+}
+
+/* ─── Form layout ───────────────────────────────────────────────────────────── */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* ─── Header (label + subtitle) ─────────────────────────────────────────────── */
+
+.formTitle {
+  margin: 0;
+  color: var(--color-foreground);
+}
+
+.subtitle {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: var(--font-size-lg);
+  line-height: 24px;
+  color: var(--color-muted-foreground);
+}
+
+.subtitle ul {
+  margin: 0;
+  padding-left: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.subtitle li {
+  list-style-type: disc;
+}
+
+/* ─── Fields ────────────────────────────────────────────────────────────────── */
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.fields input,
+.fields textarea {
+  border-color: var(--color-border);
+  border-radius: var(--radius-lg);
+  max-width: 406px;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 108px;
+  padding: var(--space-3) var(--space-4);
+  border: var(--stroke-default) solid var(--color-border);
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: var(--font-size-md);
+  line-height: 20px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.textarea::placeholder {
+  color: var(--color-muted-foreground);
+}
+
+.textarea:focus {
+  border-color: var(--color-primary);
+  border-width: var(--stroke-focus);
+}
+
+
+/* ─── Error ─────────────────────────────────────────────────────────────────── */
+
+.error {
+  color: var(--color-error);
+}
+
+/* ─── Textarea field wrapper + inline error ─────────────────────────────────── */
+
+.textareaWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.textareaError {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+  line-height: 16px;
+  color: var(--color-error);
+}
+
+.textarea.textareaInvalid {
+  border-color: var(--color-error);
+}
+
+.textarea.textareaInvalid:focus {
+  border-color: var(--color-error);
+}
+
+/* ─── Submit button ─────────────────────────────────────────────────────────── */
+
+.submitBtn {
+  max-width: var(--size-col-3);
+  align-self: stretch;
+}

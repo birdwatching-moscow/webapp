@@ -259,7 +259,9 @@ export function WalkEditForm({ walk, guides }: Props) {
     })
   }
 
-  const canReactivate = walk.status === EventStatus.CANCELLED && new Date(walk.startsAt) > new Date()
+  const canReactivate  = walk.status === EventStatus.CANCELLED && new Date(walk.startsAt) > new Date()
+  const publishErrors  = walk.status === EventStatus.DRAFT ? getPublishErrors() : []
+  const canPublish     = !isDirty && publishErrors.length === 0
 
   return (
     <div className={styles.page}>
@@ -274,16 +276,22 @@ export function WalkEditForm({ walk, guides }: Props) {
             {STATUS_LABELS[walk.status] ?? walk.status}
           </span>
           {isDirty && <span className={styles.dirtyHint}>Несохранённые изменения</span>}
-          <CopyWalkButton walkId={walk.id} disabled={saving} onError={setError} onSuccess={() => router.push(`${ROUTES.admin.walks}?tab=draft`)} />
+          <div className={styles.tooltipWrap} data-tooltip="Копируются только сохранённые данные">
+            <CopyWalkButton walkId={walk.id} disabled={saving} onError={setError} onSuccess={() => router.push(`${ROUTES.admin.walks}?tab=draft`)} />
+          </div>
           {walk.status === EventStatus.DRAFT && (
-            <Button
-              size="sm"
-              onClick={handlePublish}
-              disabled={publishing || isDirty}
-              title={isDirty ? 'Сначала сохраните изменения' : undefined}
+            <div
+              className={!canPublish ? styles.tooltipWrap : undefined}
+              data-tooltip={!canPublish ? 'Заполните и сохраните все поля для публикации' : undefined}
             >
-              {publishing ? 'Публикация…' : 'Опубликовать'}
-            </Button>
+              <Button
+                size="sm"
+                onClick={handlePublish}
+                disabled={publishing || !canPublish}
+              >
+                {publishing ? 'Публикация…' : 'Опубликовать'}
+              </Button>
+            </div>
           )}
         </div>
       </div>
