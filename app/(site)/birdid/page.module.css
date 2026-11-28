@@ -7,6 +7,9 @@
   flex-direction: column;
   gap: var(--space-6);
   padding-top: var(--space-10);
+  min-width: 320px;
+  max-width: 720px;
+  margin-inline: auto;
 }
 
 .aboutTitle {
@@ -21,11 +24,4 @@
 
 .aboutParagraph {
   margin: 0;
-}
-
-@media (min-width: 1248px) {
-  .about {
-    max-width: 60%;
-    margin-inline: auto;
-  }
 }
