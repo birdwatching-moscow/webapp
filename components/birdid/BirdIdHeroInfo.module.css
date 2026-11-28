@@ -1,0 +1,57 @@
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-top: var(--space-6);
+}
+
+.title {
+  margin: 0;
+}
+
+/* ─── Stats ───────────────────────────────────────────── */
+
+.stats {
+  display: flex;
+  gap: var(--space-5);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--space-1);
+}
+
+.statValue {
+  line-height: 1;
+  margin: 0;
+}
+
+.statNum {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: var(--font-size-2xl);
+}
+
+.statLabel {
+  color: var(--color-muted-foreground);
+  margin: 0;
+}
+
+/* ─── Desktop ─────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .info {
+    gap: var(--space-6);
+    max-width: 60%;
+  }
+
+  .statNum {
+    font-size: var(--font-size-3xl);
+  }
+
+  .cta {
+    max-width: var(--size-col-3);
+  }
+}
