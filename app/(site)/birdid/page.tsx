@@ -56,8 +56,6 @@ export default async function BirdIDPage() {
 
       <AlertBanner text="Вставать придётся в 5 утра, ходить по 10+ км! В выходные!" className={styles.alert} />
 
-      <BirdIdPhotoRow />
-
       <section className={styles.about}>
         <h2 className={`text-display ${styles.aboutTitle}`}>Что такое курс BirdID и кому он подходит?</h2>
         <div className={styles.aboutBody}>
@@ -69,6 +67,8 @@ export default async function BirdIDPage() {
           </p>
         </div>
       </section>
+
+      <BirdIdPhotoRow />
     </main>
   )
 }
