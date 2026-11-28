@@ -3,6 +3,7 @@ import { PhotoCard } from '@/components/PhotoCard/PhotoCard'
 import { BirdIdHeroInfo } from '@/components/birdid/BirdIdHeroInfo'
 import { PrivateHighlights, type PrivateHighlight } from '@/components/private/PrivateHighlights'
 import { AlertBanner } from '@/components/AlertBanner/AlertBanner'
+import { BirdIdPhotoRow } from '@/components/birdid/BirdIdPhotoRow'
 import { getBirdIdPublic } from '@/lib/birdid'
 import styles from './page.module.css'
 
@@ -54,6 +55,8 @@ export default async function BirdIDPage() {
       <PrivateHighlights title="Коротко о курсе" highlights={ABOUT_HIGHLIGHTS} />
 
       <AlertBanner text="Вставать придётся в 5 утра, ходить по 10+ км! В выходные!" className={styles.alert} />
+
+      <BirdIdPhotoRow />
 
       <section className={styles.about}>
         <h2 className={`text-display ${styles.aboutTitle}`}>Что такое курс BirdID и кому он подходит?</h2>
