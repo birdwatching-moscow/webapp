@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { PhotoCard } from '@/components/PhotoCard/PhotoCard'
 import { BirdIdHeroInfo } from '@/components/birdid/BirdIdHeroInfo'
 import { PrivateHighlights, type PrivateHighlight } from '@/components/private/PrivateHighlights'
+import { AlertBanner } from '@/components/AlertBanner/AlertBanner'
 import { getBirdIdPublic } from '@/lib/birdid'
 
 export const metadata: Metadata = {
@@ -50,6 +51,8 @@ export default async function BirdIDPage() {
       )}
 
       <PrivateHighlights title="Коротко о курсе" highlights={ABOUT_HIGHLIGHTS} />
+
+      <AlertBanner text="Вставать придётся в 5 утра, ходить по 10+ км! В выходные!" />
     </main>
   )
 }
