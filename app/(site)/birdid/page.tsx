@@ -4,6 +4,7 @@ import { BirdIdHeroInfo } from '@/components/birdid/BirdIdHeroInfo'
 import { PrivateHighlights, type PrivateHighlight } from '@/components/private/PrivateHighlights'
 import { AlertBanner } from '@/components/AlertBanner/AlertBanner'
 import { getBirdIdPublic } from '@/lib/birdid'
+import styles from './page.module.css'
 
 export const metadata: Metadata = {
   title: 'BirdID | Birdwatching Moscow',
@@ -52,7 +53,7 @@ export default async function BirdIDPage() {
 
       <PrivateHighlights title="Коротко о курсе" highlights={ABOUT_HIGHLIGHTS} />
 
-      <AlertBanner text="Вставать придётся в 5 утра, ходить по 10+ км! В выходные!" />
+      <AlertBanner text="Вставать придётся в 5 утра, ходить по 10+ км! В выходные!" className={styles.alert} />
     </main>
   )
 }
