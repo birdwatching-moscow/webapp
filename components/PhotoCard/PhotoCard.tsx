@@ -14,11 +14,13 @@ interface PhotoCardProps {
   className?: string
   /** `sizes` for next/image — pass a narrower value when the card is not full width. */
   sizes?: string
+  /** Pass true when this image is the LCP element (above the fold). */
+  priority?: boolean
 }
 
-export const PhotoCard = ({ src, alt, caption, className, sizes = DEFAULT_SIZES }: PhotoCardProps) => (
+export const PhotoCard = ({ src, alt, caption, className, sizes = DEFAULT_SIZES, priority }: PhotoCardProps) => (
   <div className={`${styles.card} ${className ?? ''}`}>
-    <Image src={src} alt={alt} fill sizes={sizes} className={styles.image} />
+    <Image src={src} alt={alt} fill sizes={sizes} priority={priority} className={styles.image} />
 
     <span data-testid="photo-info-icon" className={styles.icon} aria-hidden="true">
       <InfoIcon />

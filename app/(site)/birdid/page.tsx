@@ -10,9 +10,10 @@ export default function BirdIDPage() {
   return (
     <main className="container">
       <PhotoCard
-        src="/images/birdid/birdid-hero.jpg"
+        src="/images/birdid/birdid-hero.webp"
         alt="Участники курса BirdID наблюдают за птицами"
         caption="Фото: Ольга Ерёменко, BirdId-2022"
+        priority
       />
     </main>
   )
