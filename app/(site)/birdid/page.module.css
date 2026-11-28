@@ -1,3 +1,30 @@
 .alert {
   margin-top: var(--space-10);
 }
+
+.about {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding-top: var(--space-10);
+}
+
+.aboutTitle {
+  margin: 0;
+}
+
+.aboutBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.aboutParagraph {
+  margin: 0;
+}
+
+@media (min-width: 1248px) {
+  .about {
+    max-width: 60%;
+  }
+}
