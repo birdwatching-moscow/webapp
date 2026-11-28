@@ -10,6 +10,8 @@ import { ExpeditionBirds } from '@/components/expedition/ExpeditionBirds'
 import { ExpeditionFaq } from '@/components/expedition/ExpeditionFaq'
 import { ExpeditionGuides } from '@/components/expedition/ExpeditionGuides'
 import { ExpeditionProgramme } from '@/components/expedition/ExpeditionProgramme'
+import { ExpeditionPricing } from '@/components/expedition/ExpeditionPricing'
+import { ExpeditionContactTrigger } from '@/components/expedition/ExpeditionContactTrigger'
 import styles from './expedition.module.css'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -27,19 +29,17 @@ export default async function ExpeditionPage({ params }: Props) {
   const [expedition, session] = await Promise.all([getExpeditionBySlug(slug), auth()])
   if (!expedition) notFound()
 
-  const isSoldOut = expedition.spotsLeft <= 0
+  const isSoldOut  = expedition.spotsLeft <= 0
+  const hasTickets = expedition.ticketTypes.length > 0
+  const useModal   = hasTickets && !isSoldOut
 
   return (
     <main className={`container ${styles.page}`}>
       {isSoldOut && (
         <div className={styles.noticeBanner}>
           <NoticeBanner
-            text={
-              <>
-                Стая укомплектована — мы улетаем в экспедицию!{' '}
-                Оставьте свои контакты, и мы сразу оповестим вас о новой экспедиции.
-              </>
-            }
+            title="Мест нет"
+            text="Запишитесь в лист ожидания — форма для заявки ниже на странице"
           />
         </div>
       )}
@@ -86,11 +86,26 @@ export default async function ExpeditionPage({ params }: Props) {
         <ExpeditionFaq items={expedition.checklistItems} />
       )}
 
-      <ExpeditionContactForm
-        expeditionId={expedition.id}
-        initialName={session?.user?.name ?? ''}
-        initialEmail={session?.user?.email ?? ''}
+      <ExpeditionPricing
+        ticketTypes={expedition.ticketTypes}
+        includedItems={expedition.includedItems}
+        excludedItems={expedition.excludedItems}
+        cta={useModal
+          ? <ExpeditionContactTrigger expeditionId={expedition.id} />
+          : null
+        }
       />
+
+      {!useModal && (
+        <div id="contact">
+          <ExpeditionContactForm
+            expeditionId={expedition.id}
+            initialName={session?.user?.name ?? ''}
+            initialEmail={session?.user?.email ?? ''}
+            waitingList={!hasTickets || isSoldOut}
+          />
+        </div>
+      )}
     </main>
   )
 }

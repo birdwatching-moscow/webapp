@@ -6,6 +6,7 @@ import { Modal } from '@/components/ui/modal/Modal'
 import { Button } from '@/components/ui/buttons/Button'
 import { StatusPicker } from './StatusPicker'
 import { deleteRequest } from './_actions'
+import { STATUS_DISPLAY, TYPE_LABELS } from './_constants'
 import styles from './requests.module.css'
 
 export type RequestRow = {
@@ -17,21 +18,6 @@ export type RequestRow = {
   message: string
   status: RequestStatus
   createdAt: string
-}
-
-const TYPE_LABELS: Record<RequestType, string> = {
-  EXPEDITION:    'Экспедиция',
-  CERTIFICATE:   'Сертификат',
-  QUESTION:      'Вопрос',
-  PRIVATE_EVENT: 'Частное мероприятие',
-}
-
-const STATUS_INFO: Record<RequestStatus, { label: string; cls: string }> = {
-  NEW:         { label: 'Новая',          cls: 'badgeNEW' },
-  WAITLIST:    { label: 'Лист ожидания',  cls: 'badgeWAITLIST' },
-  OPEN:        { label: 'Открыта',        cls: 'badgeOPEN' },
-  IN_PROGRESS: { label: 'В работе',       cls: 'badgeIN_PROGRESS' },
-  CLOSED:      { label: 'Закрыта',        cls: 'badgeCLOSED' },
 }
 
 interface Props {
@@ -104,7 +90,7 @@ export function RequestsTable({ requests: initialRequests }: Props) {
                   )}
                 </td>
                 <td onClick={e => e.stopPropagation()} data-status-picker="">
-                  <StatusPicker id={r.id} status={r.status} />
+                  <StatusPicker id={r.id} status={r.status} type={r.type} />
                 </td>
                 <td className={styles.dateCell}>{r.createdAt}</td>
                 <td className={styles.actionCell} data-row-action="" onClick={e => e.stopPropagation()}>
@@ -145,8 +131,8 @@ export function RequestsTable({ requests: initialRequests }: Props) {
             )}
             <div className={styles.detailRow}>
               <span className={styles.detailLabel}>Статус</span>
-              <span className={[styles.badge, styles[STATUS_INFO[active.status].cls as keyof typeof styles]].join(' ')}>
-                {STATUS_INFO[active.status].label}
+              <span className={[styles.badge, styles[STATUS_DISPLAY[active.status].cls as keyof typeof styles]].join(' ')}>
+                {STATUS_DISPLAY[active.status].label}
               </span>
             </div>
             <div className={styles.detailRow}>

@@ -115,6 +115,7 @@ model TicketType {
   priceKopecks Int?
   capacity     Int     @default(0)
   sortOrder    Int     @default(0)
+  description  String? @db.Text
 
   walk Walk @relation(fields: [walkId], references: [id])
 
@@ -164,6 +165,7 @@ model ExpeditionTicketType {
   priceKopecks Int?
   capacity     Int    @default(0)
   sortOrder    Int    @default(0)
+  description  String? @db.Text
 
   expedition Expedition @relation(fields: [expeditionId], references: [id])
 
@@ -194,6 +196,39 @@ model TeamMember {
 
   walks       Walk[]  @relation("WalkPrimaryGuide")
   expeditions Expedition[]
+  birdIds     BirdId[] @relation("BirdIdTeam")
+}
+
+model BirdId {
+  id                   String    @id @default(uuid())
+  title                String    @default("") @db.VarChar(150)
+  formUrl              String?   @db.VarChar(2048)
+  startsAt             DateTime? @db.Timestamptz
+  endsAt               DateTime? @db.Timestamptz
+  schedule             String?   @db.Text
+  seminars             String?   @db.Text
+  registrationDeadline DateTime? @db.Timestamptz
+  registrationOpen     Boolean   @default(false)
+  createdAt            DateTime  @default(now()) @db.Timestamptz
+  updatedAt            DateTime  @updatedAt @db.Timestamptz
+  updatedBy            String?   @db.VarChar(254)
+
+  ticketTypes BirdIdTicketType[]
+  team        TeamMember[]       @relation("BirdIdTeam")
+}
+
+model BirdIdTicketType {
+  id           Int     @id @default(autoincrement())
+  birdIdId     String
+  name         String  @db.VarChar(100)
+  priceKopecks Int?
+  capacity     Int     @default(0)
+  sortOrder    Int     @default(0)
+  description  String? @db.Text
+
+  birdId BirdId @relation(fields: [birdIdId], references: [id])
+
+  @@index([birdIdId])
 }
 
 model Order {

@@ -29,11 +29,10 @@
 .imageWrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;
-  max-height: 320px;
+  aspect-ratio: 4 / 3;
+  max-height: 360px;
 }
 
-.placeholder,
 .image {
   object-fit: contain;
 }
@@ -62,8 +61,8 @@
 
   .imageWrapper {
     flex-shrink: 0;
-    width: 480px;
-    height: 480px;
+    width: 600px;
+    height: 450px;
     max-height: none;
     aspect-ratio: unset;
   }

@@ -32,7 +32,7 @@ export function WalkNewForm({ guides }: Props) {
   const [coverCredit, setCoverCredit]   = useState('')
   const [guideId, setGuideId]           = useState('')
   const [tickets, setTickets]           = useState<TicketTypeRow[]>([
-    { key: makeKey(), name: 'Стандартный', priceRub: '', capacity: '' },
+    { key: makeKey(), name: 'Стандартный', priceRub: '', capacity: '', description: '' },
   ])
   const [purchaseEmailSubject, setPurchaseEmailSubject] = useState('')
   const [purchaseEmailBody, setPurchaseEmailBody]       = useState('')
@@ -93,7 +93,6 @@ export function WalkNewForm({ guides }: Props) {
   return (
     <div className={styles.page}>
 
-      {/* Top bar */}
       <div className={styles.topBar}>
         <button type="button" className={styles.backBtn} onClick={() => router.push(ROUTES.admin.walks)}>
           ← Прогулки

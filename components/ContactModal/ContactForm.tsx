@@ -87,9 +87,12 @@ type Props = {
   /** Rendered above the fields when the form is open — use for label/subtitle */
   header?: React.ReactNode
   messagePlaceholder?: string
+  successText?: string
+  hideFallbackEmail?: boolean
+  isWaitlist?: boolean
 }
 
-export const ContactForm = ({ type, initialName = '', initialEmail = '', expeditionId, header, messagePlaceholder = 'Комментарий' }: Props) => {
+export const ContactForm = ({ type, initialName = '', initialEmail = '', expeditionId, header, messagePlaceholder = 'Комментарий', successText, hideFallbackEmail, isWaitlist }: Props) => {
   const config = TYPE_CONFIG[type]
 
   const [name, setName]       = useState(initialName)
@@ -122,7 +125,7 @@ export const ContactForm = ({ type, initialName = '', initialEmail = '', expedit
     setSubmitting(true)
     setServerError(null)
     try {
-      await submitContactRequest({ type: REQUEST_TYPE[type], expeditionId, name, email, message, _hp: hp })
+      await submitContactRequest({ type: REQUEST_TYPE[type], expeditionId, name, email, message, isWaitlist, _hp: hp })
       setSubmitted(true)
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 429) {
@@ -152,13 +155,15 @@ export const ContactForm = ({ type, initialName = '', initialEmail = '', expedit
     return (
       <div className={styles.stateBox}>
         <p className={`text-h3 ${styles.stateTitle}`}>{CONTACT_FORM_LABELS.submittedTitle}</p>
-        <p className={`text-body ${styles.stateText}`}>{config.successText}</p>
-        <p className={`text-body ${styles.stateText}`}>
-          Если мы не связались — напишите нам на{' '}
-          <a href={`mailto:${CONTACT_FORM_LABELS.fallbackEmail}`} className={styles.fallbackLink}>
-            {CONTACT_FORM_LABELS.fallbackEmail}
-          </a>
-        </p>
+        <p className={`text-body ${styles.stateText}`}>{successText ?? config.successText}</p>
+        {!hideFallbackEmail && (
+          <p className={`text-body ${styles.stateText}`}>
+            Если мы не связались — напишите нам на{' '}
+            <a href={`mailto:${CONTACT_FORM_LABELS.fallbackEmail}`} className={styles.fallbackLink}>
+              {CONTACT_FORM_LABELS.fallbackEmail}
+            </a>
+          </p>
+        )}
       </div>
     )
   }

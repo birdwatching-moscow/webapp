@@ -5,6 +5,7 @@ export type TicketTypeRow = {
   name: string
   priceRub: string
   capacity: string
+  description: string
 }
 
 export function makeKey(): string {

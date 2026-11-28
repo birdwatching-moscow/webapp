@@ -86,9 +86,8 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
   const [tickets, setTickets]               = useState<TicketTypeRow[]>(
     expedition.ticketTypes.length > 0
       ? expedition.ticketTypes
-      : [{ key: makeKey(), name: 'Стандартный', priceRub: '', capacity: '' }]
+      : [{ key: makeKey(), name: 'Стандартный', priceRub: '', capacity: '', description: '' }]
   )
-  const [totalSpots, setTotalSpots]         = useState(String(expedition.totalSpots))
   const [spotsLeft, setSpotsLeft]     = useState(String(expedition.spotsLeft))
   const [guideIds, setGuideIds]       = useState<string[]>(expedition.guideIds)
   const [days, setDays]               = useState<DayRow[]>(() => [...expedition.days].sort((a, b) => a.dayNumber - b.dayNumber))
@@ -132,10 +131,11 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
     if (!galleryItems.some(g => g.url.trim()))                 errors.push('Хотя бы одно фото в «Будем искать»')
     if (!checklistItems.some(c => c.title.trim()))             errors.push('Хотя бы один пункт «Важно знать»')
     if (!tickets.some(t => t.name.trim() && t.priceRub !== '' && t.capacity !== '')) errors.push('Хотя бы один тип билета')
-    if (!totalSpots || parseInt(totalSpots) < 1)               errors.push('Количество мест')
+    if (tickets.length > 1 && tickets.some(t => t.name.trim() && !t.description.trim())) errors.push('Описание для каждого типа билета')
     if (!includedItems.some(s => s.trim()))                    errors.push('Хотя бы один пункт «Включено в стоимость»')
     if (!excludedItems.some(s => s.trim()))                    errors.push('Хотя бы один пункт «Не входит в стоимость»')
     if (days.length === 0)                                     errors.push('Хотя бы один день программы')
+    if (days.some(d => d.photoUrl.trim() && !d.photoCredit.trim())) errors.push('Подпись к фото для всех фотографий в программе')
     return errors
   }
 
@@ -152,17 +152,15 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
     const start = new Date(startsAt)
     const end   = new Date(endsAt)
     if (isNaN(start.getTime()) || isNaN(end.getTime()) || end <= start) return
+    const count = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1
     setDays(prev => {
-      if (prev.length > 0) return prev
-      const count = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1
-      return Array.from({ length: count }, (_, i) => ({
-        clientId:    makeKey(),
-        dayNumber:   i + 1,
-        title:       '',
-        description: '',
-        photoUrl:    '',
-        photoCredit: '',
-      }))
+      const existing = new Map(prev.map(d => [d.dayNumber, d]))
+      const dayZero = existing.get(0)
+      const numbered = Array.from({ length: count }, (_, i) => {
+        const n = i + 1
+        return existing.get(n) ?? { clientId: makeKey(), dayNumber: n, title: '', description: '', photoUrl: '', photoCredit: '' }
+      })
+      return dayZero ? [dayZero, ...numbered] : numbered
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startsAt, endsAt])
@@ -210,8 +208,9 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
           name: t.name.trim(),
           priceKopecks: t.priceRub !== '' ? Math.round(parseFloat(t.priceRub) * 100) : null,
           capacity: parseInt(t.capacity, 10) || 0,
+          description: t.description.trim() || null,
         })),
-      totalSpots: parseInt(totalSpots, 10) || 0,
+      totalSpots,
       spotsLeft: parseInt(spotsLeft, 10) || 0,
       guideIds,
       days: days.map(d => ({
@@ -387,6 +386,7 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
     })
   }
 
+  const totalSpots    = tickets.reduce((sum, t) => sum + (parseInt(t.capacity, 10) || 0), 0)
   const canReactivate = expedition.status === EventStatus.CANCELLED && new Date(expedition.startsAt) > new Date()
   const publishErrors = expedition.status === EventStatus.DRAFT ? getPublishErrors() : []
   const canPublish    = !isDirty && publishErrors.length === 0
@@ -711,17 +711,15 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
             <h2 className={styles.sectionTitle}>Места</h2>
             <div className={`${styles.fieldRow} ${styles.fieldRow2}`}>
               <div className={styles.field}>
-                <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>
-                  Мест всего
-                </label>
+                <label className={styles.label}>Мест всего</label>
                 <input
                   className={styles.input}
                   type="number"
-                  min="1"
                   value={totalSpots}
-                  onChange={e => { setTotalSpots(e.target.value); markDirty() }}
-                  disabled={!isEditable}
+                  readOnly
+                  disabled
                 />
+                <span className={styles.photoNote}>Сумма мест по всем типам билетов</span>
               </div>
               <div className={styles.field}>
                 <label className={styles.label}>Мест осталось</label>
@@ -825,7 +823,7 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
                 </div>
                 {day.photoUrl && (
                   <div className={`${styles.field} ${styles.fieldFullWidth}`}>
-                    <label className={styles.label}>Подпись к фото</label>
+                    <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Подпись к фото</label>
                     <input
                       className={styles.input}
                       value={day.photoCredit}

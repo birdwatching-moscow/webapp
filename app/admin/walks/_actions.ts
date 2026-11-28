@@ -10,6 +10,7 @@ export type TicketTypeInput = {
   name: string
   priceKopecks: number | null
   capacity: number
+  description?: string | null
 }
 
 export type UpdateWalkFullData = {
@@ -64,6 +65,7 @@ export async function updateWalkFull(id: string, data: UpdateWalkFullData): Prom
         name: t.name,
         priceKopecks: t.priceKopecks,
         capacity: t.capacity,
+        description: t.description ?? null,
         sortOrder: i,
       })),
     }),
@@ -113,6 +115,7 @@ export async function createWalkFull(data: UpdateWalkFullData): Promise<string> 
         name: t.name,
         priceKopecks: t.priceKopecks,
         capacity: t.capacity,
+        description: t.description ?? null,
         sortOrder: i,
       })),
     })
@@ -222,6 +225,7 @@ export async function copyWalk(id: string): Promise<string> {
         name: t.name,
         priceKopecks: t.priceKopecks,
         capacity: t.capacity,
+        description: t.description ?? null,
         sortOrder: i,
       })),
     })

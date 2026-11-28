@@ -15,14 +15,15 @@ export function WalkSectionTickets({ tickets, onChange, disabled, requireAll }: 
   }
   function add() {
     if (tickets.length >= MAX_TICKETS) return
-    onChange([...tickets, { key: makeKey(), name: '', priceRub: '', capacity: '' }])
+    onChange([...tickets, { key: makeKey(), name: '', priceRub: '', capacity: '', description: '' }])
   }
   function remove(key: string) {
     if (tickets.length <= 1) return
     onChange(tickets.filter(t => t.key !== key))
   }
 
-  const hasValidTicket = tickets.some(t => t.name.trim() !== '' && t.priceRub !== '' && t.capacity !== '')
+  const hasValidTicket  = tickets.some(t => t.name.trim() !== '' && t.priceRub !== '' && t.capacity !== '')
+  const descRequired    = tickets.length > 1
 
   return (
     <section className={styles.section}>
@@ -42,43 +43,52 @@ export function WalkSectionTickets({ tickets, onChange, disabled, requireAll }: 
         </div>
 
         {tickets.map(t => (
-          <div key={t.key} className={styles.ticketRow}>
+          <div key={t.key} className={styles.ticketCard}>
+            <div className={styles.ticketRow}>
+              <input
+                className={`${styles.input} ${styles.ticketName}`}
+                value={t.name}
+                onChange={e => update(t.key, { name: e.target.value })}
+                disabled={disabled}
+                placeholder="Название типа"
+              />
+              <input
+                className={styles.input}
+                type="number"
+                min="0"
+                step="1"
+                value={t.priceRub}
+                onChange={e => update(t.key, { priceRub: e.target.value })}
+                disabled={disabled}
+                placeholder="Не указана"
+              />
+              <input
+                className={styles.input}
+                type="number"
+                min="0"
+                step="1"
+                value={t.capacity}
+                onChange={e => update(t.key, { capacity: e.target.value })}
+                disabled={disabled}
+                placeholder="0"
+              />
+              <button
+                type="button"
+                className={styles.removeTicketBtn}
+                onClick={() => remove(t.key)}
+                disabled={disabled || tickets.length <= 1}
+                aria-label="Удалить тип билета"
+              >
+                ×
+              </button>
+            </div>
             <input
-              className={`${styles.input} ${styles.ticketName}`}
-              value={t.name}
-              onChange={e => update(t.key, { name: e.target.value })}
+              className={`${styles.input}${descRequired && !t.description.trim() ? ` ${styles.inputError}` : ''}`}
+              value={t.description}
+              onChange={e => update(t.key, { description: e.target.value })}
               disabled={disabled}
-              placeholder="Название типа"
+              placeholder={descRequired ? 'Описание *' : 'Описание (необязательно)'}
             />
-            <input
-              className={styles.input}
-              type="number"
-              min="0"
-              step="1"
-              value={t.priceRub}
-              onChange={e => update(t.key, { priceRub: e.target.value })}
-              disabled={disabled}
-              placeholder="Не указана"
-            />
-            <input
-              className={styles.input}
-              type="number"
-              min="0"
-              step="1"
-              value={t.capacity}
-              onChange={e => update(t.key, { capacity: e.target.value })}
-              disabled={disabled}
-              placeholder="0"
-            />
-            <button
-              type="button"
-              className={styles.removeTicketBtn}
-              onClick={() => remove(t.key)}
-              disabled={disabled || tickets.length <= 1}
-              aria-label="Удалить тип билета"
-            >
-              ×
-            </button>
           </div>
         ))}
       </div>

@@ -9,6 +9,7 @@ type ContactRequestPayload = {
   name: string
   email: string
   message: string
+  isWaitlist?: boolean
   _hp?: string
 }
 

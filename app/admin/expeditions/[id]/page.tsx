@@ -67,6 +67,7 @@ export default async function EditExpeditionPage({ params }: { params: Promise<{
           name: t.name,
           priceRub: t.priceKopecks != null ? String(t.priceKopecks / 100) : '',
           capacity:  String(t.capacity),
+          description: t.description ?? '',
         })),
         totalSpots:     expedition.totalSpots,
         spotsLeft:     expedition.spotsLeft,

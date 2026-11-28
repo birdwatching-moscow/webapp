@@ -71,7 +71,7 @@ export default async function WalkPage({ params }: Props) {
         },
       },
       ticketTypes: {
-        select: { id: true, name: true, priceKopecks: true, capacity: true, sortOrder: true },
+        select: { id: true, name: true, priceKopecks: true },
         orderBy: SORT_ASC,
       },
       _count: { select: { tickets: true } },
@@ -94,12 +94,8 @@ export default async function WalkPage({ params }: Props) {
       {isSoldOut && (
         <div className={styles.noticeBanner}>
           <NoticeBanner
-            text={
-              <>
-                Стая укомплектована — мы улетаем в экспедицию!{' '}
-                Оставьте свои контакты, и мы сразу оповестим вас о новой экспедиции.
-              </>
-            }
+            title="Билеты закончились"
+            text="Все билеты распроданы на эту прогулку, выберете пожалуйста другую"
           />
         </div>
       )}
@@ -123,15 +119,16 @@ export default async function WalkPage({ params }: Props) {
         more={{ label: 'Подробнее', href: ROUTES.faq }}
       />
 
-      <section id="payment" className={styles.paymentSection}>
-        <h2 className={`text-h1 ${styles.paymentTitle}`}>Оплата</h2>
-        <WalkCheckoutForm
-          walkId={walk.id}
-          priceKopecks={walk.priceKopecks}
-          ticketTypes={resolvedTicketTypes}
-          disabled={isSoldOut}
-        />
-      </section>
+      {!isSoldOut && (
+        <section id="payment" className={styles.paymentSection}>
+          <h2 className={`text-h1 ${styles.paymentTitle}`}>Оплата</h2>
+          <WalkCheckoutForm
+            walkId={walk.id}
+            priceKopecks={walk.priceKopecks}
+            ticketTypes={resolvedTicketTypes}
+          />
+        </section>
+      )}
 
       <div className={styles.certificateBand}>
         <CertificateCTABand />

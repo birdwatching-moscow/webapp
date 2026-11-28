@@ -13,9 +13,11 @@ type ContactModalProps = {
   open: boolean
   onClose: () => void
   defaultType?: ContactFormType
+  expeditionId?: string
+  messagePlaceholder?: string
 }
 
-export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: ContactModalProps) => {
+export const ContactModal = ({ open, onClose, defaultType = 'QUESTION', expeditionId, messagePlaceholder }: ContactModalProps) => {
   const { data: session } = useSession()
   const config = TYPE_CONFIG[defaultType]
 
@@ -43,6 +45,8 @@ export const ContactModal = ({ open, onClose, defaultType = 'QUESTION' }: Contac
         type={defaultType}
         initialName={session?.user?.name ?? ''}
         initialEmail={session?.user?.email ?? ''}
+        expeditionId={expeditionId}
+        messagePlaceholder={messagePlaceholder}
         header={header}
       />
     </Modal>

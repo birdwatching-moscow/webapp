@@ -21,6 +21,9 @@ interface MultiProps {
   disabled?: boolean
   requireAll?: boolean
   requireGuide?: boolean
+  maxGuides?: number
+  sectionTitle?: string
+  fieldLabel?: string
   multi: true
 }
 
@@ -30,8 +33,9 @@ export function WalkSectionGuides(props: Props) {
   const isRequired = props.requireAll || props.requireGuide
 
   if (props.multi) {
-    const { guides, guideIds, onGuideIds, disabled } = props
-    const atLimit = guideIds.length >= MAX_GUIDES
+    const { guides, guideIds, onGuideIds, disabled, maxGuides, sectionTitle, fieldLabel } = props
+    const limit = maxGuides ?? MAX_GUIDES
+    const atLimit = limit < Infinity && guideIds.length >= limit
 
     function toggle(id: string) {
       if (guideIds.includes(id)) {
@@ -43,9 +47,9 @@ export function WalkSectionGuides(props: Props) {
 
     return (
       <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>Гиды</h2>
+        <h2 className={styles.sectionTitle}>{sectionTitle ?? 'Гиды'}</h2>
         <div className={styles.guideField}>
-          <label className={`${styles.label} ${isRequired ? styles.required : ''}`}>Гиды</label>
+          <label className={`${styles.label} ${isRequired ? styles.required : ''}`}>{fieldLabel ?? 'Гиды'}</label>
           <div className={styles.checkboxGroup}>
             {guides.map(g => {
               const id = String(g.id)
@@ -63,7 +67,7 @@ export function WalkSectionGuides(props: Props) {
               )
             })}
           </div>
-          {atLimit && <p className={styles.photoNote}>Максимум {MAX_GUIDES} гида</p>}
+          {atLimit && <p className={styles.photoNote}>Максимум {limit} гида</p>}
         </div>
       </section>
     )
