@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/buttons/Button'
 import { WalkSectionDateTime } from '@/app/admin/walks/_sections/WalkSectionDateTime'
 import { WalkSectionGuides } from '@/app/admin/walks/_sections/WalkSectionGuides'
 import { WalkSectionTickets } from '@/app/admin/walks/_sections/WalkSectionTickets'
+import { WalkSectionDifficulty } from '@/app/admin/walks/_sections/WalkSectionDifficulty'
 import { saveBirdId } from './_actions'
 import type { BirdIdData } from './_actions'
 import type { Guide, TicketTypeRow } from '@/app/admin/walks/_sections/types'
@@ -39,6 +40,7 @@ export const BirdIdEditForm = ({ initial, guides }: Props) => {
   const [startsAt,             setStartsAt]             = useState(initial?.startsAt ?? '')
   const [endsAt,               setEndsAt]               = useState(initial?.endsAt ?? '')
   const [durationDays,         setDurationDays]         = useState(initial?.durationDays != null ? String(initial.durationDays) : '')
+  const [difficulty,           setDifficulty]           = useState<number | null>(initial?.difficulty ?? null)
   const [schedule,             setSchedule]             = useState(initial?.schedule ?? '')
   const [seminars,             setSeminars]             = useState(initial?.seminars ?? '')
   const [registrationDeadline, setRegistrationDeadline] = useState(initial?.registrationDeadline ?? '')
@@ -102,6 +104,7 @@ export const BirdIdEditForm = ({ initial, guides }: Props) => {
           title:                title.trim(),
           formUrl:              formUrl.trim() || null,
           durationDays:         durationDays ? parseInt(durationDays, 10) : null,
+          difficulty,
           startsAt:             startsAt || null,
           endsAt:               endsAt   || null,
           schedule:             schedule.trim() || null,
@@ -214,6 +217,11 @@ export const BirdIdEditForm = ({ initial, guides }: Props) => {
             </div>
           </div>
         </section>
+
+        <WalkSectionDifficulty
+          value={difficulty}
+          onChange={v => { setDifficulty(v); markDirty() }}
+        />
 
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Дата окончания регистрации</h2>

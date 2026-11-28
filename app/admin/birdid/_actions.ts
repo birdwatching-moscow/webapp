@@ -19,6 +19,7 @@ export type BirdIdInput = {
   startsAt: string | null
   endsAt: string | null
   durationDays: number | null
+  difficulty: number | null
   schedule: string | null
   seminars: string | null
   registrationDeadline: string | null
@@ -34,6 +35,7 @@ export type BirdIdData = {
   startsAt: string | null
   endsAt: string | null
   durationDays: number | null
+  difficulty: number | null
   schedule: string | null
   seminars: string | null
   registrationDeadline: string | null
@@ -59,6 +61,7 @@ export async function getBirdId(): Promise<BirdIdData | null> {
     startsAt:             record.startsAt ? record.startsAt.toISOString().split('T')[0] : null,
     endsAt:               record.endsAt   ? record.endsAt.toISOString().split('T')[0]   : null,
     durationDays:         record.durationDays,
+    difficulty:           record.difficulty,
     schedule:             record.schedule,
     seminars:             record.seminars,
     registrationDeadline: record.registrationDeadline ? record.registrationDeadline.toISOString().split('T')[0] : null,
@@ -88,6 +91,7 @@ export async function saveBirdId(input: BirdIdInput): Promise<void> {
       startsAt:             input.startsAt ? new Date(input.startsAt) : null,
       endsAt:               input.endsAt   ? new Date(input.endsAt)   : null,
       durationDays:         input.durationDays,
+      difficulty:           input.difficulty,
       schedule:             input.schedule,
       seminars:             input.seminars,
       registrationDeadline: input.registrationDeadline ? new Date(input.registrationDeadline) : null,
@@ -102,6 +106,7 @@ export async function saveBirdId(input: BirdIdInput): Promise<void> {
       startsAt:             input.startsAt ? new Date(input.startsAt) : null,
       endsAt:               input.endsAt   ? new Date(input.endsAt)   : null,
       durationDays:         input.durationDays,
+      difficulty:           input.difficulty,
       schedule:             input.schedule,
       seminars:             input.seminars,
       registrationDeadline: input.registrationDeadline ? new Date(input.registrationDeadline) : null,
