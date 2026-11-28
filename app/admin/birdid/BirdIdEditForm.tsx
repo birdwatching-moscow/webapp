@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/buttons/Button'
 import { WalkSectionDateTime } from '@/app/admin/walks/_sections/WalkSectionDateTime'
 import { WalkSectionGuides } from '@/app/admin/walks/_sections/WalkSectionGuides'
 import { WalkSectionTickets } from '@/app/admin/walks/_sections/WalkSectionTickets'
+import { WalkSectionDifficulty } from '@/app/admin/walks/_sections/WalkSectionDifficulty'
 import { saveBirdId } from './_actions'
 import type { BirdIdData } from './_actions'
 import type { Guide, TicketTypeRow } from '@/app/admin/walks/_sections/types'
@@ -38,6 +39,8 @@ export const BirdIdEditForm = ({ initial, guides }: Props) => {
   const [formUrl,              setFormUrl]              = useState(initial?.formUrl ?? '')
   const [startsAt,             setStartsAt]             = useState(initial?.startsAt ?? '')
   const [endsAt,               setEndsAt]               = useState(initial?.endsAt ?? '')
+  const [durationHours,        setDurationHours]        = useState(initial?.durationHours != null ? String(initial.durationHours) : '')
+  const [difficulty,           setDifficulty]           = useState<number | null>(initial?.difficulty ?? null)
   const [schedule,             setSchedule]             = useState(initial?.schedule ?? '')
   const [seminars,             setSeminars]             = useState(initial?.seminars ?? '')
   const [registrationDeadline, setRegistrationDeadline] = useState(initial?.registrationDeadline ?? '')
@@ -59,11 +62,24 @@ export const BirdIdEditForm = ({ initial, guides }: Props) => {
     setSuccess(false)
   }
 
+  function isValidUrl(url: string): boolean {
+    try {
+      const { protocol } = new URL(url)
+      return protocol === 'https:' || protocol === 'http:'
+    } catch {
+      return false
+    }
+  }
+
+  const formUrlInvalid = formUrl.trim() !== '' && !isValidUrl(formUrl.trim())
+
   function getValidationErrors(): string[] {
     const errors: string[] = []
     if (!title.trim())               errors.push('Заголовок')
     if (!formUrl.trim())             errors.push('Ссылка на форму')
+    else if (formUrlInvalid)         errors.push('Ссылка на форму (неверный формат)')
     if (!startsAt)                   errors.push('Дата начала курса')
+    if (!durationHours || parseInt(durationHours, 10) < 1) errors.push('Количество часов')
     if (!endsAt)                     errors.push('Дата окончания курса')
     if (!registrationDeadline)       errors.push('Дата окончания регистрации')
     if (!schedule.trim())            errors.push('Примерное расписание')
@@ -87,6 +103,8 @@ export const BirdIdEditForm = ({ initial, guides }: Props) => {
         await saveBirdId({
           title:                title.trim(),
           formUrl:              formUrl.trim() || null,
+          durationHours:        durationHours ? parseInt(durationHours, 10) : null,
+          difficulty,
           startsAt:             startsAt || null,
           endsAt:               endsAt   || null,
           schedule:             schedule.trim() || null,
@@ -150,12 +168,15 @@ export const BirdIdEditForm = ({ initial, guides }: Props) => {
             <div className={`${styles.field} ${styles.fieldFullWidth}`}>
               <label className={`${styles.label} ${styles.required}`}>Ссылка на форму регистрации</label>
               <input
-                className={styles.input}
+                className={`${styles.input}${formUrlInvalid ? ` ${styles.inputError}` : ''}`}
                 type="url"
                 value={formUrl}
                 onChange={e => { setFormUrl(e.target.value); markDirty() }}
                 placeholder="https://…"
               />
+              {formUrlInvalid && (
+                <span className={styles.fieldError}>Введите корректный URL, начинающийся с https:// или http://</span>
+              )}
             </div>
             <div className={styles.field}>
               <label className={`${styles.label} ${styles.required}`}>Запись на курс открыта</label>
@@ -178,6 +199,29 @@ export const BirdIdEditForm = ({ initial, guides }: Props) => {
           onEndsAt={v => { setEndsAt(v); markDirty() }}
           dateOnly
           requireAll
+          readOnlyDuration
+        />
+
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Длительность</h2>
+          <div className={styles.fieldRow}>
+            <div className={styles.field}>
+              <label className={`${styles.label} ${styles.required}`}>Количество часов</label>
+              <input
+                className={styles.input}
+                type="number"
+                min="1"
+                value={durationHours}
+                onChange={e => { setDurationHours(e.target.value); markDirty() }}
+                placeholder="Например: 120"
+              />
+            </div>
+          </div>
+        </section>
+
+        <WalkSectionDifficulty
+          value={difficulty}
+          onChange={v => { setDifficulty(v); markDirty() }}
         />
 
         <section className={styles.section}>

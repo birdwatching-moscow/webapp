@@ -18,6 +18,8 @@ export type BirdIdInput = {
   formUrl: string | null
   startsAt: string | null
   endsAt: string | null
+  durationHours: number | null
+  difficulty: number | null
   schedule: string | null
   seminars: string | null
   registrationDeadline: string | null
@@ -32,6 +34,9 @@ export type BirdIdData = {
   formUrl: string | null
   startsAt: string | null
   endsAt: string | null
+  durationDays: number | null
+  durationHours: number | null
+  difficulty: number | null
   schedule: string | null
   seminars: string | null
   registrationDeadline: string | null
@@ -56,6 +61,9 @@ export async function getBirdId(): Promise<BirdIdData | null> {
     formUrl:              record.formUrl,
     startsAt:             record.startsAt ? record.startsAt.toISOString().split('T')[0] : null,
     endsAt:               record.endsAt   ? record.endsAt.toISOString().split('T')[0]   : null,
+    durationDays:         record.durationDays,
+    durationHours:        record.durationHours,
+    difficulty:           record.difficulty,
     schedule:             record.schedule,
     seminars:             record.seminars,
     registrationDeadline: record.registrationDeadline ? record.registrationDeadline.toISOString().split('T')[0] : null,
@@ -71,8 +79,17 @@ export async function getBirdId(): Promise<BirdIdData | null> {
   }
 }
 
+function computeDurationDays(startsAt: string | null, endsAt: string | null): number | null {
+  if (!startsAt || !endsAt) return null
+  const start = new Date(startsAt)
+  const end   = new Date(endsAt)
+  if (isNaN(start.getTime()) || isNaN(end.getTime()) || end < start) return null
+  return Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1
+}
+
 export async function saveBirdId(input: BirdIdInput): Promise<void> {
   const session = await requireAdmin()
+  const durationDays = computeDurationDays(input.startsAt, input.endsAt)
 
   await prisma.birdIdTicketType.deleteMany({ where: { birdIdId: SINGLETON_ID } })
 
@@ -84,6 +101,9 @@ export async function saveBirdId(input: BirdIdInput): Promise<void> {
       formUrl:              input.formUrl,
       startsAt:             input.startsAt ? new Date(input.startsAt) : null,
       endsAt:               input.endsAt   ? new Date(input.endsAt)   : null,
+      durationDays,
+      durationHours:        input.durationHours,
+      difficulty:           input.difficulty,
       schedule:             input.schedule,
       seminars:             input.seminars,
       registrationDeadline: input.registrationDeadline ? new Date(input.registrationDeadline) : null,
@@ -97,6 +117,9 @@ export async function saveBirdId(input: BirdIdInput): Promise<void> {
       formUrl:              input.formUrl,
       startsAt:             input.startsAt ? new Date(input.startsAt) : null,
       endsAt:               input.endsAt   ? new Date(input.endsAt)   : null,
+      durationDays,
+      durationHours:        input.durationHours,
+      difficulty:           input.difficulty,
       schedule:             input.schedule,
       seminars:             input.seminars,
       registrationDeadline: input.registrationDeadline ? new Date(input.registrationDeadline) : null,

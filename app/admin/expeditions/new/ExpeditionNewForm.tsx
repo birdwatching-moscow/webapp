@@ -12,6 +12,7 @@ import { WalkSectionCover } from '@/app/admin/walks/_sections/WalkSectionCover'
 import { ImageUpload } from '@/components/admin/ImageUpload'
 import { WalkSectionGuides } from '@/app/admin/walks/_sections/WalkSectionGuides'
 import { WalkSectionTickets } from '@/app/admin/walks/_sections/WalkSectionTickets'
+import { WalkSectionDifficulty } from '@/app/admin/walks/_sections/WalkSectionDifficulty'
 import type { TicketTypeRow } from '@/app/admin/walks/_sections/types'
 import { makeKey as makeTicketKey } from '@/app/admin/walks/_sections/types'
 import styles from '@/app/admin/walks/[id]/walk-edit.module.css'
@@ -210,22 +211,14 @@ export function ExpeditionNewForm({ guides }: Props) {
                 rows={5}
               />
             </div>
-            <div className={styles.field}>
-              <label className={styles.label}>Сложность</label>
-              <div className={styles.difficultyPicker}>
-                {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
-                  <button
-                    key={n}
-                    type="button"
-                    className={`${styles.difficultyChip}${difficulty === n ? ` ${styles.difficultyChipActive}` : ''}`}
-                    onClick={() => setDifficulty(difficulty === n ? null : n)}
-                    disabled={pending}
-                  >{n}</button>
-                ))}
-              </div>
-            </div>
           </div>
         </section>
+
+        <WalkSectionDifficulty
+          value={difficulty}
+          onChange={setDifficulty}
+          disabled={pending}
+        />
 
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Будем искать</h2>

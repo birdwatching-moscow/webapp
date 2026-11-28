@@ -14,6 +14,7 @@ import { WalkSectionDateTime } from '@/app/admin/walks/_sections/WalkSectionDate
 import { WalkSectionCover } from '@/app/admin/walks/_sections/WalkSectionCover'
 import { WalkSectionGuides } from '@/app/admin/walks/_sections/WalkSectionGuides'
 import { WalkSectionTickets } from '@/app/admin/walks/_sections/WalkSectionTickets'
+import { WalkSectionDifficulty } from '@/app/admin/walks/_sections/WalkSectionDifficulty'
 import { ImageUpload } from '@/components/admin/ImageUpload'
 import styles from '@/app/admin/walks/[id]/walk-edit.module.css'
 import { EventStatus } from '@/lib/enums'
@@ -499,6 +500,13 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
             dateOnly
           />
 
+          <WalkSectionDifficulty
+            value={difficulty}
+            onChange={v => { setDifficulty(v); markDirty() }}
+            required={requireAll}
+            disabled={!isEditable}
+          />
+
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>О поездке</h2>
             <div className={`${styles.fieldRow} ${styles.fieldRow2}`}>
@@ -521,20 +529,6 @@ export function ExpeditionEditForm({ expedition, guides }: Props) {
                   disabled={!isEditable}
                   rows={5}
                 />
-              </div>
-              <div className={styles.field}>
-                <label className={`${styles.label} ${requireAll ? styles.required : ''}`}>Сложность</label>
-                <div className={styles.difficultyPicker}>
-                  {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
-                    <button
-                      key={n}
-                      type="button"
-                      className={`${styles.difficultyChip}${difficulty === n ? ` ${styles.difficultyChipActive}` : ''}`}
-                      onClick={() => { setDifficulty(difficulty === n ? null : n); markDirty() }}
-                      disabled={!isEditable}
-                    >{n}</button>
-                  ))}
-                </div>
               </div>
             </div>
           </section>

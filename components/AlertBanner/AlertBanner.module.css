@@ -1,0 +1,21 @@
+.banner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-2);
+  align-self: stretch;
+  margin-inline: auto;
+  min-width: 320px;
+  max-width: 720px;
+  padding: var(--space-4) var(--space-5);
+  border: var(--stroke-default) solid var(--color-error);
+  border-radius: var(--radius-lg);
+  background: var(--color-background);
+}
+
+.text {
+  margin: 0;
+  color: var(--color-foreground);
+  text-align: center;
+}

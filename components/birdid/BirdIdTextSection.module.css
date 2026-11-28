@@ -1,0 +1,23 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding-top: var(--space-10);
+  min-width: 320px;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.title {
+  margin: 0;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.paragraph {
+  margin: 0;
+}

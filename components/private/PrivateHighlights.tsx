@@ -10,7 +10,7 @@ export type PrivateHighlight = {
 type PrivateHighlightsProps = {
   title: string
   highlights: readonly PrivateHighlight[]
-  more: { label: string; href: string }
+  more?: { label: string; href: string }
 }
 
 /** «Важно знать»: swipeable cards on mobile, 3-column grid on desktop. */
@@ -24,8 +24,10 @@ export const PrivateHighlights = ({ title, highlights, more }: PrivateHighlights
         </li>
       ))}
     </ul>
-    <Button as="a" href={more.href} variant="secondary" size="lg" fullWidth className={styles.more}>
-      {more.label}
-    </Button>
+    {more && (
+      <Button as="a" href={more.href} variant="secondary" size="lg" fullWidth className={styles.more}>
+        {more.label}
+      </Button>
+    )}
   </section>
 )
