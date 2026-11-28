@@ -36,7 +36,6 @@ export const BirdIdEditForm = ({ initial, guides }: Props) => {
   const titleId = useId()
 
   const [title,                setTitle]                = useState(initial?.title ?? '')
-  const [subtitle,             setSubtitle]             = useState(initial?.subtitle ?? '')
   const [formUrl,              setFormUrl]              = useState(initial?.formUrl ?? '')
   const [startsAt,             setStartsAt]             = useState(initial?.startsAt ?? '')
   const [endsAt,               setEndsAt]               = useState(initial?.endsAt ?? '')
@@ -103,7 +102,6 @@ export const BirdIdEditForm = ({ initial, guides }: Props) => {
       try {
         await saveBirdId({
           title:                title.trim(),
-          subtitle:             subtitle.trim() || null,
           formUrl:              formUrl.trim() || null,
           durationHours:        durationHours ? parseInt(durationHours, 10) : null,
           difficulty,
@@ -165,15 +163,6 @@ export const BirdIdEditForm = ({ initial, guides }: Props) => {
                 value={title}
                 onChange={e => { setTitle(e.target.value); markDirty() }}
                 placeholder="Например: BirdID — курс полевой идентификации птиц"
-              />
-            </div>
-            <div className={`${styles.field} ${styles.fieldFullWidth}`}>
-              <label className={styles.label}>Подзаголовок</label>
-              <input
-                className={styles.input}
-                value={subtitle}
-                onChange={e => { setSubtitle(e.target.value); markDirty() }}
-                placeholder="Например: Углублённый курс полевой идентификации птиц"
               />
             </div>
             <div className={`${styles.field} ${styles.fieldFullWidth}`}>

@@ -4,7 +4,6 @@ const SINGLETON_ID = 'singleton'
 
 export type BirdIdPublicData = {
   title: string
-  subtitle: string | null
   formUrl: string | null
   startsAt: Date | null
   endsAt: Date | null
@@ -19,7 +18,6 @@ export async function getBirdIdPublic(): Promise<BirdIdPublicData | null> {
     where: { id: SINGLETON_ID },
     select: {
       title: true,
-      subtitle: true,
       formUrl: true,
       startsAt: true,
       endsAt: true,
