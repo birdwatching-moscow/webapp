@@ -1,0 +1,12 @@
+.banner {
+  width: 100%;
+  padding: var(--space-4);
+  border: var(--stroke-default) solid var(--color-error);
+  border-radius: var(--radius-lg);
+  background: var(--color-background);
+}
+
+.text {
+  margin: 0;
+  color: var(--color-foreground);
+}
