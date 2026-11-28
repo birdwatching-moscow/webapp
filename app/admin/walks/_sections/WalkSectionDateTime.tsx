@@ -97,8 +97,7 @@ export function WalkSectionDateTime({
               className={styles.input}
               type="number"
               value={computedDays ?? ''}
-              readOnly
-              tabIndex={-1}
+              disabled
               placeholder="—"
             />
           </div>
