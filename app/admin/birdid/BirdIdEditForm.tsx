@@ -59,10 +59,22 @@ export const BirdIdEditForm = ({ initial, guides }: Props) => {
     setSuccess(false)
   }
 
+  function isValidUrl(url: string): boolean {
+    try {
+      const { protocol } = new URL(url)
+      return protocol === 'https:' || protocol === 'http:'
+    } catch {
+      return false
+    }
+  }
+
+  const formUrlInvalid = formUrl.trim() !== '' && !isValidUrl(formUrl.trim())
+
   function getValidationErrors(): string[] {
     const errors: string[] = []
     if (!title.trim())               errors.push('Заголовок')
     if (!formUrl.trim())             errors.push('Ссылка на форму')
+    else if (formUrlInvalid)         errors.push('Ссылка на форму (неверный формат)')
     if (!startsAt)                   errors.push('Дата начала курса')
     if (!endsAt)                     errors.push('Дата окончания курса')
     if (!registrationDeadline)       errors.push('Дата окончания регистрации')
@@ -150,12 +162,15 @@ export const BirdIdEditForm = ({ initial, guides }: Props) => {
             <div className={`${styles.field} ${styles.fieldFullWidth}`}>
               <label className={`${styles.label} ${styles.required}`}>Ссылка на форму регистрации</label>
               <input
-                className={styles.input}
+                className={`${styles.input}${formUrlInvalid ? ` ${styles.inputError}` : ''}`}
                 type="url"
                 value={formUrl}
                 onChange={e => { setFormUrl(e.target.value); markDirty() }}
                 placeholder="https://…"
               />
+              {formUrlInvalid && (
+                <span className={styles.fieldError}>Введите корректный URL, начинающийся с https:// или http://</span>
+              )}
             </div>
             <div className={styles.field}>
               <label className={`${styles.label} ${styles.required}`}>Запись на курс открыта</label>
