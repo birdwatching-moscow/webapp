@@ -16,9 +16,20 @@
   bottom: var(--space-4);
   right: var(--space-4);
   composes: flex-center from global;
-  pointer-events: auto;
+  list-style: none;
   cursor: pointer;
+  transition: opacity 0.2s ease;
   z-index: var(--z-index-float);
+}
+
+.icon::-webkit-details-marker {
+  display: none;
+}
+
+.icon:focus-visible {
+  outline: var(--stroke-focus) solid var(--color-primary-foreground);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
 }
 
 /* Caption overlay — hidden by default, appears at bottom-right on icon hover */
@@ -30,21 +41,44 @@
   text-align: right;
   text-transform: uppercase;
   margin: 0;
-  padding: 0;
   color: var(--color-primary-foreground);
   font-size: var(--font-size-sm);
   line-height: 1.4;
+  text-shadow: 0 0 4px rgb(0 0 0 / 0.6);
   opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s;
   z-index: var(--z-index-raised);
 }
 
-/* On icon hover: hide icon, show caption */
-.card:has(.icon:hover) .icon {
-  opacity: 0;
+/* Desktop: hover on the icon — icon fades out, caption appears.
+   Caption stays up while pointer moves onto it (caption is inside .credit). */
+@media (hover: hover) {
+  .credit:is(:hover, :focus-within)::details-content {
+    content-visibility: visible;
+  }
+
+  .credit:is(:hover, :focus-within) .caption {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .credit:is(:hover, :focus-within) .icon {
+    opacity: 0;
+  }
 }
 
-.card:has(.icon:hover) .caption {
-  opacity: 1;
+/* Touch: tap the icon to open, tap the photo area to close. */
+@media (hover: none) {
+  .credit[open] .caption {
+    opacity: 1;
+    visibility: visible;
+    z-index: var(--z-index-float);
+  }
+
+  .credit[open] .icon {
+    inset: 0;
+    opacity: 0;
+    z-index: var(--z-index-raised);
+  }
 }

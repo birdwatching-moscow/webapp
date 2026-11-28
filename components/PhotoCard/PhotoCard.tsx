@@ -22,12 +22,13 @@ export const PhotoCard = ({ src, alt, caption, className, sizes = DEFAULT_SIZES,
   <div className={`${styles.card} ${className ?? ''}`}>
     <Image src={src} alt={alt} fill sizes={sizes} priority={priority} className={styles.image} />
 
-    <span data-testid="photo-info-icon" className={styles.icon} aria-hidden="true">
-      <InfoIcon />
-    </span>
-
-    <p data-testid="photo-caption" className={styles.caption}>
-      {caption ?? LOREM_IPSUM}
-    </p>
+    <details className={styles.credit}>
+      <summary data-testid="photo-info-icon" className={styles.icon} aria-label="Автор фото">
+        <InfoIcon />
+      </summary>
+      <p data-testid="photo-caption" className={styles.caption}>
+        {caption ?? LOREM_IPSUM}
+      </p>
+    </details>
   </div>
 )
