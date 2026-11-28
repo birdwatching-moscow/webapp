@@ -4,28 +4,19 @@ import { useState, useRef, useEffect, useTransition } from 'react'
 import { createPortal } from 'react-dom'
 import { RequestStatus } from '@/lib/enums'
 import { updateRequestStatus } from './_actions'
+import { STATUS_DISPLAY, STATUS_PICKER_BASE, STATUS_PICKER_WAITLIST } from './_constants'
 import styles from './requests.module.css'
-
-const STATUS_OPTIONS: { value: RequestStatus; label: string; cls: string }[] = [
-  { value: 'OPEN',        label: 'Открыта',        cls: 'badgeOPEN' },
-  { value: 'IN_PROGRESS', label: 'В работе',       cls: 'badgeIN_PROGRESS' },
-  { value: 'CLOSED',      label: 'Закрыта',        cls: 'badgeCLOSED' },
-]
-
-const ALL_STATUS_DISPLAY: Record<RequestStatus, { label: string; cls: string }> = {
-  NEW:         { label: 'Новая',         cls: 'badgeNEW' },
-  WAITLIST:    { label: 'Лист ожидания', cls: 'badgeWAITLIST' },
-  OPEN:        { label: 'Открыта',       cls: 'badgeOPEN' },
-  IN_PROGRESS: { label: 'В работе',      cls: 'badgeIN_PROGRESS' },
-  CLOSED:      { label: 'Закрыта',       cls: 'badgeCLOSED' },
-}
 
 interface Props {
   id: string
   status: RequestStatus
+  type: string
 }
 
-export function StatusPicker({ id, status }: Props) {
+export function StatusPicker({ id, status, type }: Props) {
+  const statusOptions = type === 'EXPEDITION'
+    ? [STATUS_PICKER_WAITLIST, ...STATUS_PICKER_BASE]
+    : STATUS_PICKER_BASE
   const [open, setOpen] = useState(false)
   const [coords, setCoords] = useState({ top: 0, left: 0 })
   const [pending, startTransition] = useTransition()
@@ -68,7 +59,7 @@ export function StatusPicker({ id, status }: Props) {
     })
   }
 
-  const current = ALL_STATUS_DISPLAY[currentStatus]
+  const current = STATUS_DISPLAY[currentStatus]
 
   return (
     <>
@@ -79,15 +70,13 @@ export function StatusPicker({ id, status }: Props) {
           styles.badge,
           styles[current.cls as keyof typeof styles],
           styles.statusPickerTrigger,
-          pending ? styles.statusPickerPending : '',
         ].filter(Boolean).join(' ')}
         onClick={handleOpen}
         aria-expanded={open}
         aria-haspopup="true"
-        disabled={pending}
         title="Изменить статус"
       >
-        {pending ? '…' : current.label}
+        {current.label}
         <span className={styles.statusPickerCaret} aria-hidden="true">▾</span>
       </button>
 
@@ -98,7 +87,7 @@ export function StatusPicker({ id, status }: Props) {
           style={{ top: coords.top, left: coords.left }}
           role="menu"
         >
-          {STATUS_OPTIONS.map(opt => (
+          {statusOptions.map(opt => (
             <button
               key={opt.value}
               type="button"

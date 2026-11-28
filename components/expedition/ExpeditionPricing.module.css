@@ -1,0 +1,159 @@
+/* ─── Mobile first ─────────────────────────────────────────────────────────── */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: var(--space-8);
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  width: 100%;
+  max-width: 616px;
+}
+
+.title {
+  margin: 0;
+}
+
+/* ── Ticket cards ─────────────────────────────────────────────────────────── */
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  align-items: flex-start;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  min-width: 200px;
+}
+
+.cardLabel {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
+  line-height: 1.4;
+}
+
+.cardPrice {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: var(--font-size-3xl);
+  line-height: 1.1;
+  color: var(--color-foreground);
+}
+
+/* ── Included / excluded lists ────────────────────────────────────────────── */
+
+.lists {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.listBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.listTitle {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: var(--font-size-lg);
+  line-height: 1.4;
+  color: var(--color-foreground);
+  margin: 0;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.listItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  font-size: var(--font-size-md);
+  line-height: 1.5;
+  color: var(--color-foreground);
+}
+
+.listItem::before {
+  content: '·';
+  flex-shrink: 0;
+  color: var(--color-muted-foreground);
+  margin-top: 0;
+  line-height: 1.5;
+}
+
+/* ── CTA button ───────────────────────────────────────────────────────────── */
+
+.cta {
+  width: 100%;
+}
+
+/* ─── Desktop ──────────────────────────────────────────────────────────────── */
+
+@media (min-width: 1248px) {
+  .section {
+    padding-top: var(--space-10);
+  }
+
+  .inner {
+    max-width: 760px;
+  }
+
+  .cards {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    align-items: flex-start;
+  }
+
+  .card {
+    flex: 0 0 auto;
+    padding: var(--space-6) var(--space-6);
+  }
+
+  .cardPrice {
+    font-size: var(--font-size-4xl);
+  }
+
+  .listTitle {
+    font-size: var(--font-size-xl);
+  }
+
+  .listItem {
+    font-size: var(--font-size-lg);
+  }
+
+  .cta {
+    width: auto;
+    min-width: 260px;
+    max-width: 406px;
+  }
+}

@@ -34,7 +34,6 @@ export function ExpeditionNewForm({ guides }: Props) {
   const [startsAt, setStartsAt]       = useState('')
   const [endsAt, setEndsAt]           = useState('')
   const [coverUrl, setCoverUrl]       = useState('')
-  const [totalSpots, setTotalSpots]   = useState('')
   const [guideIds, setGuideIds]       = useState<string[]>([])
   const [galleryItems, setGalleryItems]     = useState<GalleryItem[]>([])
   const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([])
@@ -45,7 +44,7 @@ export function ExpeditionNewForm({ guides }: Props) {
   const [includedItems, setIncludedItems] = useState<string[]>([])
   const [excludedItems, setExcludedItems] = useState<string[]>([])
   const [tickets, setTickets]             = useState<TicketTypeRow[]>([
-    { key: makeTicketKey(), name: 'Стандартный', priceRub: '', capacity: '' },
+    { key: makeTicketKey(), name: 'Стандартный', priceRub: '', capacity: '', description: '' },
   ])
 
   const [error, setError]            = useState<string | null>(null)
@@ -93,7 +92,7 @@ export function ExpeditionNewForm({ guides }: Props) {
     if (startsAt && endsAt && endsAt <= startsAt) {
       setError('Дата окончания не может быть раньше даты начала'); return
     }
-    const spots = parseInt(totalSpots, 10) || 0
+    const spots = tickets.reduce((sum, t) => sum + (parseInt(t.capacity, 10) || 0), 0)
     startCreate(async () => {
       try {
         const id = await createExpedition({
@@ -391,24 +390,6 @@ export function ExpeditionNewForm({ guides }: Props) {
           )}
         </section>
 
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Места</h2>
-          <div className={`${styles.fieldRow} ${styles.fieldRow2}`}>
-            <div className={styles.field}>
-              <label className={styles.label}>
-                Мест всего
-              </label>
-              <input
-                className={styles.input}
-                type="number"
-                min="1"
-                value={totalSpots}
-                onChange={e => setTotalSpots(e.target.value)}
-                placeholder="20"
-              />
-            </div>
-          </div>
-        </section>
       </div>
 
       <div className={styles.formActions}>

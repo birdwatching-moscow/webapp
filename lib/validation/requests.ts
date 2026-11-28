@@ -17,6 +17,7 @@ const expeditionRequestSchema = z
     name:         baseName,
     email:        baseEmail,
     message:      z.string().max(MAX_REQUEST_MESSAGE).optional().transform(v => (v === '' ? undefined : v)),
+    isWaitlist:   z.boolean().optional(),
     ...honeypot,
   })
   .strict()

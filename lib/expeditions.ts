@@ -38,6 +38,7 @@ export type ExpeditionTicketTypeRow = {
   priceKopecks: number | null
   capacity: number
   sortOrder: number
+  description: string | null
 }
 
 export type ExpeditionPageRow = {
@@ -130,7 +131,7 @@ export async function getExpeditionBySlug(slug: string): Promise<ExpeditionPageR
         orderBy: { dayNumber: 'asc' },
       },
       ticketTypes: {
-        select: { id: true, name: true, priceKopecks: true, capacity: true, sortOrder: true },
+        select: { id: true, name: true, priceKopecks: true, capacity: true, sortOrder: true, description: true },
         orderBy: { sortOrder: 'asc' },
       },
     },
@@ -177,6 +178,7 @@ export async function getExpeditionBySlug(slug: string): Promise<ExpeditionPageR
       priceKopecks: t.priceKopecks,
       capacity: t.capacity,
       sortOrder: t.sortOrder,
+      description: t.description,
     })),
   }
 }

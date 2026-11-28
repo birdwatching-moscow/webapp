@@ -21,14 +21,6 @@ export default function NotFound() {
       </div>
       <div className={styles.imageWrapper}>
         <Image
-          src="/placeholders/hero-media.png"
-          alt=""
-          fill
-          sizes={IMAGE_SIZES}
-          className={styles.placeholder}
-          aria-hidden
-        />
-        <Image
           src="/404-image.png"
           alt="Птичье гнездо"
           fill

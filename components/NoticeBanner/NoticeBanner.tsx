@@ -8,15 +8,19 @@ type ButtonConfig =
   | { label: string; href?: never; onClick: () => void; variant?: ButtonVariant }
 
 type NoticeBannerProps = {
+  title?: React.ReactNode
   text: React.ReactNode
   buttons?: [ButtonConfig] | [ButtonConfig, ButtonConfig]
   stackButtons?: boolean
   className?: string
 }
 
-export const NoticeBanner = ({ text, buttons, stackButtons, className }: NoticeBannerProps) => (
+export const NoticeBanner = ({ title, text, buttons, stackButtons, className }: NoticeBannerProps) => (
   <div className={[styles.banner, className].filter(Boolean).join(' ')}>
-    <p className={`text-body-l ${styles.text}`}>{text}</p>
+    <div className={styles.content}>
+      {title && <p className={`text-body-l ${styles.title}`}>{title}</p>}
+      <p className={`text-body-l ${styles.text}`}>{text}</p>
+    </div>
     {buttons && buttons.length > 0 && (
       <div className={[styles.actions, stackButtons && styles.actionsStacked].filter(Boolean).join(' ')}>
         {buttons.map((btn) =>

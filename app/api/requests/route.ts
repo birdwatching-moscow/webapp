@@ -53,6 +53,7 @@ export async function POST(req: Request): Promise<NextResponse> {
       }
     }
 
+    const isWaitlist = data.type === RequestType.EXPEDITION && 'isWaitlist' in data && data.isWaitlist === true
     const request = await prisma.request.create({
       data: {
         type:        data.type,
@@ -60,7 +61,7 @@ export async function POST(req: Request): Promise<NextResponse> {
         name:        data.name,
         email:       data.email,
         message:     data.message ?? '',
-        status:      RequestStatus.OPEN,
+        status:      isWaitlist ? RequestStatus.WAITLIST : RequestStatus.OPEN,
       },
     })
 

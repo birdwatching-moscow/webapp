@@ -36,7 +36,7 @@ type WalkData = {
   emailSubject: string | null
   emailBody: string | null
   reminderDaysBefore: number | null
-  ticketTypes: { name: string; priceKopecks: number | null; capacity: number }[]
+  ticketTypes: { name: string; priceKopecks: number | null; capacity: number; description: string | null }[]
 }
 
 interface Props {
@@ -59,12 +59,13 @@ function statusBadgeClass(status: string) {
 }
 
 function initialTickets(types: WalkData['ticketTypes']): TicketTypeRow[] {
-  if (types.length === 0) return [{ key: makeKey(), name: 'Стандартный', priceRub: '', capacity: '' }]
+  if (types.length === 0) return [{ key: makeKey(), name: 'Стандартный', priceRub: '', capacity: '', description: '' }]
   return types.map(t => ({
     key: makeKey(),
     name: t.name,
     priceRub: t.priceKopecks != null ? String(t.priceKopecks / 100) : '',
     capacity: String(t.capacity),
+    description: t.description ?? '',
   }))
 }
 
@@ -120,6 +121,7 @@ export function WalkEditForm({ walk, guides }: Props) {
     if (!guideId) errors.push('Гид')
     if (!coverUrl.trim()) errors.push('URL фото')
     if (!tickets.some(t => t.name.trim() !== '' && t.priceRub !== '' && t.capacity !== '')) errors.push('хотя бы один билет с названием, ценой и количеством')
+    if (tickets.length > 1 && tickets.some(t => t.name.trim() && !t.description.trim())) errors.push('описание для каждого типа билета')
     if (!purchaseEmailSubject.trim()) errors.push('Тема письма при покупке')
     if (!purchaseEmailBody.trim()) errors.push('Текст письма при покупке')
     return errors
@@ -173,6 +175,7 @@ export function WalkEditForm({ walk, guides }: Props) {
         name: t.name.trim() || 'Без названия',
         priceKopecks: t.priceRub !== '' ? Math.round(parseFloat(t.priceRub) * 100) : null,
         capacity: parseInt(t.capacity, 10) || 0,
+        description: t.description.trim() || null,
       })),
     }
   }
@@ -266,7 +269,6 @@ export function WalkEditForm({ walk, guides }: Props) {
   return (
     <div className={styles.page}>
 
-      {/* Top bar */}
       <div className={styles.topBar}>
         <button type="button" className={styles.backBtn} onClick={handleBack}>
           ← Прогулки

@@ -8,6 +8,7 @@ import styles from './AdminNav.module.css'
 const PRIMARY = [
   { label: 'Прогулки',   href: ROUTES.admin.walks },
   { label: 'Экспедиции', href: ROUTES.admin.expeditions },
+  { label: 'BirdID',     href: ROUTES.admin.birdid },
   { label: 'Заявки',     href: ROUTES.admin.requests },
 ]
 

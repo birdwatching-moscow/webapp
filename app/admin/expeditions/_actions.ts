@@ -16,7 +16,7 @@ async function requireAdmin() {
 type DayInput = { clientId: string; dayNumber: number; title: string; description: string; photoUrl: string; photoCredit: string }
 export type ChecklistItem = { title: string; text: string }
 export type GalleryItem = { url: string; info: string }
-export type TicketTypeInput = { name: string; priceKopecks: number | null; capacity: number }
+export type TicketTypeInput = { name: string; priceKopecks: number | null; capacity: number; description?: string | null }
 
 type ExpeditionInput = {
   type: 'EXPEDITION'
@@ -92,6 +92,7 @@ export async function createExpedition(input: ExpeditionInput): Promise<string> 
           name: t.name,
           priceKopecks: t.priceKopecks,
           capacity: t.capacity,
+          description: t.description ?? null,
           sortOrder: i,
         })),
       },
@@ -143,6 +144,7 @@ export async function updateExpedition(id: string, input: ExpeditionInput): Prom
           name: t.name,
           priceKopecks: t.priceKopecks,
           capacity: t.capacity,
+          description: t.description ?? null,
           sortOrder: i,
         })),
       },
@@ -255,6 +257,7 @@ export async function copyExpedition(id: string): Promise<string> {
         name:         t.name,
         priceKopecks: t.priceKopecks,
         capacity:     t.capacity,
+        description:  t.description ?? null,
         sortOrder:    i,
       })),
     })

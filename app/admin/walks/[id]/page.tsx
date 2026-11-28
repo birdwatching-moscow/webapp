@@ -46,6 +46,7 @@ export default async function EditWalkPage({ params }: { params: Promise<{ id: s
           name:         t.name,
           priceKopecks: t.priceKopecks,
           capacity:     t.capacity,
+          description:  t.description,
         })),
       }}
       guides={guides}

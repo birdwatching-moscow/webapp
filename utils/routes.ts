@@ -41,6 +41,7 @@ export const ROUTES = {
     walksNew:       '/admin/walks/new',
     expeditions:    '/admin/expeditions',
     expeditionsNew: '/admin/expeditions/new',
+    birdid:         '/admin/birdid',
     team:           '/admin/team',
     teamNew:        '/admin/team/new',
     requests:       '/admin/requests',

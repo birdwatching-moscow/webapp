@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { RequestStatus } from '@/generated/prisma/client'
+import { RequestStatus, RequestType } from '@/generated/prisma/client'
 import { prisma } from '@/lib/prisma'
 import { ROUTES, API_ROUTES } from '@/utils/routes'
 import { getPageSlots } from '../_shared/listUtils'
@@ -11,8 +11,9 @@ import styles from './requests.module.css'
 const PAGE_SIZE = 25
 
 const VALID_STATUSES = new Set<string>(['NEW', 'WAITLIST', 'OPEN', 'IN_PROGRESS', 'CLOSED'])
+const VALID_TYPES    = new Set<string>(['EXPEDITION', 'CERTIFICATE', 'QUESTION', 'PRIVATE_EVENT'])
 
-function buildWhere(q: string, statuses: RequestStatus[]) {
+function buildWhere(q: string, statuses: RequestStatus[], types: RequestType[]) {
   const conditions: object[] = []
   if (q) {
     conditions.push({
@@ -22,25 +23,26 @@ function buildWhere(q: string, statuses: RequestStatus[]) {
       ],
     })
   }
-  if (statuses.length > 0) {
-    conditions.push({ status: { in: statuses } })
-  }
+  if (statuses.length > 0) conditions.push({ status: { in: statuses } })
+  if (types.length > 0)    conditions.push({ type:   { in: types } })
   return conditions.length > 0 ? { AND: conditions } : {}
 }
 
-function pageHref(q: string, statuses: string[], page: number) {
+function pageHref(q: string, statuses: string[], types: string[], page: number) {
   const params = new URLSearchParams()
   if (q) params.set('q', q)
   statuses.forEach(s => params.append('status', s))
+  types.forEach(t => params.append('type', t))
   if (page > 1) params.set('page', String(page))
   const qs = params.toString()
   return qs ? `${ROUTES.admin.requests}?${qs}` : ROUTES.admin.requests
 }
 
-function exportHref(q: string, statuses: string[]) {
+function exportHref(q: string, statuses: string[], types: string[]) {
   const params = new URLSearchParams()
   if (q) params.set('q', q)
   statuses.forEach(s => params.append('status', s))
+  types.forEach(t => params.append('type', t))
   const qs = params.toString()
   return qs ? `${API_ROUTES.admin.requestsExport}?${qs}` : API_ROUTES.admin.requestsExport
 }
@@ -56,21 +58,25 @@ function plural(n: number) {
 export default async function RequestsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string | string[]; page?: string }>
+  searchParams: Promise<{ q?: string; status?: string | string[]; type?: string | string[]; page?: string }>
 }) {
-  const { q: qParam, status: statusParam, page: pageParam } = await searchParams
+  const { q: qParam, status: statusParam, type: typeParam, page: pageParam } = await searchParams
 
   const q = (qParam ?? '').trim()
   const selectedStatuses: RequestStatus[] = (() => {
     const raw = Array.isArray(statusParam) ? statusParam : statusParam ? [statusParam] : []
     return raw.filter(s => VALID_STATUSES.has(s)) as RequestStatus[]
   })()
+  const selectedTypes: RequestType[] = (() => {
+    const raw = Array.isArray(typeParam) ? typeParam : typeParam ? [typeParam] : []
+    return raw.filter(t => VALID_TYPES.has(t)) as RequestType[]
+  })()
 
   const pageNum = Math.max(1, parseInt(pageParam ?? '1', 10))
   const skip    = (pageNum - 1) * PAGE_SIZE
-  const hasFilters = q !== '' || selectedStatuses.length > 0
+  const hasFilters = q !== '' || selectedStatuses.length > 0 || selectedTypes.length > 0
 
-  const where = buildWhere(q, selectedStatuses)
+  const where = buildWhere(q, selectedStatuses, selectedTypes)
 
   const [requests, total] = await Promise.all([
     prisma.request.findMany({
@@ -109,10 +115,10 @@ export default async function RequestsPage({
       </div>
 
       <div className={styles.toolbar}>
-        <RequestsFilters initial={{ q, statuses: selectedStatuses }} />
+        <RequestsFilters initial={{ q, statuses: selectedStatuses, types: selectedTypes }} />
         <div className={styles.toolbarActions}>
           <ExportButton
-            href={exportHref(q, selectedStatuses)}
+            href={exportHref(q, selectedStatuses, selectedTypes)}
             className={styles.exportBtn}
           />
         </div>
@@ -138,7 +144,7 @@ export default async function RequestsPage({
               </span>
               <div className={styles.paginationPages}>
                 <Link
-                  href={pageHref(q, selectedStatuses, pageNum - 1)}
+                  href={pageHref(q, selectedStatuses, selectedTypes, pageNum - 1)}
                   className={[styles.pageBtn, pageNum <= 1 ? styles.pageBtnDisabled : ''].filter(Boolean).join(' ')}
                   aria-label="Предыдущая страница"
                 >
@@ -150,7 +156,7 @@ export default async function RequestsPage({
                   ) : (
                     <Link
                       key={slot}
-                      href={pageHref(q, selectedStatuses, slot)}
+                      href={pageHref(q, selectedStatuses, selectedTypes, slot)}
                       className={[styles.pageBtn, slot === pageNum ? styles.pageBtnActive : ''].filter(Boolean).join(' ')}
                       aria-label={`Страница ${slot}`}
                       aria-current={slot === pageNum ? 'page' : undefined}
@@ -160,7 +166,7 @@ export default async function RequestsPage({
                   )
                 )}
                 <Link
-                  href={pageHref(q, selectedStatuses, pageNum + 1)}
+                  href={pageHref(q, selectedStatuses, selectedTypes, pageNum + 1)}
                   className={[styles.pageBtn, pageNum >= totalPages ? styles.pageBtnDisabled : ''].filter(Boolean).join(' ')}
                   aria-label="Следующая страница"
                 >
