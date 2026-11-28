@@ -20,7 +20,6 @@ export type BirdIdInput = {
   endsAt: string | null
   durationHours: number | null
   difficulty: number | null
-  difficultyText: string | null
   schedule: string | null
   seminars: string | null
   registrationDeadline: string | null
@@ -38,7 +37,6 @@ export type BirdIdData = {
   durationDays: number | null
   durationHours: number | null
   difficulty: number | null
-  difficultyText: string | null
   schedule: string | null
   seminars: string | null
   registrationDeadline: string | null
@@ -66,7 +64,6 @@ export async function getBirdId(): Promise<BirdIdData | null> {
     durationDays:         record.durationDays,
     durationHours:        record.durationHours,
     difficulty:           record.difficulty,
-    difficultyText:       record.difficultyText,
     schedule:             record.schedule,
     seminars:             record.seminars,
     registrationDeadline: record.registrationDeadline ? record.registrationDeadline.toISOString().split('T')[0] : null,
@@ -107,7 +104,6 @@ export async function saveBirdId(input: BirdIdInput): Promise<void> {
       durationDays,
       durationHours:        input.durationHours,
       difficulty:           input.difficulty,
-      difficultyText:       input.difficultyText,
       schedule:             input.schedule,
       seminars:             input.seminars,
       registrationDeadline: input.registrationDeadline ? new Date(input.registrationDeadline) : null,
@@ -124,7 +120,6 @@ export async function saveBirdId(input: BirdIdInput): Promise<void> {
       durationDays,
       durationHours:        input.durationHours,
       difficulty:           input.difficulty,
-      difficultyText:       input.difficultyText,
       schedule:             input.schedule,
       seminars:             input.seminars,
       registrationDeadline: input.registrationDeadline ? new Date(input.registrationDeadline) : null,

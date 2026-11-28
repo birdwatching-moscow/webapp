@@ -9,16 +9,23 @@ export const metadata: Metadata = {
   description: 'Бердвотчинг в Москве, экспедиции по России и за границей',
 }
 
+const ABOUT_HIGHLIGHTS: readonly PrivateHighlight[] = [
+  {
+    title: 'Продолжительность',
+    description: 'Ожидаемая продолжительность курса: 181 час. Выезды по выходным с 4 апреля по 7 июня. Лекции и семинары по вечерам в будни',
+  },
+  {
+    title: 'Что будем делать?',
+    description: 'Посещаем различные местообитания птиц и учимся определять их в природе по внешнему виду и голосу',
+  },
+  {
+    title: 'Сложность',
+    description: 'Долгие пешие переходы, переезды на авто и общественном транспорте. Ночевки в разных условиях от гостевого домика до палатки',
+  },
+]
+
 export default async function BirdIDPage() {
   const birdId = await getBirdIdPublic()
-
-  const highlights: PrivateHighlight[] = (
-    [
-      birdId?.schedule       ? { title: 'Продолжительность', description: birdId.schedule }       : null,
-      birdId?.seminars       ? { title: 'Что будем делать?', description: birdId.seminars }       : null,
-      birdId?.difficultyText ? { title: 'Сложность',         description: birdId.difficultyText } : null,
-    ] as Array<PrivateHighlight | null>
-  ).filter((x): x is PrivateHighlight => x !== null)
 
   return (
     <main className="container">
@@ -42,9 +49,7 @@ export default async function BirdIDPage() {
         />
       )}
 
-      {highlights.length > 0 && (
-        <PrivateHighlights title="Коротко о курсе" highlights={highlights} />
-      )}
+      <PrivateHighlights title="Коротко о курсе" highlights={ABOUT_HIGHLIGHTS} />
     </main>
   )
 }
