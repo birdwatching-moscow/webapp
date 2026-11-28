@@ -193,6 +193,7 @@ export const BirdIdEditForm = ({ initial, guides }: Props) => {
           onEndsAt={v => { setEndsAt(v); markDirty() }}
           dateOnly
           requireAll
+          readOnlyDuration
         />
 
         <section className={styles.section}>

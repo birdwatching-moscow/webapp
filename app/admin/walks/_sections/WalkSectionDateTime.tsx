@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import styles from '../[id]/walk-edit.module.css'
 
 interface Props {
@@ -14,6 +14,8 @@ interface Props {
   durationDays?: string
   onDurationDays?: (v: string) => void
   dateOnly?: boolean
+  /** Show an auto-computed, read-only duration field (endsAt − startsAt + 1). */
+  readOnlyDuration?: boolean
 }
 
 export function WalkSectionDateTime({
@@ -21,11 +23,13 @@ export function WalkSectionDateTime({
   onStartsAt, onEndsAt, onLocation,
   disabled, requireAll, requireStartsAt,
   durationDays, onDurationDays,
-  dateOnly,
+  dateOnly, readOnlyDuration,
 }: Props) {
   const startRequired = requireAll || requireStartsAt
   const inputType = dateOnly ? 'date' : 'datetime-local'
   const dateOrderError = startsAt && endsAt && endsAt <= startsAt
+
+  const [computedDays, setComputedDays] = useState<number | null>(null)
 
   useEffect(() => {
     if (!dateOnly || !onDurationDays || !startsAt || !endsAt) return
@@ -36,6 +40,14 @@ export function WalkSectionDateTime({
     onDurationDays(String(days))
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startsAt, endsAt])
+
+  useEffect(() => {
+    if (!readOnlyDuration || !startsAt || !endsAt) { setComputedDays(null); return }
+    const start = new Date(startsAt)
+    const end   = new Date(endsAt)
+    if (isNaN(start.getTime()) || isNaN(end.getTime()) || end < start) { setComputedDays(null); return }
+    setComputedDays(Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1)
+  }, [startsAt, endsAt, readOnlyDuration])
 
   return (
     <section className={styles.section}>
@@ -75,6 +87,19 @@ export function WalkSectionDateTime({
               onChange={e => onDurationDays(e.target.value)}
               disabled={disabled}
               placeholder="Например: 10"
+            />
+          </div>
+        )}
+        {readOnlyDuration && (
+          <div className={styles.field}>
+            <label className={styles.label}>Длительность (дней)</label>
+            <input
+              className={styles.input}
+              type="number"
+              value={computedDays ?? ''}
+              readOnly
+              tabIndex={-1}
+              placeholder="—"
             />
           </div>
         )}
