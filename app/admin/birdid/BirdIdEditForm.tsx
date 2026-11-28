@@ -41,6 +41,7 @@ export const BirdIdEditForm = ({ initial, guides }: Props) => {
   const [endsAt,               setEndsAt]               = useState(initial?.endsAt ?? '')
   const [durationHours,        setDurationHours]        = useState(initial?.durationHours != null ? String(initial.durationHours) : '')
   const [difficulty,           setDifficulty]           = useState<number | null>(initial?.difficulty ?? null)
+  const [difficultyText,       setDifficultyText]       = useState(initial?.difficultyText ?? '')
   const [schedule,             setSchedule]             = useState(initial?.schedule ?? '')
   const [seminars,             setSeminars]             = useState(initial?.seminars ?? '')
   const [registrationDeadline, setRegistrationDeadline] = useState(initial?.registrationDeadline ?? '')
@@ -105,6 +106,7 @@ export const BirdIdEditForm = ({ initial, guides }: Props) => {
           formUrl:              formUrl.trim() || null,
           durationHours:        durationHours ? parseInt(durationHours, 10) : null,
           difficulty,
+          difficultyText:       difficultyText.trim() || null,
           startsAt:             startsAt || null,
           endsAt:               endsAt   || null,
           schedule:             schedule.trim() || null,
@@ -223,6 +225,22 @@ export const BirdIdEditForm = ({ initial, guides }: Props) => {
           value={difficulty}
           onChange={v => { setDifficulty(v); markDirty() }}
         />
+
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Описание сложности</h2>
+          <div className={styles.fieldRow}>
+            <div className={`${styles.field} ${styles.fieldFullWidth}`}>
+              <label className={styles.label}>Что ожидает участников</label>
+              <textarea
+                className={styles.textarea}
+                rows={3}
+                value={difficultyText}
+                onChange={e => { setDifficultyText(e.target.value); markDirty() }}
+                placeholder="Например: долгие пешие переходы, переезды на авто…"
+              />
+            </div>
+          </div>
+        </section>
 
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Дата окончания регистрации</h2>

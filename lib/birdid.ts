@@ -10,6 +10,9 @@ export type BirdIdPublicData = {
   durationDays: number | null
   durationHours: number | null
   difficulty: number | null
+  difficultyText: string | null
+  schedule: string | null
+  seminars: string | null
   registrationOpen: boolean
 }
 
@@ -24,6 +27,9 @@ export async function getBirdIdPublic(): Promise<BirdIdPublicData | null> {
       durationDays: true,
       durationHours: true,
       difficulty: true,
+      difficultyText: true,
+      schedule: true,
+      seminars: true,
       registrationOpen: true,
     },
   })
