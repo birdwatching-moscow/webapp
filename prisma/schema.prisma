@@ -209,6 +209,7 @@ model BirdId {
   seminars             String?   @db.Text
   registrationDeadline DateTime? @db.Timestamptz
   registrationOpen     Boolean   @default(false)
+  durationDays         Int?
   createdAt            DateTime  @default(now()) @db.Timestamptz
   updatedAt            DateTime  @updatedAt @db.Timestamptz
   updatedBy            String?   @db.VarChar(254)

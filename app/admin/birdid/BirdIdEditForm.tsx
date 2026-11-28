@@ -38,6 +38,7 @@ export const BirdIdEditForm = ({ initial, guides }: Props) => {
   const [formUrl,              setFormUrl]              = useState(initial?.formUrl ?? '')
   const [startsAt,             setStartsAt]             = useState(initial?.startsAt ?? '')
   const [endsAt,               setEndsAt]               = useState(initial?.endsAt ?? '')
+  const [durationDays,         setDurationDays]         = useState(initial?.durationDays != null ? String(initial.durationDays) : '')
   const [schedule,             setSchedule]             = useState(initial?.schedule ?? '')
   const [seminars,             setSeminars]             = useState(initial?.seminars ?? '')
   const [registrationDeadline, setRegistrationDeadline] = useState(initial?.registrationDeadline ?? '')
@@ -76,6 +77,7 @@ export const BirdIdEditForm = ({ initial, guides }: Props) => {
     if (!formUrl.trim())             errors.push('Ссылка на форму')
     else if (formUrlInvalid)         errors.push('Ссылка на форму (неверный формат)')
     if (!startsAt)                   errors.push('Дата начала курса')
+    if (!durationDays || parseInt(durationDays, 10) < 1) errors.push('Длительность')
     if (!endsAt)                     errors.push('Дата окончания курса')
     if (!registrationDeadline)       errors.push('Дата окончания регистрации')
     if (!schedule.trim())            errors.push('Примерное расписание')
@@ -99,6 +101,7 @@ export const BirdIdEditForm = ({ initial, guides }: Props) => {
         await saveBirdId({
           title:                title.trim(),
           formUrl:              formUrl.trim() || null,
+          durationDays:         durationDays ? parseInt(durationDays, 10) : null,
           startsAt:             startsAt || null,
           endsAt:               endsAt   || null,
           schedule:             schedule.trim() || null,
@@ -193,8 +196,24 @@ export const BirdIdEditForm = ({ initial, guides }: Props) => {
           onEndsAt={v => { setEndsAt(v); markDirty() }}
           dateOnly
           requireAll
-          readOnlyDuration
         />
+
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Длительность</h2>
+          <div className={styles.fieldRow}>
+            <div className={styles.field}>
+              <label className={`${styles.label} ${styles.required}`}>Количество дней</label>
+              <input
+                className={styles.input}
+                type="number"
+                min="1"
+                value={durationDays}
+                onChange={e => { setDurationDays(e.target.value); markDirty() }}
+                placeholder="Например: 90"
+              />
+            </div>
+          </div>
+        </section>
 
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Дата окончания регистрации</h2>
