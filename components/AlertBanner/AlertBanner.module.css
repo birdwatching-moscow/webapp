@@ -5,6 +5,7 @@
   align-items: center;
   gap: var(--space-2);
   align-self: stretch;
+  margin-inline: auto;
   min-width: 320px;
   max-width: 720px;
   padding: var(--space-4) var(--space-5);
