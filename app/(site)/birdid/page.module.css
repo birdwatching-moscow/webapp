@@ -1,0 +1,82 @@
+.hero {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.heroImage {
+  object-fit: cover;
+}
+
+.credit {
+  position: absolute;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  z-index: var(--z-index-float);
+}
+
+.creditIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  list-style: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.creditIcon::-webkit-details-marker {
+  display: none;
+}
+
+.creditIcon:focus-visible {
+  outline: var(--stroke-focus) solid var(--color-primary-foreground);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.creditCaption {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  margin: 0;
+  white-space: nowrap;
+  text-transform: uppercase;
+  color: var(--color-primary-foreground);
+  font-size: var(--font-size-sm);
+  text-shadow: 0 0 4px rgb(0 0 0 / 0.6);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s;
+  z-index: var(--z-index-raised);
+}
+
+@media (hover: hover) {
+  .credit:is(:hover, :focus-within)::details-content {
+    content-visibility: visible;
+  }
+
+  .credit:is(:hover, :focus-within) .creditCaption {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .credit:is(:hover, :focus-within) .creditIcon {
+    opacity: 0;
+  }
+}
+
+@media (hover: none) {
+  .credit[open] .creditCaption {
+    opacity: 1;
+    visibility: visible;
+    z-index: var(--z-index-float);
+  }
+
+  .credit[open] .creditIcon {
+    inset: 0;
+    opacity: 0;
+    z-index: var(--z-index-raised);
+  }
+}
