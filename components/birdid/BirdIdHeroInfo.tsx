@@ -8,9 +8,11 @@ const MOS_TZ = 'Europe/Moscow'
 function formatDateRange(startsAt: Date | null, endsAt: Date | null): string | null {
   if (!startsAt) return null
   const start = startsAt.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', timeZone: MOS_TZ })
-  if (!endsAt) return `С ${start}`
+  const ref = endsAt ?? startsAt
+  const year = ref.toLocaleDateString('ru-RU', { year: 'numeric', timeZone: MOS_TZ })
+  if (!endsAt) return `С ${start} ${year}`
   const end = endsAt.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', timeZone: MOS_TZ })
-  return `С ${start} по ${end}`
+  return `С ${start} по ${end} ${year}`
 }
 
 type Props = Pick<BirdIdPublicData, 'title' | 'formUrl' | 'startsAt' | 'endsAt' | 'durationDays' | 'durationHours' | 'difficulty' | 'registrationOpen'>
