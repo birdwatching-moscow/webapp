@@ -15,6 +15,7 @@ export type BirdIdTicketInput = { name: string; priceKopecks: number | null; cap
 
 export type BirdIdInput = {
   title: string
+  subtitle: string | null
   formUrl: string | null
   startsAt: string | null
   endsAt: string | null
@@ -31,6 +32,7 @@ export type BirdIdInput = {
 export type BirdIdData = {
   id: string
   title: string
+  subtitle: string | null
   formUrl: string | null
   startsAt: string | null
   endsAt: string | null
@@ -58,6 +60,7 @@ export async function getBirdId(): Promise<BirdIdData | null> {
   return {
     id:                   record.id,
     title:                record.title,
+    subtitle:             record.subtitle,
     formUrl:              record.formUrl,
     startsAt:             record.startsAt ? record.startsAt.toISOString().split('T')[0] : null,
     endsAt:               record.endsAt   ? record.endsAt.toISOString().split('T')[0]   : null,
@@ -98,6 +101,7 @@ export async function saveBirdId(input: BirdIdInput): Promise<void> {
     create: {
       id:                   SINGLETON_ID,
       title:                input.title,
+      subtitle:             input.subtitle,
       formUrl:              input.formUrl,
       startsAt:             input.startsAt ? new Date(input.startsAt) : null,
       endsAt:               input.endsAt   ? new Date(input.endsAt)   : null,
@@ -114,6 +118,7 @@ export async function saveBirdId(input: BirdIdInput): Promise<void> {
     },
     update: {
       title:                input.title,
+      subtitle:             input.subtitle,
       formUrl:              input.formUrl,
       startsAt:             input.startsAt ? new Date(input.startsAt) : null,
       endsAt:               input.endsAt   ? new Date(input.endsAt)   : null,

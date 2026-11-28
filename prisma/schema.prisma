@@ -202,6 +202,7 @@ model TeamMember {
 model BirdId {
   id                   String    @id @default(uuid())
   title                String    @default("") @db.VarChar(150)
+  subtitle             String?   @db.VarChar(300)
   formUrl              String?   @db.VarChar(2048)
   startsAt             DateTime? @db.Timestamptz
   endsAt               DateTime? @db.Timestamptz

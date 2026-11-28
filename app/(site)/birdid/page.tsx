@@ -23,6 +23,7 @@ export default async function BirdIDPage() {
       {birdId && (
         <BirdIdHeroInfo
           title={birdId.title}
+          subtitle={birdId.subtitle}
           formUrl={birdId.formUrl}
           startsAt={birdId.startsAt}
           endsAt={birdId.endsAt}

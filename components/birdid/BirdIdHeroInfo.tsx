@@ -13,10 +13,11 @@ function formatDateRange(startsAt: Date | null, endsAt: Date | null): string | n
   return `С ${start} по ${end}`
 }
 
-type Props = Pick<BirdIdPublicData, 'title' | 'formUrl' | 'startsAt' | 'endsAt' | 'durationDays' | 'durationHours' | 'difficulty' | 'registrationOpen'>
+type Props = Pick<BirdIdPublicData, 'title' | 'subtitle' | 'formUrl' | 'startsAt' | 'endsAt' | 'durationDays' | 'durationHours' | 'difficulty' | 'registrationOpen'>
 
 export const BirdIdHeroInfo = ({
   title,
+  subtitle,
   formUrl,
   startsAt,
   endsAt,
@@ -31,6 +32,9 @@ export const BirdIdHeroInfo = ({
   return (
     <section className={styles.info}>
       <h1 className={`text-display ${styles.title}`}>{title}</h1>
+      {subtitle && (
+        <p className={`text-body-l ${styles.subtitle}`}>{subtitle}</p>
+      )}
 
       <div className={styles.stats}>
         {durationDays != null && (
